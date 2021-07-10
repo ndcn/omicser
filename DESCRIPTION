@@ -1,0 +1,13 @@
+Package: omicser
+Title: NDCN Omics Browser
+Version: 0.0.0.9000
+Authors@R: person('Andy', 'Henrie', email = 'henrie@datatecnica.com', role = c('cre', 'aut'))
+Description: Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 2021.
+License: MIT + file LICENSE
+Imports: 
+    config (>= 0.3.1),
+    golem (>= 0.3.1),
+    shiny (>= 1.6.0)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
