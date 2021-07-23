@@ -1,0 +1,25 @@
+---
+title: "Additional Info - Godel, Escher, & Erdos"
+output: html_document
+---
+
+
+### About DATABASE XYZ
+
+Data is from a super califragilistic study which solves materialism to the nth degree.  Decarte would be convinced his pneumatics were aliens collapsing the physical universe into an experience of ribonucleic acids. 
+
+
+
+### Citation
+
+IBID Skeletal Muscle & Stem Cell Aging
+Svenja C. Schüler, Joanna M. Kirkpatrick, Manuel Schmidt, Deolinda Santinha, Philipp Koch, Simone Di Sanzo, Emilio Cirri, Martin Hemberg, Alessandro Ori and Julia von Maltzahn
+
+
+You can find the introductory paper: [here](https://journals.plos.org/plosone/article?id=10.1372).
+
+### Questions and comments
+Please write to Sir Isaac Newton at the following email address: henrie@datatecnica.com
+
+
+© 2021 Biology is solved with wave equations, Inc.

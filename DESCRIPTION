@@ -5,9 +5,31 @@ Authors@R: person('Andy', 'Henrie', email = 'henrie@datatecnica.com', role = c('
 Description: Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 2021.
 License: MIT + file LICENSE
 Imports: 
+    anndata,
+    attempt,
     config (>= 0.3.1),
+    dplyr,
+    DT,
+    glue,
     golem (>= 0.3.1),
-    shiny (>= 1.6.0)
+    htmltools,
+    Matrix,
+    plotly,
+    processx,
+    shiny (>= 1.6.0),
+    shinyWidgets,
+    SingleCellExperiment,
+    thinkr
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+Suggests: 
+    rmarkdown,
+    knitr,
+    spelling,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Language: en-US
+VignetteBuilder: knitr
+Depends: 
+    R (>= 2.10)

@@ -1,0 +1,27 @@
+---
+title: "Quick Start"
+output: html_document
+---
+### Instructions
+
+#### 1. Ingest data
+* choose database
+* upload
++ preloaded
+
+#### 2. understand context
+* read the landing
+  - whate else
+* info tab
+  - metadata
+  
+#### 3. visualize
+* You can generate 5 types of plots:
+  - volcano
+  - dotplot
+  - `boxplot` 
+  - etc
+  - etc
+  
+© 2021 DataTecnica, Inc.
+
