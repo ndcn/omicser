@@ -644,4 +644,115 @@ clust_data <- ingest_clust_data(csv_name,basedir)
 #
 #
 #
+#
+
+
+## additional dataset...
+
+# #
+#         Here’s a link to our single-cell microglia data set as a
+#         Seurat object, with counts tables, normalized counts tables,
+#         UMAP coordinates, and cell metadata in the table. The UMAP
+#         coordinates and clusters were generated with a previous v
+#         ersion of Seurat, with obsolete normalization and clustering
+#         routines. However, for visualization and to kick the tires,
+#         I hope this is a good starting data set. This is also what
+#         Chris Sifuentes has been playing with in cellxgene, so down
+#         the road it could also be a good data set if we want to explore
+#         cross-connectivity between visualization and cellxgene options.
+# #
+#
+#setwd("~/Projects/NDCN_dev/Vilas/shinydotplot")
+library("Seurat")
+
+
+basedir <- "/Users/ahenrie/Projects/NDCN_dev/Vilas"
+
+
+file_name <- "microglia_data_with_counts_RNA_SCT.rda"
+file_path <- file.path(basedir,file_name)
+
+load(file_path) # microglia_data
+
+
+#UPDATE OBJECT
+new_microglia_data <- UpdateSeuratObject(object = microglia_data)
+
+# convert to ANNDATA
+#
+# if (!requireNamespace("remotes", quietly = TRUE)) {
+#   install.packages("remotes")
+# }
+# remotes::install_github("mojaveazure/seurat-disk")
+# devtools::install_github('satijalab/seurat-data')
+
+library(SeuratData)
+
+library(SeuratDisk)
+
+out_file_name <- "new_microglia_data.h5Seurat"
+out_file_path <- file.path(basedir,out_file_name)
+
+
+SaveH5Seurat( new_microglia_data, filename = out_file_path, overwrite = TRUE)
+# Creating h5Seurat file for version 3.1.5.9900
+# Adding counts for RNA
+# Adding data for RNA
+# No variable features found for RNA
+# No feature-level metadata found for RNA
+# Adding counts for SCT
+# Adding data for SCT
+# Adding scale.data for SCT
+# Adding variable features for SCT
+# Adding feature-level metadata for SCT
+# Adding counts for counts
+# Adding data for counts
+# No variable features found for counts
+# No feature-level metadata found for counts
+# Adding cell embeddings for pca
+# Adding loadings for pca
+# No projected loadings for pca
+# Adding standard deviations for pca
+# No JackStraw data for pca
+# Adding cell embeddings for tsne
+# No loadings for tsne
+# No projected loadings for tsne
+# No standard deviations for tsne
+# No JackStraw data for tsne
+#
+#
+
+Convert(out_file_path, dest = "h5ad")
+# Validating h5Seurat file
+# Adding scale.data from SCT as X
+# Transfering meta.features to var
+# Adding data from SCT as raw
+# Transfering meta.features to raw/var
+# Transfering meta.data to obs
+# Adding dimensional reduction information for pca
+# Adding feature loadings for pca
+# Adding dimensional reduction information for tsne
+#
+new_file_path <- gsub(".h5Seurat",".h5ad",out_file_path)
+ad <- read_h5ad(new_file_path)
+
+
+
+
+
+X <- counts
+obs <- meta_data
+vars <- data_table
+
+oscar_toy1_X <- X
+oscar_toy1_obs <- obs
+oscar_toy1_vars <- vars
+
+
+# ingest script -----------------------
+DATA_DIR <- "/Users/ahenrie/Projects/NDCN_dev/dbrowse/ingest"
+DATA_DIR <- "ingest"
+#basedir <- "/Users/ahenrie/Projects/NDCN_dev/Oscar"
+DB_NAME = "Vilas_B"
+
 

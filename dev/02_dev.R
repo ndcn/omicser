@@ -30,7 +30,7 @@ usethis::use_package("Matrix")
 usethis::use_package("anndata")
 usethis::use_package("SingleCellExperiment")
 
-# usethis::use_package("tidyr") # called by dplyr as dependency?
+usethis::use_package("tidyr") # called by dplyr as dependency?
 # usethis::use_package("magrittr")
 # usethis::use_package("purrr")
 # usethis::use_package("tibble")
@@ -73,9 +73,11 @@ golem::add_utils( "helpers" )
 ## Add internal datasets ----
 ## If you have data in your package
 usethis::use_data_raw( name = "transcript_gold_standard", open = FALSE )
+usethis::use_data_raw( name = "metabol_gold_standard", open = FALSE )
 usethis::use_data_raw( name = "proteo_gold_standard", open = FALSE )
 usethis::use_data_raw( name = "lipid_gold_standard", open = FALSE )
 usethis::use_data_raw( name = "vilas_A", open = FALSE )
+usethis::use_data_raw( name = "vilas_B", open = FALSE )
 usethis::use_data_raw( name = "domenico_A", open = FALSE )
 usethis::use_data_raw( name = "domenico_B", open = FALSE )
 usethis::use_data_raw( name = "oscar_microglia", open = FALSE )

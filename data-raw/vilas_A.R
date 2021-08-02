@@ -62,8 +62,10 @@ Vilas_A_var <- data.frame(features,row.names = features)
 # obs_names <- row.names(obs)
 
 
-usethis::use_data(Vilas_A_X,Vilas_A_obs,Vilas_A_var,overwrite = TRUE)
+#usethis::use_data(Vilas_A_X,Vilas_A_obs,Vilas_A_var,overwrite = TRUE)
 #usethis::use_data(Vilas_A_var,overwrite = TRUE)
+
+
 
 
 # ### annot_mat
@@ -79,7 +81,7 @@ usethis::use_data(Vilas_A_X,Vilas_A_obs,Vilas_A_var,overwrite = TRUE)
 # 3. calculate fractional expression and differential levels in groups/clusters --------------------
 X <- Vilas_A_X
 obs <- Vilas_A_obs
-
+var_ <- Vilas_A_var
 
 # calculate the fractional expression for each gene within each group.
 
@@ -92,27 +94,13 @@ rownames(frac_exp_mat) <- colnames(X)
 colnames(frac_exp_mat) <- all_clusters
 
 # grand stats over all observations
-mu_mat <- apply(X, 2, mean)
+#mu_mat <- apply(X, 2, mean)
+
+mu_mat <- colMeans(X)
 sd_mat <- apply(X, 2, sd)
+sd_mat <- sd_mat + 1e-100
 
-
-log_X <- log10(X + 1.0)
-
-
-# mu_logf <- function(inval){
-#   outval <- mean(log10(inval + 1))
-#   return(outval)
-# }
-#
-# sd_logf <- function(inval){
-#   outval <- sd(log10(inval + 1))
-#   return(outval)
-# }
-mu_log_mat <- apply(log_X, 2, mean)
-sd_log_mat <- apply(log_X, 2, sd)
-
-# mu_log_mat <- apply(X, 2, mu_logf)
-# sd_log_mat <- apply(X, 2, sd_logf)
+log_X <- log(X + 1.)
 
 # copy the empty matrices
 mean_z_mat <- frac_exp_mat
@@ -120,35 +108,37 @@ mean_log_mat <- frac_exp_mat
 mean_z_log_mat <- frac_exp_mat
 
 
-# zscore against our previously computed grand mu & sd
-z_mat <-  (X-mu_mat) / rep(sd_mat, each=nrow(X))
+Z <- scale(X)
 #z_submat <- (submat-mu_mat)/ %*% diag(1 / sd_mat)
-z_log_mat <- ( log_X -  rep(mu_log_mat, each=nrow(X)) )  / rep(sd_log_mat, each=nrow(X))
+#z_log_mat <- ( log_X -  rep(mu_log_mat, each=nrow(X)) )  / rep(sd_log_mat, each=nrow(X))
+Z_log <- scale(log_X)
+mu_log <- colMeans(log_X)
+sd_log <- apply(log_X,2,sd)
 
 # i should just be able to normalize these....
-expressed <- (X > 0)
+# expressed <- (X > 0)
 
 for (clust_i in all_clusters) {
-  subs <- obs_annots$sample_id[ obs_annots$cluster_label == clust_i ]
-  # submat <- X[subs,]
-  # log_submat <- log_X[subs,]
-  # z_submat <- z_mat[subs,]
-  # x_log_submat <- z_log_mat[subs,]
-  #
-  frac_exp_mat[, clust_i] <- apply(expressed[subs,], 2, mean)
+  subs <- obs_annots$sample_id[ obs_annots$cluster_name == clust_i ]
 
+  # is colmeans more performant?
+  frac_exp_mat[, clust_i] <- colMeans(X[subs,]>0)
+  mean_z_mat[, clust_i] <- colMeans(Z[subs,])
+  mean_log_mat[, clust_i] <- colMeans(log_X[subs,] )
+  mean_z_log_mat[, clust_i] <- colMeans(Z_log[subs,] )
   # #
-  # z_submat <-  (submat-mu_mat) / rep(sd_mat, each=nrow(submat))
-  # #z_submat <- (submat-mu_mat)/ %*% diag(1 / sd_mat)
-  # z_log_submat <- ( log10(submat+1.) -  rep(mu_log_mat, each=nrow(submat)) )  / rep(sd_log_mat, each=nrow(submat))
-
-  mean_z_mat[, clust_i] <- apply(z_mat[subs,] , 2, mean)
-  #mean_log_mat[, clust_i] <- apply(submat , 2, mu_logf)
-  mean_log_mat[, clust_i] <- apply(log_X[subs,] , 2, mean)
-  mean_z_log_mat[, clust_i] <- apply(z_log_mat[subs,] , 2, mean)
-
   print(c(clust_i, " done"))
 } # rows=genes, columns = clusters
+
+# add an overall value...
+
+frac_exp_mat <- cbind(frac_exp_mat, all=colMeans(X>0))
+
+mean_z_mat <- cbind(mean_z_mat,mu=mu_mat,sd=sd_mat)
+
+mean_log_mat <- cbind(mean_log_mat,mu=mu_log,sd=sd_log)
+
+mean_z_log_mat <- cbind(mean_z_log_mat,mu=mu_log,sd=sd_log)
 
 
 # # now stack the summary frac_mat, mean_z_mat, mean_log_mat,mean_z_log_mat into vars
@@ -161,6 +151,9 @@ for (clust_i in all_clusters) {
 #
 #
 
+######3   these go in var... probably don't need varm... but they would be
+######
+#######varM for "matrix"... put things like dimreduction and 'PCs'
 varm = list(
   frac_expres = frac_exp_mat,
   mean_z = mean_z_mat,
@@ -173,8 +166,86 @@ obsm = NULL
 Vilas_A_obsm <- obsm
 Vilas_A_varm <- varm
 
-usethis::use_data(Vilas_A_obsm,Vilas_A_varm,overwrite = TRUE)
+uns <- list(frac_expres=colnames(varm$frac_expres),
+            mean_z = colnames(varm$mean_z),
+            mean_log = colnames(varm$mean_log),
+            mean_z_log = colnames(varm$mean_z_log))
+Vilas_A_uns <- uns
 
+#usethis::use_data(Vilas_A_obsm,Vilas_A_varm,Vilas_A_uns,overwrite = TRUE)
+
+
+
+
+
+
+#######################################################################
+#######################################################################
+##
+##  Create data tables / h5
+##  1. config (XXX_conf.rds)  : structure of the database
+##  2. defaults (XXX_def.rds) : the startup parameters
+##  3. meta_data (XXX_meta.rds)  : data about the observations (obs)
+##  4. omics  (XXX_omics.rds):  data about the  (var)
+##  3. gene_expression (xxx_gexpr.h5):  count matrix of observ X var (X)
+##
+#######################################################################
+#######################################################################
+
+# X <- omicser::Vilas_A_X
+# obs <- omicser::Vilas_A_obs
+# var_ <- omicser::Vilas_A_var
+# obsm <- omicser::Vilas_A_obsm
+# varm <- omicser::Vilas_A_varm
+# uns <- omicser::Vilas_A_uns
+# layers <- NULL
+
+
+#TODO:  pack into a list or anndata structure for simplicity...
+
+require("data.table")
+## TODO:  check
+##      - do we need default_1, 2 and multi?
+##
+
+#helper_functions<-('data-raw/data_prep_functions.R')
+helper_function<-('data-raw/make_ingest_file_primitives.R')
+
+source(helper_function)
+
+db_dir = "data-raw"
+db_prefix <- "Vilas_A_"
+make_ingest_file_primitives(X,obs,var_,obsm=obsm, varm=varm,
+                             uns=uns, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+                             gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
+                                        default_omics1 = NA, default_omics2 = NA, default_multi = NA,
+                                        default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+                                        max_levels_ui = 50)
+
+#vilas_A_conf = readRDS(file.path(db_dir,"test1conf.rds"))
+vilas_A_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
+
+# defaults:  list of meta1, meta2, omics1, omics2, omics (list of 10). dimred, grp1, grp2
+vilas_A_def = readRDS( paste0(db_dir,"/",db_prefix,"def.rds") )
+
+# list of vars )e/g/ 3000 genes with counts?
+vilas_A_omics = readRDS( paste0(db_dir,"/",db_prefix,"omics.rds") )
+# use this sorted one to resort everything before packing into anndata
+
+vilas_A_meta = readRDS( paste0(db_dir,"/",db_prefix,"meta.rds") )
+vilas_A_X = readRDS( paste0(db_dir,"/",db_prefix,"X.rds") )
+vilas_A_obs = readRDS( paste0(db_dir,"/",db_prefix,"obs.rds") )
+vilas_A_obsm = readRDS( paste0(db_dir,"/",db_prefix,"obsm.rds") )
+vilas_A_var = readRDS( paste0(db_dir,"/",db_prefix,"var.rds") )
+vilas_A_varm = readRDS( paste0(db_dir,"/",db_prefix,"varm.rds") )
+vilas_A_uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
+vilas_A_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
+
+
+
+usethis::use_data(vilas_A_X,vilas_A_var,vilas_A_obs,
+                  vilas_A_obsm,vilas_A_varm,vilas_A_layers,vilas_A_uns,
+                  vilas_A_conf, vilas_A_def, vilas_A_omics, vilas_A_meta, overwrite = TRUE)
 
 #######################################################################
 #######################################################################
@@ -197,35 +268,59 @@ usethis::use_data(Vilas_A_obsm,Vilas_A_varm,overwrite = TRUE)
 
 library(anndata)
 
+#
+# X <- omicser::vilas_A_X
+# obs <- omicser::vilas_A_obs
+# var_ <- omicser::vilas_A_var
+# obsm <- omicser::vilas_A_obsm
+# varm <- omicser::vilas_A_varm
+# uns <- omicser::vilas_A_varm
+# layers <- omicser::vilas_A_layers
+#
+#
+#
+# a_X <- omicser::vilas_A_X
+# a_obs <- omicser::vilas_A_obs
+# a_var_ <- omicser::vilas_A_var
+# a_obsm <- omicser::vilas_A_obsm
+# a_varm <- omicser::vilas_A_varm
+# a_uns <- omicser::vilas_A_varm
+# a_layers <- omicser::vilas_A_layers
+#
+#
+# X <- omicser::Domenico_A_X
+# obs <- omicser::Domenico_A_obs
+# var_ <- omicser::Domenico_A_var
+# obsm <- omicser::Domenico_A_obsm
+# varm <- omicser::Domenico_A_varm
+# uns <- omicser::Domenico_A_uns
+#
+#
 
-X <- omicser::Vilas_A_X
-obs <- omicser::Vilas_A_obs
-var_ <- omicser::Vilas_A_var
-#obs <- obs_annots
-#var_ <- data.frame(features,row.names = features)
-obsm <- omicser::Vilas_A_obsm
-varm <- omicser::Vilas_varm
-uns <- list()
-
-X <- omicser::Domenico_A_X
-obs <- omicser::Domenico_A_obs
-var_ <- omicser::Domenico_A_var
-obsm <- omicser::Domenico_A_obsm
-varm <- omicser::Domenico_A_varm
-uns <- omicser::Domenico_A_uns
-
+X <- vilas_A_X
+obs <- vilas_A_obs
+var_ <- vilas_A_var
+obsm <- vilas_A_obsm
+varm <- vilas_A_varm
+uns <- vilas_A_uns
+layers <-vilas_A_layers
 
 ad <- AnnData(
   X = X,
   obs = obs,
   var = var_,
-  layers = list(),
+  layers = layers,
   obsm = obsm,
   varm = varm,
-  uns = list()
+  uns = uns
 )
 
 ad
+
+#write_h5ad(anndata = ad, filename = file.path(db_dir,"data-raw/Vilas_A.h5ad"))
+# anndata R wrapper is broken.. .invoke python
+#
+ad$write_h5ad(filename="data-raw/vilas_A.h5ad")
 #> AnnData object with n_obs × n_vars = 2 × 3
 #>     obs: 'group'
 #>     var: 'type'
@@ -233,3 +328,4 @@ ad
 #>     obsm: 'ones', 'rand', 'zeros'
 #>     varm: 'ones', 'rand', 'zeros'
 #>     layers: 'spliced', 'unspliced'
+source("data-raw/vilas_B.R",echo = FALSE)

@@ -48,6 +48,7 @@ mod_export_server <- function(id, rv_in, p){
     # plot_type = NULL
     # )
 
+
     #output$text1     <- renderText({ vecFun()})
     output$var0      <- renderText({ paste0(isolate(p[["exp_fact"]]),collapse = ", ")  })
 
@@ -70,11 +71,19 @@ mod_export_server <- function(id, rv_in, p){
     output$names0 <- renderText({ p[["omics_names"]] })
 
     output$rv_1 <- renderText({
-      omics_choice_list <- isolate( rv_in$var[[rv_in$omics_feature]] )[1:20]
+
+      omics_choice_list <- isolate(rv_in$omics_feature)
+      #if ( !is.null(omics_choice_list$var) & !is.null(rv_in$omics_feature) ) {
+      if ( is.null(omics_choice_list)  ) {
+        omics_choice_list <- "" #rownames(rv_in$var)
+      } else {
+        omics_choice_list <- names(omics_choice_list)[1:25]
+        }
       paste0(omics_choice_list,collapse = ", ")
       })
+
     output$rv_2 <-  renderText({
-      paste0(isolate( rv_in$var[[rv_in$omics_feature]] )[1:20],collapse = ", ")
+      paste0(isolate( rv_in$ad$var[[ rv_in$ad$var_keys()[1] ]] )[1:20],collapse = ", ")
       })
 
   })

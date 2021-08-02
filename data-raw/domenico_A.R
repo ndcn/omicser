@@ -8,7 +8,13 @@
 #######################################################################
 ######################################################################### code to prepare `domenico_A` dataset goes here
 
-
+# # Set options here
+# options(golem.app.prod = FALSE) # TRUE = production mode, FALSE = development mode
+# # Detach all loaded packages and clean your environment
+# golem::detach_all_attached()
+# # rm(list=ls(all.names = TRUE))
+# # Document and reload your package
+# golem::document_and_reload()
 
 ############
 ##
@@ -71,12 +77,6 @@ process_sn_prot_quant <- function(in_file, exp_name=NULL) {
     data[, i] <- t[index, "PG.Quantity"]
   }
   colnames(data) <- unique(mp_all$R.FileName)
-  # TODO?
-  # replace "-" with "_" in colnames because they are replaced automatically by "."in readMSn
-  # colnames(data)<-sub("-", "_", colnames(data))
-
-  # correlation #
-  # thin wrapper to plot correlation table
 
   # write out expression data file
   if ( !is.null(exp_name) ) {
@@ -108,7 +108,9 @@ features <- row.names(raw_data)
 # load condition setup
 file_path <- file.path(DATA_DIR,DB_NAME,conditions_table_file)
 conditions_table <- read.delim(file_path, as.is = TRUE)
-obs_names <- conditions_table$File.Name
+# these file name names suck... lets call them "Sample_1" "Sample_2" etc...
+obs_names <- paste0("Sample_",conditions_table$X)
+
 row.names(conditions_table) <- obs_names
 
 # differential expression matrix
@@ -119,7 +121,10 @@ diff_data <- read.delim(file_path, as.is = TRUE)  #contrasts <- diff_data
 
 # re-order to conditions_table
 raw_data <- raw_data[,conditions_table$File.Name]
-log2_data <- log2(raw_data)
+
+rownames(raw_data)<- features
+
+log_data <- log(raw_data)
 
 ############
 ##
@@ -132,6 +137,7 @@ length((features))
 
 feat_annots <- unique(diff_data[, c("UniProtIds", "Genes","ProteinDescriptions","ProteinNames",
               "GO.Cellular.Component","GO.Molecular.Function","GO.Biological.Process")])
+all_proteins <- unique(diff_data$UniProtIds)
 
 row.names(feat_annots) <- feat_annots$UniProtIds
 
@@ -143,6 +149,30 @@ del_vars <- which(!(features %in% feat_annots$UniProtIds))
 data <- raw_data[feat_annots$UniProtIds,conditions_table$File.Name]
 var_names <- row.names(data)
 
+require(tidyverse)
+
+d_data <- diff_data %>% mutate(Comp_Group = gsub(" / ", "_vs_", Comparison..group1.group2.) )
+
+wide_data <- d_data %>% pivot_wider(
+                            id_cols = UniProtIds,
+                            names_from = c(Comp_Group),
+                            values_from = c(AVG.Log2.Ratio, Absolute.AVG.Log2.Ratio,Pvalue,Qvalue,
+                                            X..of.Ratios,X..Unique.Total.Peptides, X..Change,Ratio),
+                            names_repair = "check_unique"
+                          )
+to_join <- d_data %>% select(UniProtIds,
+                             ProteinDescriptions,
+                             ProteinNames, Genes,
+                             GO.Cellular.Component,
+                             GO.Molecular.Function,
+                             GO.Biological.Process) %>%
+                      distinct()
+
+comp_data <- wide_data %>% inner_join(to_join)
+comp_data <- as.data.frame(comp_data)
+rownames(comp_data) <- comp_data$UniProtIds
+
+comp_data <- comp_data[feat_annots$UniProtIds,]
 
 ############
 ##
@@ -175,15 +205,21 @@ var_names <- row.names(data)
 
 Domenico_A_X <- t(data)
 Domenico_A_obs <- conditions_table
-Domenico_A_var <- feat_annots
+Domenico_A_var <- comp_data
 
+
+X <- Domenico_A_X
+obs <- Domenico_A_obs
+var_ <- Domenico_A_var
 # var_names <- row.names(var)
 # obs_names <- row.names(obs)
 
 
-usethis::use_data(Domenico_A_X,Domenico_A_obs,Domenico_A_var,overwrite = TRUE)
-
-
+# usethis::use_data(Domenico_A_X,Domenico_A_obs,Domenico_A_var,overwrite = TRUE)
+#
+# X <- omicser::Domenico_A_X
+# var_ <- omicser::Domenico_A_var
+# obs <- omicser::Domenico_A_obs
 
 # pack differential/ aggregated into the obsm lists
 # breal tje diff_data up into comparasons?
@@ -193,41 +229,60 @@ usethis::use_data(Domenico_A_X,Domenico_A_obs,Domenico_A_var,overwrite = TRUE)
 
 # TODO:  change this from top_n to ALL the proteins in features  and then we'll do the actual comparisons...
 
-
-get_comparisons_selection <- function(data_in, diff_data, comp, top_n = 100, pval_cutoff = 0.01, fc_cutoff = 0.58) {
-
-  # data table with
-  hits_all <- diff_data[diff_data$Comparison..group1.group2. == comp, ]
-  hits_all <- hits_all[order(hits_all$Qvalue, decreasing = FALSE), ]
-  top_hits <- hits_all[hits_all$Qvalue < pval_cutoff & hits_all$Absolute.AVG.Log2.Ratio > fc_cutoff, ]
-  top_n_hits <- top_hits[c(1:top_n), ]
-  hits_all$label <- ifelse(hits_all$Group %in% top_n_hits$Group, as.character(hits_all$Genes), NA)
+# THIS IS ALL NONSENSE
 
 
-  ############## Extract quantity from data table and annotate the table###################
-  data <- as.data.frame(data_in)
-  data[is.na(data)] <- 0
-  data <- cbind.data.frame(data, ID = rownames(data)) # mutate?
-  data$Genes <- NA
+add_top_hits_label <- function( diff_data, comp, top_n = 100, pval_cutoff = 0.01, fc_cutoff = 0.58) {
+  require(tidyverse)
 
-  ############# Extract quantity from Datatable based on topN table and format table#########
-  data_annotated_top_n <- subset(data, ID %in% top_n_hits$Group)
-  data_annotated_top_n$ID <- factor(data_annotated_top_n$ID)
-  for (i in 1:nrow(data_annotated_top_n)) {
-    if (data_annotated_top_n$ID[i] %in% top_n_hits$ProteinGroups) {
-      data_annotated_top_n$Genes[i] <- top_n_hits[top_n_hits$ProteinGroups == data_annotated_top_n$ID[i], "Genes"]
-    }
-  }
+  all_prots <- unique(diff_data$UniProtIds)
 
-  row.names(data_annotated_top_n) <- make.unique(data_annotated_top_n$Genes)
-  data_annotated_top_n <- dplyr::select(data_annotated_top_n, -ID, -Genes)
+  # # # data table with
+  # hits_all <- diff_data[diff_data$Comparison..group1.group2. == comp, ]
+  # hits_all <- hits_all[order(hits_all$Qvalue, decreasing = FALSE), ]
+  # top_hits <- hits_all[hits_all$Qvalue < pval_cutoff & hits_all$Absolute.AVG.Log2.Ratio > fc_cutoff, ]
+  # top_n_hits <- top_hits[c(1:top_n), ]
+  # hits_all$label <- ifelse(hits_all$Group %in% top_n_hits$Group, as.character(hits_all$Genes), NA)
 
-  return(t(data_annotated_top_n))
+    # data table with
+    #hits_all <- diff_data[diff_data$Comparison..group1.group2. == comp, ]
+    hits_all<- diff_data %>% filter(Comparison..group1.group2. == comp)  %>%
+      arrange(Qvalue)  # don't actually need this since we are using top_n
+
+
+    top_hits <- hits_all %>% filter(Qvalue<pval_cutoff & Absolute.AVG.Log2.Ratio>fc_cutoff ) %>%
+      slice_head(n=top_n)
+
+    # top_hits <- diff_data %>% filter(Comparison..group1.group2. == comp) %>%
+    #   filter(Qvalue<pval_cutoff & Absolute.AVG.Log2.Ratio>fc_cutoff ) %>%
+    #   slice_min(n=top_n,order_by=Qvalue)
+
+    hits_all <- hits_all %>% mutate(label=ifelse(hits_all$Group %in% top_hits$Group, as.character(hits_all$Genes), NA))
+
+    hits_all <- as.data.frame(hits_all)
+    rownames(hits_all) <- hits_all$UniProtIds
+    return(hits_all[all_prots,])
+#
+#   ############## Extract quantity from data table and annotate the table###################
+#   data <- as.data.frame(data_in)
+#   data[is.na(data)] <- 0
+#   data <- cbind.data.frame(data, ID = rownames(data)) # mutate?
+#   data$Genes <- NA
+#
+#   ############# Extract quantity from Datatable based on topN table and format table#########
+#   data_annotated_top_n <- subset(data, ID %in% top_n_hits$Group)
+#   data_annotated_top_n$ID <- factor(data_annotated_top_n$ID)
+#   for (i in 1:nrow(data_annotated_top_n)) {
+#     if (data_annotated_top_n$ID[i] %in% top_n_hits$ProteinGroups) {
+#       data_annotated_top_n$Genes[i] <- top_n_hits[top_n_hits$ProteinGroups == data_annotated_top_n$ID[i], "Genes"]
+#     }
+#   }
+#
+#   row.names(data_annotated_top_n) <- make.unique(data_annotated_top_n$Genes)
+#   data_annotated_top_n <- dplyr::select(data_annotated_top_n, -ID, -Genes)
+
 
 }
-
-
-
 
 
 
@@ -240,36 +295,112 @@ for (i in 1:length(comps)) {
   # fc.cutoff<-0.58  #?
   print(comp_name)
   # get_volcano_selection(candidates,comp,top_n,pval_cutoff=0.01,fc_cutoff=0.58)
-  dat_top_n[[comp_name]] <- get_comparisons_selection(data, diff_data, comp, top_n = 50, pval_cutoff = 0.01, fc_cutoff = 0.58)
-
+  hits <- add_top_hits_label(diff_data, comp, top_n = 50, pval_cutoff = 0.01, fc_cutoff = 0.58)
+  dat_top_n[[comp_name]] <- as.matrix(hits)
   #diff_i <- diff_data[diff_data$Comparison..group1.group2. == comp, ]
 
   print(length(which(diff_data$Comparison..group1.group2. == comp)))
 }
 
-uns = dat_top_n
+varm = dat_top_n
+
+
+
+uns <- list(o_vs_y=colnames(varm$o_vs_y),
+            g_vs_y = colnames(varm$g_vs_y),
+            g_vs_o = colnames(varm$g_vs_o))
+
+
 # list(
 #   old_v_young = old_v_young,
 #   geriatric_v_young = geriatric_v_young,
 #   geriatric_v_old = geriatric_v_old
 # )
 
-varm = NULL
-bosm = NULL
+obsm = NULL
+layers = NULL
 
 Domenico_A_obsm <- obsm
 Domenico_A_varm <- varm
 Domenico_A_uns <- uns
-
-obsm<- omicser::domenico_A_obsm
-varm<- omicser::domenico_A_varm
-varm<- omicser::domenico_A_varm
+Domenico_A_layers <- layers
 
 
-usethis::use_data(Domenico_A_obsm,Domenico_A_varm,Domenico_A_uns,overwrite = TRUE)
+X <- Domenico_A_X
+obs <- Domenico_A_obs
+var_ <- Domenico_A_var
+obsm <- Domenico_A_obsm
+varm <- Domenico_A_varm
+uns <- Domenico_A_uns
+layers <- Domenico_A_layers
+
+# usethis::use_data(Domenico_A_obsm,Domenico_A_varm,Domenico_A_uns,Domenico_A_layers,overwrite = TRUE)
+#
+#
+# usethis::use_data_table()
+#require("data.table")
+## TODO:  check
+##      - do we need default_1, 2 and multi?
+##
+
+#helper_functions<-('data-raw/data_prep_functions.R')
+helper_function<-('data-raw/make_ingest_file_primitives.R')
+
+source(helper_function)
+
+db_dir = "data-raw"
+# ui_config <- make_ingest_file_primitives(X,obs,var_,obsm=NA,varm=NA,uns=NA,
+#                                           gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+#                                           gene_mapping = FALSE, db_prefix = "", db_dir = db_dir,
+#                                           default_omics1 = NA, default_omics2 = NA, default_multi = NA,
+#                                           default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+#                                           max_levels_ui = 50)
+
+db_prefix <- "Domenico_A_"
+make_ingest_file_primitives(X,obs,var_,obsm=obsm, varm=varm,
+                            uns=uns, layers = layers,
+                            gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
+                            default_omics1 = NA, default_omics2 = NA, default_multi = NA,
+                            default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+                            max_levels_ui = 50)
+
+#vilas_A_conf = readRDS(file.path(db_dir,"test1conf.rds"))
+domenico_A_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
+
+# defaults:  list of meta1, meta2, omics1, omics2, omics (list of 10). dimred, grp1, grp2
+domenico_A_def = readRDS( paste0(db_dir,"/",db_prefix,"def.rds") )
+
+# list of vars )e/g/ 3000 genes with counts?
+domenico_A_omics = readRDS( paste0(db_dir,"/",db_prefix,"omics.rds") )
+# use this sorted one to resort everything before packing into anndata
+
+domenico_A_meta = readRDS( paste0(db_dir,"/",db_prefix,"meta.rds") )
+domenico_A_X = readRDS( paste0(db_dir,"/",db_prefix,"X.rds") )
+domenico_A_obs = readRDS( paste0(db_dir,"/",db_prefix,"obs.rds") )
+domenico_A_obsm = readRDS( paste0(db_dir,"/",db_prefix,"obsm.rds") )
+domenico_A_var = readRDS( paste0(db_dir,"/",db_prefix,"var.rds") )
+domenico_A_varm = readRDS( paste0(db_dir,"/",db_prefix,"varm.rds") )
+domenico_A_uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
+domenico_A_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
 
 
 
+usethis::use_data(domenico_A_X,domenico_A_var,domenico_A_obs, overwrite = TRUE)
+
+usethis::use_data(domenico_A_obsm,domenico_A_varm,domenico_A_layers,domenico_A_uns,
+                  domenico_A_conf, domenico_A_def, domenico_A_omics, domenico_A_meta, overwrite = TRUE)
+
+#######################################################################
+#######################################################################
+##
+##  Create some "differential tables" of type:
+##  1. aggregated over "observations"
+##  2. aggregated over "features"
+##  3. aggretated over features and observations.
+##
+#######################################################################
+#######################################################################
 
 #######################################################################
 #######################################################################
@@ -279,28 +410,78 @@ usethis::use_data(Domenico_A_obsm,Domenico_A_varm,Domenico_A_uns,overwrite = TRU
 #######################################################################
 #######################################################################
 
-library(anndata)
+require(anndata)
+
+X <-  domenico_A_X
+obs <-  domenico_A_obs
+var_ <-  domenico_A_var
+obsm <-  domenico_A_obsm
+varm <-  domenico_A_varm
+uns <-  domenico_A_uns
+layers <-  domenico_A_layers
 
 
-X <- omicser::Domenico_A_X
-obs <- omicser::Domenico_A_obs
-var_ <- omicser::Domenico_A_var
-obsm <- omicser::Domenico_A_obsm
-varm <- omicser::Domenico_A_varm
-uns <- omicser::Domenico_A_uns
 
 ad <- AnnData(
   X = X,
   obs = obs,
   var = var_,
-  layers = list(),
-  obsm =  list(),
-  varm =  list(),
+  layers = layers,
+  obsm = obsm,
+  varm = varm,
   uns = uns
 )
 
 ad
+
+#write_h5ad(anndata = ad, filename = file.path(db_dir,"data-raw/domenico_A.h5ad"))
+# anndata R wrapper is broken.. .invoke python
+#
+ad$write_h5ad(filename="data-raw/domenico_A.h5ad")
 #> AnnData object with n_obs × n_vars = 2 × 3
+#>     obs: 'group'
+
+source("data-raw/yassene_example.R",echo = FALSE)
+
+#######################################################################
+#######################################################################
+##
+##  ANNDATA example
+##
+#######################################################################
+#######################################################################
+#
+# library(anndata)
+#
+#
+# X <- omicser::Domenico_A_X
+# obs <- omicser::Domenico_A_obs
+# var_ <- omicser::Domenico_A_var
+# obsm <- omicser::Domenico_A_obsm
+# varm <- omicser::Domenico_A_varm
+# uns <- omicser::Domenico_A_uns
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# ad <- AnnData(
+#   X = X,
+#   obs = obs,
+#   var = var_,
+#   layers = list(),
+#   obsm =  list(),
+#   varm =  list(),
+#   uns = uns
+# )
+#
+# ad
+# #> AnnData object with n_obs × n_vars = 2 × 3
 #>     obs: 'group'
 #>     var: 'type'
 #>     uns: 'a', 'b', 'c'

@@ -13,7 +13,6 @@ mod_side_selector_ui <- function(id){
   plot_types <- c("Volcano Plot"="volcano", "Dot Plot"="dotplot","Heat Map"="hmap","Box Plot"="box")
 
   selector_tags <- tagList(
-
     helpText(HTML("Choose a Dataset.
                           Change visualization by selecting muscle-type and condition.
                           Proteins can be selected directly from the <i>Visualize</i> tab, from <i>Browse Table</i> tab, or by typing the protein name into the <i>Selected genes</i> window below.")
@@ -23,24 +22,43 @@ mod_side_selector_ui <- function(id){
     fluidRow(textOutput(ns("ui_exp_fact_name"))), #fluidRow 1a
 
     fluidRow(
-          col_8(selectizeInput(ns("SI_exp_fact_select"), "choose experimental factor: ", "",
-                      options = list(placeholder = "load database first")))
-            ), #fluidRow 1b
-
-    fluidRow(textOutput(ns("ui_aux_fact_names"))),
+          col_8(
+            selectizeInput(ns("SI_exp_fact_select"), "choose experimental factor: ", "",
+                      options = list(placeholder = "load database first"))
+            )
+    ), #fluidRow 1b
+    fluidRow(
+      col_3(offset=1,
+            shinyjs::hidden(textOutput(ns("ui_group_factor"))),
+            shinyjs::disabled(selectizeInput(ns("SI_aux_group_select"),  "group values", "",
+                                             multiple=TRUE,
+                                             options = list(placeholder = "load db/choose aux factor "))),
+      ),
+      col_3(offset=0,
+            shinyjs::hidden(textOutput(ns("ui_raw_factor"))),
+            shinyjs::disabled(selectizeInput(ns("SI_aux_raw_select"),  "raw measurments", "",
+                                             multiple=TRUE,
+                                             options = list(placeholder = "load db/choose aux factor "))),
+      ),
+      col_3(offset=0,
+            shinyjs::hidden(textOutput(ns("ui_comp_factor"))),
+            shinyjs::disabled(selectizeInput(ns("SI_aux_comp_select"),  "comparative1 measures", "",
+                                             multiple=TRUE,
+                                             options = list(placeholder = "load db/choose aux factor ")))
+      )
+    ),
 
     fluidRow(
-      col_8(selectizeInput(ns("SI_aux_fact_select"),  "choose aux factors: ", "",
-                    options = list(placeholder = "load database first")))
-            ),
-    fluidRow(
-      col_8(offset=2,
-            shinyjs::hidden(textOutput(ns("ui_aux_factor1"))),
-            shinyjs::disabled(selectizeInput(ns("SI_aux_factor1_select"),  "aux factor values", "",
-                                        multiple=TRUE,
-                                        options = list(placeholder = "load db/choose aux factor ")))
-          )
-      ), #fluidRow 1c
+      col_3(offset=1,
+            shinyjs::hidden(textOutput(ns("ui_group_factor1")))
+          ),
+      col_3(offset=1,
+            shinyjs::hidden(textOutput(ns("ui_raw_factor1")))
+      ),
+      col_3(offset=1,
+            shinyjs::hidden(textOutput(ns("ui_comp_factor1")))
+      )
+    ), #fluidRow 1c
 
     fluidRow(
       selectizeInput(
@@ -99,22 +117,7 @@ mod_side_selector_server <- function(id, rv_in){
    #      database_name = NULL,
    #      omics_type    = NULL,   # Transcript-omics, Prote-omics, Lipid-omics, Metabol-omics, misc-
    #
-   #      var_names = NULL,       # eg.  var_names: Genes, Proteins, Lipids
-   #      var_annotations = NULL, # colnames of variable annotations.  e.g. gene/protein-families, ontologies, lipid class
-   #
-   #      obs_names = NULL,       # name of observations e.g. cell ID
-   #      obs_annotations = NULL,
-   #
-   #      X   = NULL,
-   #      var = NULL,
-   #      obs = NULL,
-   #
-   #      uns = list(),
-   #      uns_keys = NULL,
-   #      varm = list(),
-   #      varm_keys = NULL,
-   #      obsm = list(),
-   #      obsm_keys = NULL,
+   #      ad = NULL,   # this is the DATA  packed into an anndata object
    #
    #                              # these reflect the choices made in the ingestor
    #                              #    omics key feature i.e. genes, proteins, lipids
@@ -123,7 +126,18 @@ mod_side_selector_server <- function(id, rv_in){
    #      omics_feature = NULL,
    #      aux_features = NULL,
    #      exp_factor = NULL,        # observables:  experiemntal factor... i.e. patient/control, old/young,
-   #      aux_factors = NULL,        # e.g. #   plust aucuilarry observations. e.g. QC- batch, sex, etc  or inferred: cluster, label, cell-type
+   #
+   #
+   #0      exp_factor = NULL,
+  #  aux_group = NULL,
+  #  aux_comp = NULL,
+  #  aux_raw = NULL,
+
+
+   #      defaults = NULL,
+   #      configs = NULL,
+   #      meta = NULL,
+   #
    #      trigger = 0
    # #
 
@@ -152,36 +166,65 @@ mod_side_selector_server <- function(id, rv_in){
     ## update factors if data just loaded
     ############################+
 
-    observeEvent(rv_in$trigger, {
-      req(rv_in$trigger>0)
-      print("TRIGGERED -------->")
+    observeEvent(
+      rv_in$trigger,
+      {
+        req(rv_in$ad)
+        print("TRIGGERED -------->")
 
-      exp_fact_name <- isolate(rv_in$exp_factor)
-      # show the factors that have been loaded
-      output$ui_exp_fact_name <- renderText({
-        req(rv_in$exp_factor)
-        print(paste("current experimental factor: ", exp_fact_name))
+        exp_fact_name <- isolate(rv_in$exp_factor)
+        # show the factors that have been loaded
+        output$ui_exp_fact_name <- renderText({
+          req(rv_in$exp_factor)
+          print(paste("current experimental factor: ", exp_fact_name))
 
-      })
-      #print(isolate(rv_in$factors0))
-      exp_factor_vals <- isolate(rv_in$obs[[rv_in$exp_factor]])
-      updateSelectizeInput(session, "SI_exp_fact_select", paste0(exp_fact_name," (exp fact):"), # wrap in ns?
-                           choices = exp_factor_vals,
-                           selected = exp_factor_vals[1], server=TRUE)
-      # reset trigger for next time (if we don't reset, will everything just be responsive?)
-      rv_in$trigger  <-  0
-
-
-      if (!is.null(rv_in$aux_factors)){
-        aux_fact_names <-  isolate(rv_in$aux_factors)
-        output$ui_aux_fact_names <- renderText({
-          req(rv_in$aux_factors)
-          print(paste("auxillary factors: ", paste0( aux_fact_names,collapse="; ")))
         })
-        updateSelectizeInput(session, "SI_aux_fact_select",
-                             choices = aux_fact_names,
-                             selected = aux_fact_names[1], server=TRUE)
-      }
+        #print(isolate(rv_in$factors0))
+        exp_factor_vals <- isolate(rv_in$ad$obs[[rv_in$exp_factor]])
+        updateSelectizeInput(session, "SI_exp_fact_select", paste0(exp_fact_name," (exp fact):"), # wrap in ns?
+                             choices = exp_factor_vals,
+                             selected = exp_factor_vals[1], server=TRUE)
+        # reset trigger for next time (if we don't reset, will everything just be responsive?)
+        rv_in$trigger  <-  0
+
+
+        if (!is.null(rv_in$aux_group)){
+          aux_group_names <-  unique(isolate(rv_in$obs[[rv_in$aux_group]]))
+          # this should also be backed into conf or def
+          output$ui_group_factor <- renderText({
+            req(rv_in$aux_group)
+            print(paste("grouping factors: ", paste0( aux_group_names,collapse="; ")))
+          })
+          updateSelectizeInput(session, "SI_aux_group_select",
+                               choices = aux_group_names,
+                               selected = aux_group_names[1], server=TRUE)
+          shinyjs::enable("SI_aux_group_select")
+        }
+
+        if (!is.null(rv_in$aux_raw)){
+          aux_raw_names <- isolate(rv_in$ad$uns[[rv_in$aux_raw]])
+          output$ui_raw_factor <- renderText({
+            req(rv_in$aux_raw)
+            print(paste("raw measures: ", paste0( aux_raw_names,collapse="; ")))
+          })
+          updateSelectizeInput(session, "SI_aux_raw_select",
+                               choices = aux_raw_names,
+                               selected = aux_raw_names[1], server=TRUE)
+          shinyjs::enable("SI_aux_raw_select")
+
+        }
+
+        if (!is.null(rv_in$aux_comp)){
+          aux_comp_names <- isolate(rv_in$ad$uns[[rv_in$aux_comp]])
+          output$ui_comp_factor <- renderText({
+            req(rv_in$aux_comp)
+            print(paste("comparative measures: ", paste0( aux_comp_names,collapse="; ")))
+          })
+          updateSelectizeInput(session, "SI_aux_comp_select",
+                               choices = aux_comp_names,
+                               selected = aux_comp_names[1], server=TRUE)
+          shinyjs::enable("SI_aux_comp_select")
+          }
 
       # # reset omics list
       # print("reset omics_list!")
@@ -192,37 +235,56 @@ mod_side_selector_server <- function(id, rv_in){
       # output$textWarn_comp <- renderUI({ })
       #
       # do i need to wrap this in a reactive?
+      },
+    ignoreNULL = TRUE,
+    ignoreInit = TRUE
+    ) #observe event
 
-    }) #observe event
 
     observe({
-      if (input$SI_aux_fact_select != "") { #|| ( !is.na(input$SI_var0) )
-        shinyjs::enable("SI_aux_factor1_select")
-
-        aux_facts1 <- isolate(rv_in$obs[[input$SI_aux_fact_select]])
-        aux_factor1_name <- isolate(input$SI_aux_fact_select)
-
-        updateSelectizeInput(session, "SI_aux_factor1_select", paste0(aux_factor1_name," (aux factor)"),
-                             choices = aux_facts1,
-                             selected = aux_facts1[1], server=TRUE)
-
-        shinyjs::show("ui_aux_factor1")
+      req(rv_in$aux_group)
+      req(input$SI_aux_group_select)
+      if (input$SI_aux_group_select[1] != "") { #|| ( !is.na(input$SI_var0) )
+        shinyjs::show("ui_group_factor1")
       } else {
-        print("skipped SI_aux_factor1_select")
-        shinyjs::disable("SI_aux_factor1_select")
-        updateSelectizeInput(session, "SI_aux_factor1_select",
-                             "aux factor values", "",
-                             options = list(placeholder = "load db/choose aux factor "),
-                             server=TRUE)
-        shinyjs::hide("ui_aux_factor1")
-
+        shinyjs::hide("ui_group_factor1")
       }
     })
+    output$ui_group_factor1 <- renderText({
+      req(rv_in$aux_group)
+      aux_factor1_name <- isolate(input$SI_aux_group_select)
+      print( paste0("grouping factors selected: ", paste( aux_factor1_name,collapse="; ") ))
+    })
 
-    output$ui_aux_factor1 <- renderText({
-      req(rv_in$aux_factors)
-      aux_factor1_name <- isolate(input$SI_aux_fact_select)
-      print( paste0(" auxillary factors selected: ", paste( aux_factor1_name,collapse="; ") ))
+
+    observe({
+      req(rv_in$aux_raw)
+      req(input$SI_aux_raw_select)
+      if (input$SI_aux_raw_select[1] != "") { #|| ( !is.na(input$SI_var0) )
+        shinyjs::show("ui_raw_factor1")
+      } else {
+        shinyjs::hide("ui_raw_factor1")
+      }
+    })
+    output$ui_raw_factor1 <- renderText({
+      req(rv_in$aux_raw)
+      aux_raw1_name <- isolate(input$SI_aux_raw_select)
+      print( paste0("raw measures selected: ", paste( aux_raw1_name,collapse="; ") ))
+    })
+
+    observe({
+      req(rv_in$aux_comp)
+      req(input$SI_aux_comp_select)
+      if (input$SI_aux_comp_select[1] != "") { #|| ( !is.na(input$SI_var0) )
+        shinyjs::show("ui_comp_factor1")
+      } else {
+        shinyjs::hide("ui_comp_factor1")
+      }
+    })
+    output$ui_comp_factor1 <- renderText({
+      req(rv_in$aux_comp)
+      aux_comp1_name <- isolate(input$SI_aux_comp_select)
+      print( paste0("comp measures selected: ", paste( aux_comp1_name,collapse="; ") ))
     })
 
 
@@ -239,7 +301,6 @@ mod_side_selector_server <- function(id, rv_in){
     max_omic_feats <- 100
 
     observe({
-
       if ( length(unique(omics_list$value ) ) >= max_omic_feats ) {
         # will this work?  or is the "observing" affecting a reactive with this render?
         output$ui_text_warn <- renderUI({
@@ -262,33 +323,33 @@ mod_side_selector_server <- function(id, rv_in){
 
 
       } else {
-        omics_choice_list <- rv_in$var[[rv_in$omics_feature]]
-
+        #omics_choice_list <- rv_in$var[[rv_in$omics_feature]]
+        omics_choice_list <- isolate(rv_in$omics_feature)
         #if ( !is.null(omics_choice_list$var) & !is.null(rv_in$omics_feature) ) {
         if ( is.null(omics_choice_list)  ) {
           omics_choice_list <- "" #rownames(rv_in$var)
+        } else {
+          omics_choice_list <- names(omics_choice_list)
         }
 
         omics_choices <- isolate(omics_list$value)
         updateSelectizeInput(session, "SI_omics_select",
                              choices = isolate(omics_choice_list),
                              selected = omics_choices, server=TRUE)
-        # DEBUG
-        print("   ::updated omics list::  ")
-        print(isolate(omics_list$value))
+        # # DEBUG
+        # print("   ::updated omics list::  ")
+        # print(isolate(omics_list$value))
       }
-      print(paste0("current number of selected omics:  ",length(unique(isolate(omics_list$value)))))
+      #print(paste0("current number of selected omics:  ",length(unique(isolate(omics_list$value)))))
 
     })
-
 
 
     ############################+
     ## "reset" and "submit" simply sets the viz_now flag
     ############################+
     ############################
-    observe({
-      # turn on if the "placeholder" is gone
+    observe({ # turn on if the "placeholder" is gone
       shinyjs::toggleState("AB_omics_submit", !all(input$SI_omics_select == "Choose omic feature (i.e. genes,proteins,lipids...)"))
     })
 
@@ -299,20 +360,15 @@ mod_side_selector_server <- function(id, rv_in){
       output$ui_text_warn <- renderUI({ })
     })
 
-
     observeEvent(input$AB_omics_submit, {
-
       if(length(unique(omics_list$value)) < max_omic_feats ) { #defensive
         omics_list$value <- input$SI_omics_select #include direct selection from protein-box when pressing submit
         omics_list$viz_now = TRUE
-      } else {
-
-      } # else
+      }
     })
 
 
     observe({
-
       out_params[["exp_fact"]] <- input$SI_exp_fact_select
       out_params[["aux_fact"]] <-  input$SI_aux_fact_select
       out_params[["omics_names"]] <-    input$SI_omics_select
@@ -320,8 +376,7 @@ mod_side_selector_server <- function(id, rv_in){
       out_params[["plot_type"]] <-    input$RB_plot_type
     })
 
-    return(out_params)
-
+     return(out_params)
 
   })
 }

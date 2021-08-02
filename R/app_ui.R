@@ -9,91 +9,91 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
 
-    #golem::activate_js(), #already loaded in your golem by `bundle_resources()`
-    shinyjs::useShinyjs(),
+    # golem::activate_js(), #already loaded in your golem by `bundle_resources()`
 
     # Your application UI logic
     fluidPage(
+      shinyjs::useShinyjs(),
+
       titlePanel(
         fluidRow(
           col_4(
             h1("NDCN omicser"),
             h5("Browse and play for creative hypothesis generation")
           ),
-          col_4(img(src = "www/logo.svg") )
+          col_4(img(src = "www/logo.svg"))
         )
-      ), #end titlePanel
+      ), # end titlePanel
       sidebarLayout(
-        div(id = "cond_sidebar" ,
+        div(
+          id = "cond_sidebar",
           sidebarPanel(
             width = 4,
             conditionalPanel(
-              ' input.tab === "welcome" || input.tab === "add_info" || input.tab === "etc" ',
+              ' input.top_tab === "welcome" || input.top_tab === "add_info" || input.top_tab === "etc" ',
               mod_side_info_ui("side_info_ui_1")
             ),
             conditionalPanel(
-              ' input.tab === "playground" || input.tab === "table" || input.tab === "ingest" || input.tab === "export" ',
+              ' input.top_tab === "playground" || input.top_tab === "table" || input.top_tab === "ingest" || input.top_tab === "export" ',
               mod_side_selector_ui("side_selector_ui_1")
             )
-          ) #div
-      ), #sidebarpanel
-      mainPanel(
-        width = 8,
-        tabsetPanel(
-          type = 'tabs', #pills look good
-          id = 'tab',
-          tabPanel(
-            title = "Welcome", value='welcome',
-            mod_welcome_ui(id="welcome_ui_1")
-          ),
-          # ingest tab
-          tabPanel(
-            title = "Ingest", value = 'ingest',
-            mod_ingestor_ui(id="ingestor_ui_1")
-
-          ),
-          # playground tab
-          tabPanel(
-            title = "Playground", value = 'playground',
-            mod_playground_ui(id="playground_ui_1")
-            #>> playground houses
-            #  pg_table?
-            #  pg_vis_comp
-            #     - volcanos + heatmaps + ?
-            #  pg_vis_raw
-            #     - dotplots + heatmaps +??
-            #
-            #<<
-          ),
-          # Additional Info tab
-          tabPanel(
-            title = "Additional Info", value = 'add_info',
-            mod_additional_info_ui(id="additional_info_ui_1")
-          ),
-          # Export tab
-          tabPanel(
-            title = "Export", value = 'export',
-            # copy the landing module for now
-            mod_export_ui(id="export_ui_1")
-          ),
-          # table tab
-          tabPanel(
-            title = "Data Table",value = 'table',
-            # DT::dataTableOutput("my_datatable_0")
-            mod_pg_table_ui(id="pg_table_ui_1")
-
-          ),
-          # Etc tab
-          tabPanel(
-            title = "Etc", value = 'etc',
-            # copy the landing module for now
-            mod_additional_info_ui(id="additional_info_ui_1")
-          )
-        ) #tabsetpanel
-      ) #mainpanel
-    ), #end sidebarlayout
-    #actionButton("alert", "xxx"),
-    tags$footer(tags$div(class="footer", checked = NA, HTML('
+          ) # sidebarpanel
+        ), # div
+        mainPanel(
+          width = 8,
+          tabsetPanel(
+            type = "tabs", # pills look good
+            id = "top_tab",
+            tabPanel(
+              title = "Welcome", value = "welcome",
+              mod_welcome_ui(id = "welcome_ui_1")
+            ),
+            # ingest tab
+            tabPanel(
+              title = "Ingest", value = "ingest",
+              mod_ingestor_ui(id = "ingestor_ui_1")
+            ),
+            # playground tab
+            tabPanel(
+              title = "Playground", value = "playground",
+              mod_playground_ui(id = "playground_ui_1")
+              # >> playground houses
+              #  pg_table?
+              #  pg_vis_comp
+              #     - volcanos + heatmaps + ?
+              #  pg_vis_raw
+              #     - dotplots + heatmaps +??
+              #
+            ),
+            # Additional Info tab
+            tabPanel(
+              title = "Additional Info", value = "add_info",
+              mod_additional_info_ui(id = "additional_info_ui_1")
+            ),
+            # Export tab
+            tabPanel(
+              title = "Export", value = "export",
+              # copy the landing module for now
+              mod_export_ui(id = "export_ui_1")
+            ),
+            # table tab
+            tabPanel(
+              title = "Data Table", value = "table",
+              # DT::dataTableOutput("my_datatable_0")
+              mod_pg_table_ui(id = "pg_table_ui_1")
+            ),
+            # Etc tab
+            tabPanel(
+              title = "Etc", value = "etc",
+              # copy the landing module for now
+              mod_additional_info_ui(id = "additional_info_ui_1")
+            )
+          ) # tabsetpanel
+        ) # mainpanel
+      ), # end sidebarlayout
+      # actionButton("alert", "xxx"),
+      tags$footer(tags$div(
+        class = "footer", checked = NA, HTML('
               <head>
               <style>
               .footer a:link {color: #008b42; background-color: transparent; text-decoration: none}
@@ -120,10 +120,10 @@ app_ui <- function(request) {
               </div>
               </body>
               '),
-              align = "left"))
-  ) #end fluidpage
-
-  ) #end taglist
+        align = "left"
+      ))
+    ) # end fluidpage
+  ) # end taglist
 }
 
 #' Add external Resources to the Application
@@ -134,20 +134,18 @@ app_ui <- function(request) {
 #' @import shiny
 #' @importFrom golem add_resource_path activate_js favicon bundle_resources
 #' @noRd
-golem_add_external_resources <- function(){
-
+golem_add_external_resources <- function() {
   add_resource_path(
-    'www', app_sys('app/www')
+    "www", app_sys("app/www")
   )
 
   tags$head(
     favicon(),
     bundle_resources(
-      path = app_sys('app/www'),
-      app_title = 'omicser'
+      path = app_sys("app/www"),
+      app_title = "omicser"
     )
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
   )
 }
-

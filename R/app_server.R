@@ -4,43 +4,8 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @noRd
-app_server <- function( input, output, session ) {
+app_server <- function(input, output, session) {
   # Your application server logic
-  ############################ +
-  ## Module 1 : SIDESELECT   ####
-  ##
-  ##
-  ############################ +
-  {
-    p_vis <- mod_side_selector_server("side_selector_ui_1", rv_in=rv)
-    # CHECK sidebar - get params:
-    #vis_params <- mod_sideselect_server("sideselect_ui_1", rv)
-
-    # side-selector chooses the visualization parameters
-    # vis_params[["fact0"]] - which case to plot
-    # vis_params[["fact1"]] - which "second" case to plot (might not be active)
-    # vis_params[["genes"]] - chosen genes to plot
-    # vis_params[["plot_type"]] <-  what type of visualization?
-
-  }
-
-  ############################ +
-  ## Module 2 :  info for alternative sidebar
-  ##
-  ############################ +
-  {
-    mod_side_info_server("side_info_ui_1")
-
-  }
-
-  ############################ +
-  ## Module 3,: Welcome
-  ##
-  ############################ +
-  {
-    mod_welcome_server("welcome_ui_1")
-
-  }
 
   ############################ +
   ## Module 4 : "Ingest" Data
@@ -51,8 +16,8 @@ app_server <- function( input, output, session ) {
     # Call module "ingest"
     rv <- mod_ingestor_server("ingestor_ui_1")
 
-    #rv <- mod_ingest_server("ingest_ui_1")
-    #print(isolate(rv$data_table))
+    # rv <- mod_ingest_server("ingest_ui_1")
+    # print(isolate(rv$data_table))
     # Ingest "LOAD" button triggers sharing the rv structure:
 
     #   rv$data_table - datatable
@@ -64,7 +29,42 @@ app_server <- function( input, output, session ) {
     #   rv$var1  (column name)
     #   rv$factors1  - factors in that column
     #   rv$trigger
+  }
 
+
+
+
+  ############################ +
+  ## Module 1 : SIDESELECT   ####
+  ##
+  ##
+  ############################ +
+  {
+    p_vis <- mod_side_selector_server("side_selector_ui_1", rv_in = rv)
+    # CHECK sidebar - get params:
+    # vis_params <- mod_sideselect_server("sideselect_ui_1", rv)
+
+    # side-selector chooses the visualization parameters
+    # vis_params[["fact0"]] - which case to plot
+    # vis_params[["fact1"]] - which "second" case to plot (might not be active)
+    # vis_params[["genes"]] - chosen genes to plot
+    # vis_params[["plot_type"]] <-  what type of visualization?
+  }
+
+  ############################ +
+  ## Module 2 :  info for alternative sidebar
+  ##
+  ############################ +
+  {
+    mod_side_info_server("side_info_ui_1")
+  }
+
+  ############################ +
+  ## Module 3,: Welcome
+  ##
+  ############################ +
+  {
+    mod_welcome_server("welcome_ui_1")
   }
 
 
@@ -81,8 +81,7 @@ app_server <- function( input, output, session ) {
     # })
     #   Should we pass all the reactive values, or just the datatable?
     #   currently returns a subtable of the datatable
-    #filtered_db <- mod_table_server("table_ui_1", dt = rv$data_table, p = vis_params)
-
+    # filtered_db <- mod_table_server("table_ui_1", dt = rv$data_table, p = vis_params)
   }
   # selected_db <- reactive_selection_function(db,params)
   # mod_playground_server("playground_ui_1",db = data_table)
@@ -101,9 +100,8 @@ app_server <- function( input, output, session ) {
   ##     ###+
   ############################ +
   {
-    #mod_playground_server("playground_ui_1", rvs = rv, p = vis_params  )
+    # mod_playground_server("playground_ui_1", rvs = rv, p = vis_params  )
     mod_playground_server("playground_ui_1")
-
   }
 
   ############################ +
@@ -112,7 +110,7 @@ app_server <- function( input, output, session ) {
   ##
   ############################ +
   {
-    mod_export_server("export_ui_1",rv_in=rv, p=p_vis)
+    mod_export_server("export_ui_1", rv_in = rv, p = p_vis)
   }
 
   ############################ +

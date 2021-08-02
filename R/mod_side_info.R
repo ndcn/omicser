@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_side_info_ui <- function(id){
+mod_side_info_ui <- function(id) {
   ns <- NS(id)
   tagList(
     includeMarkdown(app_sys("app/www/info.Rmd"))
@@ -17,10 +17,9 @@ mod_side_info_ui <- function(id){
 #' side_info Server Functions
 #'
 #' @noRd
-mod_side_info_server <- function(id){
-  moduleServer( id, function(input, output, session){
+mod_side_info_server <- function(id) {
+  moduleServer(id, function(input, output, session) {
     ns <- session$ns
-
   })
 }
 
