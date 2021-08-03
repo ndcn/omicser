@@ -87,10 +87,12 @@ require("RColorBrewer")
 #'   default.dimred = c("UMAP_1", "UMAP_2")
 #' )
 #' @export
-make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL, layers=NULL, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
+                                        default_multi,
+                                        default_dimred , meta_to_include = NA,
+                                        gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
                                         gene_mapping = FALSE, db_prefix = "test1", db_dir = "data-raw",
-                                        default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-                                        default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+                                        chunk_size = 500,  legend_cols = 4,
                                         max_levels_ui = 50){
   max_levels <- 100
   ##################################
@@ -98,12 +100,12 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
   ###################################
   ### Preprocessing and checks
 
-  gex_matdim <- rev(dim(X))
-  gex_rownm <- rownames(var_)
-  gex_colnm <- rownames(obs)
-  def_omics = gex_rownm[1:10]
+  matdim <- rev(dim(X))
+  X_rownm <- rownames(var_)
+  X_colnm <- rownames(obs)
+  def_omics = X_rownm[1:10]
 
-  obs_meta = data.table(sampleID = gex_colnm)  # redundant but makes naming explicit..
+  obs_meta = data.table(sampleID = X_colnm)  # redundant but makes naming explicit..
   obs_meta = cbind(obs_meta, obs)
   #colnames(obs_meta) = c("sampleID", colnames(obs))
 
@@ -118,13 +120,10 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
   }
 
 
-  ############3
-  # deal with "matrix" and "unstructured"
-  # specificially dimension reductions in obsm
-  # TODO: ,obsm=NA,varm=NA,uns=NA,
-  #
-  #   # include dimension reduction?
-  dimred_exist <- TRUE
+  ############
+  dimred_exist <- TRUE  #start assuming its true, but its not if i
+  comp_exist <- TRUE
+
   obsm_exist <-  !is.null(obsm)
   varm_exist <-  !is.null(varm)
   uns_exist <-  !is.null(uns)
@@ -132,17 +131,16 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
     dimred_exist <- FALSE
   }
 
-  m_conf <- data.table()
 
   if (isTRUE(obsm_exist)) {
-    obsm_keys <- names(varm)
+    obsm_keys <- names(obsm)
     keys <- obsm_keys
     i_v <- 'obsm'
     # Start making config data.table
     m_conf <- data.table()
     tmp_conf <- data.table(
       ID = i_v, UI = i_v, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0, grp = FALSE
+      fCL = NA, fRow = NA, default = 0, grp = FALSE, comp=FALSE
     )
     # Additional preprocessing for categorical metadata
     n_levels <- length(keys)
@@ -158,10 +156,12 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
       }
     }
     m_conf <- rbindlist(list(m_conf, tmp_conf))
-
+    obsm_conf <- m_conf
   } else {
     print('no matrix obs')
     obsm_keys <- NA
+    obsm_conf <- data.table()
+
   }
 
 
@@ -174,7 +174,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
     m_conf <- data.table()
     tmp_conf <- data.table(
       ID = i_v, UI = i_v, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0, grp = FALSE
+      fCL = NA, fRow = NA, default = 0, grp = FALSE, comp=FALSE
     )
     # Additional preprocessing for categorical metadata
     n_levels <- length(keys)
@@ -190,22 +190,23 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
       }
     }
     m_conf <- rbindlist(list(m_conf, tmp_conf))
-
+    varm_conf <- m_conf
   } else {
     print('no matrix vars')
     varm_keys <- NA
+    varm_conf <- data.table()
+
   }
 
   if (uns_exist) {
-    uns_keys <- names(varm)
-
+    uns_keys <- names(uns)
     keys <- uns_keys
     i_v <- 'uns'
     # Start making config data.table
     m_conf <- data.table()
     tmp_conf <- data.table(
       ID = i_v, UI = i_v, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0, grp = FALSE
+      fCL = NA, fRow = NA, default = 0, grp = FALSE, comp=FALSE
     )
     # Additional preprocessing for categorical metadata
     n_levels <- length(keys)
@@ -219,21 +220,31 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
         tmp_conf$fUI <- tmp_conf$fID
         tmp_conf$fCL <- "black"
       }
-    }
-    m_conf <- rbindlist(list(m_conf, tmp_conf))
 
+    }
+    uns_conf <- rbindlist(list(m_conf, tmp_conf))
+
+    # # add the varm keys to the uns
+    # if (varm_exist) {
+    #   uns_keys <- names(varm)
+    #   for (i_uns in uns_keys) {
+    #     uns[[i_uns]] <- colnames(varm[[i_uns]])
+    #   }
+    # }
+    # if (obsm_exist) {
+    #   uns_keys <- names(obsm)
+    #   for (i_uns in uns_keys) {
+    #     uns[[i_uns]] <- colnames(obsm[[i_uns]])
+    #   }
+    # }
   } else {
-    if (varm_exist) {
-      uns_keys <- names(varm)
-      for (i_uns in uns_keys) {
-         uns[[i_uns]] <- colnames(varm[[i_uns]])
-      }
-
-    } else {
-      uns_keys <- NA
-      print('no unstructured meta')
+    uns_keys <- NA
+    print('no unstructured meta')
+    uns_conf <- data.table()
     }
-  }
+
+
+  m_conf <- rbindlist(list(obsm_conf, varm_conf,uns_conf))
 
   # if (layers_exist) {
   #   # TODO: do sometghing to meta_to_include
@@ -257,11 +268,12 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
   for (i_meta in meta_to_include) {
     tmp_conf <- data.table(
       ID = i_meta, UI = i_meta, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0, grp = FALSE
+      fCL = NA, fRow = NA, default = 0, grp = FALSE, comp=FALSE
     )
 
     # Additional preprocessing for categorical metadata
     n_levels <- nlevels(obs_meta[[i_meta]])
+    print(levels(obs_meta[[i_meta]]))
     if (n_levels <= max_levels) {
       if (n_levels >= 2) {
         tmp_conf$fID <- paste0(levels(obs_meta[[i_meta]]), collapse = "|")
@@ -277,10 +289,13 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
         tmp_conf$fCL <- "black"
         tmp_conf$fRow <- 1
       }
+      #TODO: test for comp measure...
       ui_conf <- rbindlist(list(ui_conf, tmp_conf))
     }
   }
 
+  # this isn't actually doing anything... leave for now
+  # TODO:  remove $default
   # Set defaults
   def1 <- grep("ident|library", ui_conf$ID, ignore.case = TRUE)[1]
   def2 <- grep("clust", ui_conf$ID, ignore.case = TRUE)
@@ -291,6 +306,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
   if (is.na(def2)) {
     def2 <- setdiff(c(1, 2), def1)[1]
   }
+
   ui_conf[def1]$default <- 1
   ui_conf[def2]$default <- 2
 
@@ -306,7 +322,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
   # Perform dimred_exist if specified (also map defGenes)
   ###################################
   if (gene_mapping[1] == TRUE) {
-    if (sum(grepl("^ENSG000", gex_rownm)) >= sum(grepl("^ENMUSG000", gex_rownm))) {
+    if (sum(grepl("^ENSG000", X_rownm)) >= sum(grepl("^ENMUSG000", X_rownm))) {
       tmp1 = fread(system.file("extdata", "geneMapHS.txt.gz",
                                package = "omicser"
       ))
@@ -321,51 +337,26 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
   # TODO:  fix the if else logic here... .or maybe gen_mapping[1] could be set to FALSE above?
   # Check if dimred_exist is partial or not
   if (gene_mapping[1] == FALSE) {
-    gene_mapping <- gex_rownm
-    names(gene_mapping) <- gex_rownm # Basically no mapping
+    gene_mapping <- X_rownm
+    names(gene_mapping) <- X_rownm # Basically no mapping
   } else {
-    if (!all(gex_rownm %in% names(gene_mapping))) {
+    if (!all(X_rownm %in% names(gene_mapping))) {
       # warning("Mapping for some gene identifiers are not provided!")
-      tmp1 <- gex_rownm[gex_rownm %in% names(gene_mapping)]
+      tmp1 <- X_rownm[X_rownm %in% names(gene_mapping)]
       tmp1 <- gene_mapping[tmp1]
-      tmp2 <- gex_rownm[!gex_rownm %in% names(gene_mapping)]
+      tmp2 <- X_rownm[!X_rownm %in% names(gene_mapping)]
       names(tmp2) <- tmp2
       gene_mapping <- c(tmp1, tmp2)
     }
-    gene_mapping <- gene_mapping[gex_rownm]
+    gene_mapping <- gene_mapping[X_rownm]
   }
   def_omics <- gene_mapping[def_omics]
 
+
   # Check default.gene1 / default.gene2 / default.multigene
-  # TODO:  WRAP THIS IN A FUNCTION SO WE CAN DO OMICS1, OMICS2 AND MULTIOMICS WITH ONE CODEBLOCK
-  default_omics1 <- default_omics1[1]  #delist?
-  default_omics2 <- default_omics2[1]
-  if (is.na(default_omics1)) {
-    default_omics1 <- def_omics[1]
-  }
-  if (is.na(default_omics2)) {
-    default_omics2 <- def_omics[2]
-  }
   if (is.na(default_multi[1])) {
     default_multi <- def_omics
-  }
-  if (default_omics1 %in% gene_mapping) {
-    default_omics1 <- default_omics1
-  } else if (default_omics1 %in% names(gene_mapping)) {
-    default_omics1 <- gene_mapping[default_omics1]
-  } else {
-    warning("default_omics1 doesn't exist in gene expression, using defaults...")
-    default_omics1 <- def_omics[1]
-  }
-  if (default_omics2 %in% gene_mapping) {
-    default_omics2 <- default_omics2
-  } else if (default_omics2 %in% names(gene_mapping)) {
-    default_omics2 <- gene_mapping[default_omics2]
-  } else {
-    warning("default_omics2 doesn't exist in gene expression, using defaults...")
-    default_omics2 <- def_omics[2]
-  }
-  if (all(default_multi %in% gene_mapping)) {
+  } else if (all(default_multi %in% gene_mapping)) {
     default_multi <- default_multi
   } else if (all(default_multi %in% names(gene_mapping))) {
     default_multi <- gene_mapping[default_multi]
@@ -393,6 +384,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
     ui_conf[ID == i]$fID <- ui_conf[ID == i]$fUI
   }
 
+
   if (isTRUE(dimred_exist)) {
     # TODO:  code extracting this from obsm "pca", "tsne", "umap" etc
     # Extract dimred and append to both XXXmeta.rds and XXXconf.rds...
@@ -414,8 +406,8 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
         fID = NA, fUI = NA, fCL = NA, fRow = NA,
         default = 0, grp = FALSE, dimred = TRUE
       )
-      tmp$UI = gsub("_", "", tmp$UI)
-      #ui_conf = rbindlist(list(ui_conf, tmp))
+      tmp$UI = gsub("_", "", tmp$UI) # now underscores allowed
+      ui_conf = rbindlist(list(ui_conf, tmp))
     }
   } else {
     print(" no dimension reductions available.  compute them?")
@@ -433,8 +425,8 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
   #scGEX <- t(X)
 
 
-  if (!isTRUE(all.equal(obs_meta$sampleID, gex_colnm))) {
-    obs_meta$sampleID <- factor(obs_meta$sampleID, levels = gex_colnm)
+  if (!isTRUE(all.equal(obs_meta$sampleID, X_colnm))) {
+    obs_meta$sampleID <- factor(obs_meta$sampleID, levels = X_colnm)
     obs_meta <- obs_meta[order(sampleID)]
     obs_meta$sampleID <- as.character(obs_meta$sampleID)
   }
@@ -442,7 +434,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm=NULL,varm=NULL,uns=NULL,
   ###################################
   # Make XXXgenes.rds
   ####################################
-  om1_omics <- seq(gex_matdim[1])
+  om1_omics <- seq(X_matdim[1])
   names(gene_mapping) <- NULL
   names(om1_omics) <- gene_mapping
 

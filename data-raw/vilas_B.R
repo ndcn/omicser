@@ -126,6 +126,31 @@ ad <- read_h5ad(new_file_path)
 
 # NOTE:  raw counts are NOT contained in the anndata file... they could be added back with layers from the seurat file *if* needed
 
+# now lets add uns entries for the varm and obsm variables....
+#
+uns <- list(frac_expres=colnames(varm$frac_expres),
+            mean_z = colnames(varm$mean_z),
+            mean_log = colnames(varm$mean_log),
+            mean_z_log = colnames(varm$mean_z_log))
+
+
+
+# OBSERVABLES
+#
+observables <- list(obs = c("nCount_SCT","nFeature_SCT"),
+                    var = names(ad$var)
+                    layers = NULL,
+                    raw = c("X"))
+
+
+# COMPARABLES
+comparables <- list(varm = names$varm,
+                    obsm = NULL)
+# Dimred
+dimreds <- list(varm = c('X_pca', 'X_tsne'),
+                    obsm = c('PCs'))
+
+
 ####################################
 ####################################
 ##

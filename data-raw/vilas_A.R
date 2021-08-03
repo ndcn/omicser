@@ -102,7 +102,11 @@ sd_mat <- sd_mat + 1e-100
 
 log_X <- log(X + 1.)
 
+# TODO:  Pack the overal mean, sd and logmean, logvar into var_
+#
 # copy the empty matrices
+#
+
 mean_z_mat <- frac_exp_mat
 mean_log_mat <- frac_exp_mat
 mean_z_log_mat <- frac_exp_mat

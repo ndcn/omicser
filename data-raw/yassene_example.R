@@ -127,8 +127,10 @@ rownames(var_) <- var_$lipids
 raw <- conc_mat
 X <- zconc
 
-layers <- list(comp = conc_mat)
+layers <- list(comp = comp_mat)
 layers$zcomp <- zcomp
+layers$conc <- conc_mat
+layers$zconc <- zconc
 
 obsm <- NULL
 varm <- NULL
@@ -258,13 +260,13 @@ ad <- AnnData(
 
 ad
 
-
-adraw <- AnnData(
-  X = raw,
-  var = var_
-)
-
-ad$raw <- adraw
+# skip raw for now... all loaded into layers
+# adraw <- AnnData(
+#   X = raw,
+#   var = var_
+# )
+#
+# ad$raw <- adraw
 
 
 #write_h5ad(anndata = ad, filename = file.path(db_dir,"data-raw/Vilas_A.h5ad"))

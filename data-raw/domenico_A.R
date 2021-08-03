@@ -334,6 +334,20 @@ varm <- Domenico_A_varm
 uns <- Domenico_A_uns
 layers <- Domenico_A_layers
 
+
+
+# OBSERVABLES
+observables <- list(layers = NULL,
+                    raw = "X")
+
+
+
+# COMPARABLES
+comparables <- list(varm = names$varm,
+                    obsm = NULL)
+
+
+
 # usethis::use_data(Domenico_A_obsm,Domenico_A_varm,Domenico_A_uns,Domenico_A_layers,overwrite = TRUE)
 #
 #

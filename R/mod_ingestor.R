@@ -491,7 +491,7 @@ mod_ingestor_server <- function(id) {
     # Update selectInput according to dataset
     observe({
       req(omic_rv$config)
-      browser()
+
       if (input$AB_subset_tog) {
         print("enabled subset ")
         shinyjs::enable("SI_subset")
