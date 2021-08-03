@@ -47,7 +47,7 @@ mod_ingestor_ui <- function(id) {
         selectizeInput(
           ns("SI_dataset"), "Dataset",
           choices = dataset_names,
-          select = "VilasA"  # should i have a default??
+          select = "VilasB"  # should i have a default??
           )
       )),
     fluidRow(
@@ -333,7 +333,7 @@ mod_ingestor_server <- function(id) {
             omicmeta <- omicser::vilas_B_meta
 
             to_return$database_name <- ds_name
-            to_return$omics_type <- "lipid"
+            to_return$omics_type <- "transcript"
 
             to_return$ad <- ad
             # set a default to avoid funny business in side_select
@@ -342,8 +342,6 @@ mod_ingestor_server <- function(id) {
             # to_return$defaults <- omicdef
             # to_return$configs <- omicconf
 
-            omicconf$meta <- as.data.table(omicconf$meta)
-            omicconf$mat <- as.data.table(omicconf$mat)
             omic_rv$config <- omicconf
 
             omic_rv$default <- omicdef
@@ -379,7 +377,6 @@ mod_ingestor_server <- function(id) {
             # to_return$defaults <- omicdef
             # to_return$configs <- omicconf
 
-            omic_rv$config <- as.data.table(omicconf)
             omic_rv$default <- omicdef
             # raw_obs <-
             # group_obs <-
@@ -415,8 +412,8 @@ mod_ingestor_server <- function(id) {
             to_return$meta <- omicmeta  # this might be too redundant
             # to_return$defaults <- omicdef
             # to_return$configs <- omicconf
-            omicconf$meta <- as.data.table(omicconf$meta)
-            omicconf$mat <- as.data.table(omicconf$mat)
+
+
             omic_rv$config <- omicconf
 
             omic_rv$default <- omicdef
@@ -512,8 +509,8 @@ mod_ingestor_server <- function(id) {
         print("enabled subset ")
         shinyjs::enable("SI_subset")
         updateSelectizeInput(session, "SI_subset","Obs information to subset:",
-                             choices = omic_rv$config[grp == TRUE]$UI,
-                             selected = omic_rv$default$grp1[1],  server = TRUE)
+                             choices = omic_rv$config$meta[grp == TRUE]$UI,
+                             selected = omic_rv$default$grp1,  server = TRUE)
 
         shinyjs::enable("CB_sub_all")
         shinyjs::enable("CB_sub_none")
@@ -526,17 +523,17 @@ mod_ingestor_server <- function(id) {
     })
 
     output$ui_subset <- renderUI({
-      sub = strsplit(omic_rv$config[UI == input$SI_subset]$fID, "\\|")[[1]]
+      sub = strsplit(omic_rv$config$meta[UI == input$SI_subset]$fID, "\\|")[[1]]
       checkboxGroupInput("CB_sub_inner1", "Select which groups to show", inline = TRUE,
                          choices = sub, selected = sub)
     })
     observeEvent(input$CB_sub_all, {
-      sub = strsplit(omic_rv$config[UI == input$SI_subset]$fID, "\\|")[[1]]
+      sub = strsplit(omic_rv$config$meta[UI == input$SI_subset]$fID, "\\|")[[1]]
       updateCheckboxGroupInput(session, inputId = "CB_sub_inner1", label = "Select which groups to show",
                                choices = sub, selected = NULL, inline = TRUE) # WARNING.  make sure subset is null is checked (length(0?))
     })
     observeEvent(input$CB_sub_none, {
-      sub = strsplit(omic_rv$config[UI == input$SI_subset]$fID, "\\|")[[1]]
+      sub = strsplit(omic_rv$config$meta[UI == input$SI_subset]$fID, "\\|")[[1]]
       updateCheckboxGroupInput(session, inputId = "CB_sub_inner1", label = "Select which groups to show",
                                choices = sub, selected = sub, inline = TRUE)
     })
