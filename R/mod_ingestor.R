@@ -2,14 +2,8 @@
 
 # TODO: pack this into a .rda .rds to load for dynamic updates
 dataset_names <- c(
-  "Skeletal Muscle" = "TMT",
-  "Muscle Stem Cell" = "DIA",
   "Domenico Tsc Long" = "DomenicoA",
-  "Vilas Transcript" = "VilasA",
   "Vilas Microglia" = "VilasB",
-  "Oscar Toy" = "OscarA",
-  "Oscar Microglia" = "OscarB",
-  "Upload New data" = "novel",
   "Yassene Lipidomics" ="YasseneA"
 )
 
@@ -131,30 +125,23 @@ mod_ingestor_ui <- function(id) {
         )
       ),
     fluidRow(
-        # col_3(
+      col_3(
           shinyjs::disabled(
             actionButton(ns("AB_ingest_load"), label = "(Re) load !")
           ),
-          # ),
-        # col_1(),
-        # col_6(
-        # shinyjs::disabled(
-        #   selectizeInput(ns("SI_datatype"), "Data Type",
-        #     choices = dataset_type, select = "X-"
-        #   )
-        # ),
         textOutput(ns("ui_datatype"))
-        # )
       )
-    )
+      )
+    ) #tagList
 }
+
+
 
 # ############################ +
 # ## UI for interactive upload/choosing...
 # ## i.e.  if "novel"
 # TODO:  make a module for this..
 # ############################ +
-
 
 # # LOAD VAR
 # selectizeInput(
