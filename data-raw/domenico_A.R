@@ -124,7 +124,8 @@ raw_data <- raw_data[,conditions_table$File.Name]
 
 rownames(raw_data)<- features
 
-log_data <- log(raw_data)
+
+
 
 ############
 ##
@@ -174,6 +175,24 @@ rownames(comp_data) <- comp_data$UniProtIds
 
 comp_data <- comp_data[feat_annots$UniProtIds,]
 
+
+
+log_data <- log(data)
+
+
+var_ <- comp_data
+var_$geomean <- rowMeans(log_data,na.rm = TRUE)
+var_$mean <- rowMeans(data,na.rm = TRUE)
+
+tmp_mat <- data
+tmp_mat[which(is.na(tmp_mat), arr.ind = TRUE)] <- 0
+var_$var  <- apply(tmp_mat,1,var)
+
+obs <- conditions_table
+obs$var_conc <- apply(tmp_mat,2,var)
+obs$mean_conc <-apply(tmp_mat,2,mean)
+
+
 ############
 ##
 ##  Part 3.  ut into anndata/ omicser formated .rda
@@ -204,8 +223,8 @@ comp_data <- comp_data[feat_annots$UniProtIds,]
 # pack into X, obs, vars, meta?
 
 Domenico_A_X <- t(data)
-Domenico_A_obs <- conditions_table
-Domenico_A_var <- comp_data
+Domenico_A_obs <- obs
+Domenico_A_var <- var_
 
 
 X <- Domenico_A_X
@@ -337,16 +356,19 @@ layers <- Domenico_A_layers
 
 
 # OBSERVABLES
-observables <- list(layers = NULL,
-                    raw = "X")
-
-
+observables <- list(obs = c("var_conc","mean_conc"),
+                    var = c("geomean","mean","var"),
+                    layers = NA,
+                    raw = c("X"),
+                    obsm = NA)
 
 # COMPARABLES
-comparables <- list(varm = names$varm,
-                    obsm = NULL)
+comparables <- list(varm = names(varm),
+                    obsm = NA)
 
-
+# Dimred
+dimreds <- list(varm = NA,
+                obsm = NA)
 
 # usethis::use_data(Domenico_A_obsm,Domenico_A_varm,Domenico_A_uns,Domenico_A_layers,overwrite = TRUE)
 #
@@ -371,14 +393,14 @@ db_dir = "data-raw"
 #                                           max_levels_ui = 50)
 
 db_prefix <- "Domenico_A_"
-make_ingest_file_primitives(X,obs,var_,obsm=obsm, varm=varm,
-                            uns=uns, layers = layers,
+make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
+                            observables, comparables, dimreds,
+                            default_omic = NA, default_dimred = NA, meta_to_include = NA,
                             gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
-                            default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-                            default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = db_dir,
+                            chunk_size = 500,  legend_cols = 4,
                             max_levels_ui = 50)
-
+#
 #vilas_A_conf = readRDS(file.path(db_dir,"test1conf.rds"))
 domenico_A_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
 

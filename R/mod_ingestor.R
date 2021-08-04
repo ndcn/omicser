@@ -3,6 +3,7 @@
 # TODO: pack this into a .rda .rds to load for dynamic updates
 dataset_names <- c(
   "Domenico Tsc Long" = "DomenicoA",
+  "Vilas Transcript" = "VilasA",
   "Vilas Microglia" = "VilasB",
   "Yassene Lipidomics" ="YasseneA"
 )
@@ -47,10 +48,13 @@ mod_ingestor_ui <- function(id) {
     fluidRow(
       col_6(
         # Var -> Genes/ Proteins
-        selectizeInput(
-          ns("SI_var_name"), "Choose -Omic Variable", "",
-          multiple = FALSE, options = list(placeholder = "choose dataset first")
-        )),
+        uiOutput(ns("ui_omics"))
+
+        # selectizeInput(
+        #   ns("SI_var_name"), "Choose -Omic Variable", "",
+        #   multiple = FALSE, options = list(placeholder = "choose dataset first")
+        # )
+        ),
       col_4(
         ofset = 1,
         actionButton(ns("AB_subset_tog"), "Toggle subset observations"), #TODO: change text when toggled
@@ -136,44 +140,6 @@ mod_ingestor_ui <- function(id) {
 }
 
 
-
-# ############################ +
-# ## UI for interactive upload/choosing...
-# ## i.e.  if "novel"
-# TODO:  make a module for this..
-# ############################ +
-
-# # LOAD VAR
-# selectizeInput(
-#   ns("SI_load_var_names"),"Choose Primary Variable", "",
-#   multiple=FALSE, options = list(placeholder = "choose dataset first")
-# ),
-#
-# selectizeInput(
-#   ns("SI_load_var_annots"),"Choose Variable Annotations", "",
-#   multiple=TRUE, options = list(placeholder = "choose dataset first")
-# ),
-#
-# # LOAD OBS
-# selectizeInput(
-#   ns("SI_load_obs_names"),"Choose Primary Observable", "",
-#   multiple=FALSE, options = list(placeholder = "choose dataset first")
-# ),
-#
-# selectizeInput(
-#   ns("SI_load_obs_annots"),"Choose Observable Annotations", "",
-#   multiple=TRUE, options = list(placeholder = "choose dataset first")
-# ),
-#
-#
-# # LOAD data-matrix
-# if (input$data_type == 'transcriptomics'){
-#   #LOAD RAW DATA TABLE
-# }
-#
-
-
-
 #' ingestor Server Functions
 #'
 #' @noRd
@@ -188,31 +154,16 @@ mod_ingestor_server <- function(id) {
     ############################ +
     to_return <- reactiveValues(
       # these values hold the database contents (only reactive because we can choose)
-                #
-                # X = NULL,
-                # var = NULL,
-                # obs = NULL,
-                # var_names = NULL, # eg.  var_names: Genes, Proteins, Lipids
-                # var_annotations = NULL, # colnames of variable annotations.  e.g. gene/protein-families, ontologies, lipid class
-                #
-                # obs_names = NULL, # name of observations e.g. cell ID
-                # obs_annotations = NULL,
-                # # do i need this here?
-                # uns = list(), # NULL if not used, otherwise list of unstructured annotations...
-                # uns_keys = NULL,
-                # varm = list(), # NULL if not used, otherwise list of unstructured annotations...
-                # varm_keys = NULL,
-                # obsm = list(), # NULL if not used, otherwise list of unstructured annotations...
-                # obsm_keys = NULL,
+
       database_name = NULL,
       omics_type = NULL, # Transcript-omics, Prote-omics, Lipid-omics, Metabol-omics, misc-
+      #  Everything is packed into an anndata object
+      ad = NULL,
+
 
       # these reflect the choices made in the ingestor
       # omics key feature i.e. genes, proteins, lipids
       #  primary & auxilarry
-
-      #  Everything is packed into an anndata object
-      ad = NULL,
       omics_feature = NULL, #the omics columnname...
       aux_features = NULL,
       # observables:  experiemntal factor... i.e. patient/control, old/young,
@@ -230,7 +181,8 @@ mod_ingestor_server <- function(id) {
 
     omic_rv <- reactiveValues(
       config = NULL,
-      default = NULL)
+      default = NULL
+      )
 
     ############################ +
     ## Update selectInput according to dataset
@@ -242,82 +194,34 @@ mod_ingestor_server <- function(id) {
       if (!is.null(input$SI_dataset)) { # unnesscasary defensive?
 
         ds_name <- (input$SI_dataset)
-
-        # if (ds_name == "DomenicoA") { # Skeletal Muscle
-        #
-        #   X <- omicser::Domenico_A_X
-        #   obs <- omicser::Domenico_A_obs
-        #   var_ <- omicser::Domenico_A_var
-        #   obsm <- omicser::Domenico_A_obsm
-        #   varm <- omicser::Domenico_A_varm
-        #   uns <- omicser::Domenico_A_uns
-        #
-        #   to_return$database_name <- ds_name
-        #   to_return$omics_type <- "prote"
-        #
-        #   to_return$var <- var_
-        #   to_return$obs <- obs
-        #   to_return$X <- X
-        #
-        #   to_return$var_names <-row.names(var_)
-        #   to_return$var_annotations <- colnames(var_)
-        #
-        #   to_return$obs_names <- row.names(obs)
-        #   to_return$obs_annotations <- colnames(obs)
-        #
-        #   to_return$uns <- uns
-        #   to_return$varm <- varm
-        #   to_return$obsm <- obsm
-        #
-        #   # set a default to avoid funny business in side_select
-        #   to_return$omics_feature <- to_return$var_annotations[1]
-
-        # } else
           if (ds_name == "VilasA") { # Vilas transc
 
-          # X <- omicser::Vilas_A_X
-          # obs <- omicser::Vilas_A_obs
-          # var_ <- omicser::Vilas_A_var
-          # obsm <- omicser::Vilas_A_obsm
-          # varm <- omicser::Vilas_A_varm
-          # uns <- list()
+            ad <- anndata::read_h5ad(filename="data-raw/vilas_A.h5ad")
 
+            omicconf <- omicser::vilas_A_conf
+            omicdef <- omicser::vilas_A_def
+            omics <- omicser::vilas_A_omics
+            omicmeta <- omicser::vilas_A_meta
 
-          ad <- anndata::read_h5ad(filename="data-raw/vilas_A.h5ad")
+            to_return$database_name <- ds_name
+            to_return$omics_type <- "transcript"
+            to_return$ad <- ad
+            to_return$omics_feature <- omics
+            to_return$meta <- omicmeta  # this might be too redundant
 
-
-          omicconf <- omicser::vilas_A_conf
-          omicdef <- omicser::vilas_A_def
-          omics <- omicser::vilas_A_omics
-          omicmeta <- omicser::vilas_A_meta
-
-
-          to_return$database_name <- ds_name
-          to_return$omics_type <- "transcript"
-
-          to_return$ad <- ad
-          # set a default to avoid funny business in side_select
-          to_return$omics_feature <- omics
-          to_return$meta <- omicmeta  # this might be too redundant
-          # to_return$defaults <- omicdef
-          # to_return$configs <- omicconf
-
-          omicconf$meta <- as.data.table(omicconf$meta)
-          omicconf$mat <- as.data.table(omicconf$mat)
-          omic_rv$config <- omicconf
-
-          omic_rv$default <- omicdef
+            omicconf$meta <- as.data.table(omicconf$meta)
+            omicconf$mat <- as.data.table(omicconf$mat)
+            omic_rv$config <- omicconf
+            omic_rv$default <- omicdef
 
           } else if (ds_name == "VilasB") { # Vilas microglia
 
-
             ad <- anndata::read_h5ad(filename="data-raw/vilas_B.h5ad")
-
 
             omicconf <- omicser::vilas_B_conf
             omicdef <- omicser::vilas_B_def
             omics <- omicser::vilas_B_omics
-            omicmeta <- omicser::vilas_B_meta
+            omicsomicmeta <- omicser::vilas_B_meta
 
             to_return$database_name <- ds_name
             to_return$omics_type <- "transcript"
@@ -326,25 +230,11 @@ mod_ingestor_server <- function(id) {
             # set a default to avoid funny business in side_select
             to_return$omics_feature <- omics
             to_return$meta <- omicmeta  # this might be too redundant
-            # to_return$defaults <- omicdef
-            # to_return$configs <- omicconf
 
             omic_rv$config <- omicconf
-
             omic_rv$default <- omicdef
-            # raw_obs <-
-            # group_obs <-
-            # comp_obs <-
+
           } else if (ds_name == "YasseneA") { # Vilas transc
-
-
-            # X <- omicser::yassene_A_X
-            # obs <- omicser::yassene_A_obs
-            # var_ <- omicser::yassene_A_var
-            # obsm <- omicser::yassene_A_obsm
-            # varm <- omicser::yassene_A_varm
-            # uns <- omicser::yassene_A_varm
-            # layers <- omicser::yassene_A_layers
 
             ad <- anndata::read_h5ad(filename="data-raw/yassene_A.h5ad")
 
@@ -358,32 +248,14 @@ mod_ingestor_server <- function(id) {
             to_return$omics_type <- "lipid"
 
             to_return$ad <- ad
-            # set a default to avoid funny business in side_select
             to_return$omics_feature <- omics
             to_return$meta <- omicmeta  # this might be too redundant
-            # to_return$defaults <- omicdef
-            # to_return$configs <- omicconf
 
+            omic_rv$config <- omicconf
             omic_rv$default <- omicdef
-            # raw_obs <-
-            # group_obs <-
-            # comp_obs <-
           } else if (ds_name == "DomenicoA") { # "Domenico Tsc Long"
 
-
-            # X <- omicser::domenico_A_X
-            # obs <- omicser::domenico_A_obs
-            # var_ <- omicser::domenico_A_var
-            # obsm <- omicser::domenico_A_obsm
-            # varm <- omicser::domenico_A_varm
-            # uns <- omicser::domenico_A_varm
-            # layers <- omicser::domenico_A_layers
-
             ad <- anndata::read_h5ad(filename="data-raw/domenico_A.h5ad")
-            #ad <- anndata::read_h5ad(filename="data-raw/domenico_A.h5ad",backed = 'r')
-            # If 'r', load ~anndata.AnnData in backed mode instead of fully
-            # loading it into memory (memory mode). If you want to modify
-            # backed attributes of the AnnData object, you need to choose 'r+'.
 
             omicconf <- omicser::domenico_A_conf
             omicdef <- omicser::domenico_A_def
@@ -394,49 +266,15 @@ mod_ingestor_server <- function(id) {
             to_return$omics_type <- "prote"
 
             to_return$ad <- ad
-            # set a default to avoid funny business in side_select
             to_return$omics_feature <- omics
             to_return$meta <- omicmeta  # this might be too redundant
-            # to_return$defaults <- omicdef
-            # to_return$configs <- omicconf
 
 
             omic_rv$config <- omicconf
-
             omic_rv$default <- omicdef
-            # raw_obs <-
-            # group_obs <-
-            # comp_obs <-
 
 
           # } else if (ds_name == "OscarB") { # Vilas transc
-          #
-          #   X <- omicser::oscar_microglia_X
-          #   obs <- omicser::oscar_microglia_obs
-          #   var_ <- omicser::oscar_microglia_var
-          #   obsm <- omicser::oscar_microglia_obsm
-          #   varm <- omicser::oscar_microglia_varm
-          #   uns <- list()
-          #
-          #   to_return$database_name <- ds_name
-          #   to_return$omics_type <- "transcript"
-          #
-          #   to_return$var <- var_
-          #   to_return$obs <- obs
-          #   to_return$X <- X
-          #
-          #   to_return$var_names <-row.names(var_) # the variable IDs
-          #   to_return$var_annotations <- colnames(var_)
-          #
-          #   to_return$obs_names <- row.names(obs)  # the sample IDs
-          #   to_return$obs_annotations <- colnames(obs)
-          #
-          #   to_return$uns <- uns
-          #   to_return$varm <- varm
-          #   to_return$obsm <- obsm
-          #
-          #   # set a default to avoid funny business in side_select
-          #   to_return$omics_feature <- to_return$var_annotations[1]
           #
         # } else if (ds_name == "novel") {
         #   # TODO:  code here for upload module
@@ -455,18 +293,17 @@ mod_ingestor_server <- function(id) {
       }
     })
 
+
     observe({
       if ( !is.null(to_return$database_name) ) {
-        #TODO: make var_names and aux_vars (and obs_exp & aux_obs) mutually exclusive
         var_choices <- isolate(to_return$ad$var_keys())
         var_choices <- var_choices[1]  # short circuit for now...
-        updateSelectizeInput(session, "SI_var_name", choices = var_choices, selected = var_choices[1], server = TRUE)
-        # TODO: update so we cant choose both at the same time
-        #
+        # updateSelectizeInput(session, "SI_var_name", choices = var_choices, selected = var_choices[1], server = TRUE)
+
+
         obs_choices <- isolate(to_return$ad$obs_keys())
         updateSelectizeInput(session, "SI_obs_exp", choices = obs_choices, selected = obs_choices[1], server = TRUE)
         print(paste0("experimental observations: ",obs_choices))
-        #shinyjs::enable("CB_aux_obs")
 
         shinyjs::enable("CB_aux_vars")
         shinyjs::enable("CB_obs_raw")
@@ -475,18 +312,23 @@ mod_ingestor_server <- function(id) {
 
       } else {
         # disable check boxes
-        # shinyjs::disable("CB_aux_obs")
-        # shinyjs::disable("CB_aux_vars")
-
         shinyjs::disable("CB_aux_vars")
         shinyjs::disable("CB_obs_raw")
         shinyjs::disable("CB_obs_comp")
         shinyjs::disable("CB_obs_group")
 
-        print(" no database loaded... try Vilas Trans or Domenico or Oscar Microglia...")
+        print(" no database loaded... try Vilas Trans or Domenico or Yassene.")
       }
     })
 
+    output$ui_omics <- renderPrint({
+      if (is.null(to_return$omics_feature)) {
+        print("no datbase loaded")
+      } else {
+        omics <- isolate(to_return$omics_feature)
+        print(paste("Current database is: ", names(omics)[1:10]))
+      }
+    })
 
     # Update selectInput according to dataset
     observe({
@@ -525,10 +367,9 @@ mod_ingestor_server <- function(id) {
                                choices = sub, selected = sub, inline = TRUE)
     })
 
-    # keep these up to date for side_select... can maybe remove teh defaults
+    # keep these up to date for side_select..
     observe({
       to_return$database_name <- input$SI_dataset
-      #to_return$omics_feature <- input$SI_var_name  #send the loaded value...
     })
 
 
@@ -618,25 +459,17 @@ mod_ingestor_server <- function(id) {
     })
 
 
-    # Update selectInput SI_var_name
+    # Update selectInput SI_obs_exp
     observe({
-      if (input$SI_var_name != "") { #|| ( !is.na(input$SI_var0) )
+      if (input$SI_obs_exp != "") { #|| ( !is.na(input$SI_var0) )
         shinyjs::enable("AB_ingest_load")
       } else {
-        print(' SI_var_name == "" ')
+        print(' SI_obs_exp == <empty> ')
         shinyjs::disable("AB_ingest_load")
       }
     })
 
 
-    # observe({
-    #   if (input$SI_obs_exp == "") { #|| !(is.na(input$SI_var1))
-    #     to_return$factors1 <- unique(factor(to_return$data_table[[input$SI_obs_exp]]))
-    #
-    #   } else {
-    #     print("skipped SI_obs_exp")
-    #   }
-    # })
     # show the factors that have been loaded
     output$ui_datatype <- renderText({
       print(paste0("db type - ", to_return$omics_type , "-omics"))
@@ -646,14 +479,14 @@ mod_ingestor_server <- function(id) {
     # (Re)load button :: send the reactive object back to the app...
     observeEvent(input$AB_ingest_load, {
 
+      to_return$exp_factor <- input$SI_obs_exp
+
+
       if (input$CB_aux_vars) {
         to_return$aux_features <- input$SI_aux_vars
       } else {
         to_return$aux_features <- NULL
       }
-
-      to_return$exp_factor <- input$SI_obs_exp
-
 
       if (input$CB_obs_raw) {
         to_return$aux_raw <- input$SI_obs_raw

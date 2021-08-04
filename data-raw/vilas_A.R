@@ -102,10 +102,7 @@ sd_mat <- sd_mat + 1e-100
 
 log_X <- log(X + 1.)
 
-# TODO:  Pack the overal mean, sd and logmean, logvar into var_
-#
-# copy the empty matrices
-#
+
 
 mean_z_mat <- frac_exp_mat
 mean_log_mat <- frac_exp_mat
@@ -118,6 +115,21 @@ Z <- scale(X)
 Z_log <- scale(log_X)
 mu_log <- colMeans(log_X)
 sd_log <- apply(log_X,2,sd)
+
+fracexp <- colMeans(X>0)
+
+# TODO:  Pack the overal mean, sd and logmean, logvar into var_
+#
+# copy the empty matrices
+#
+
+var_ <- cbind(var_,fracexp=fracexp,
+              meanexp=mu_mat,
+              sdexp=sd_mat,
+              mulogexp=mu_log,
+              sdlogexp=sd_log)
+
+
 
 # i should just be able to normalize these....
 # expressed <- (X > 0)
@@ -136,7 +148,7 @@ for (clust_i in all_clusters) {
 
 # add an overall value...
 
-frac_exp_mat <- cbind(frac_exp_mat, all=colMeans(X>0))
+frac_exp_mat <- cbind(frac_exp_mat, all=fracexp)
 
 mean_z_mat <- cbind(mean_z_mat,mu=mu_mat,sd=sd_mat)
 
@@ -166,6 +178,7 @@ varm = list(
 )
 
 obsm = NULL
+layers <- NULL
 
 Vilas_A_obsm <- obsm
 Vilas_A_varm <- varm
@@ -175,9 +188,26 @@ uns <- list(frac_expres=colnames(varm$frac_expres),
             mean_log = colnames(varm$mean_log),
             mean_z_log = colnames(varm$mean_z_log))
 Vilas_A_uns <- uns
-
+Vilas_A_var <- var_
+Vilas_A_layers <- layers
 #usethis::use_data(Vilas_A_obsm,Vilas_A_varm,Vilas_A_uns,overwrite = TRUE)
 
+
+# OBSERVABLES
+#
+observables <- list(obs = NA,
+                    var = names(var_)[-1],
+                    layers = NA,
+                    raw = c("X"),
+                    obsm = NA) # this might not even be possible
+
+
+# COMPARABLES
+comparables <- list(varm = names(varm),
+                    obsm = NA)
+# Dimred
+dimreds <- list(varm = NA,
+                obsm = NA)
 
 
 
@@ -202,7 +232,6 @@ Vilas_A_uns <- uns
 # obsm <- omicser::Vilas_A_obsm
 # varm <- omicser::Vilas_A_varm
 # uns <- omicser::Vilas_A_uns
-# layers <- NULL
 
 
 #TODO:  pack into a list or anndata structure for simplicity...
@@ -219,12 +248,21 @@ source(helper_function)
 
 db_dir = "data-raw"
 db_prefix <- "Vilas_A_"
-make_ingest_file_primitives(X,obs,var_,obsm=obsm, varm=varm,
-                             uns=uns, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-                             gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
-                                        default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-                                        default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
-                                        max_levels_ui = 50)
+
+make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
+                            observables, comparables, dimreds,
+                            default_omic = NA, default_dimred = NA, meta_to_include = NA,
+                            gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = db_dir,
+                            chunk_size = 500,  legend_cols = 4,
+                            max_levels_ui = 50)
+#
+# make_ingest_file_primitives(X,obs,var_,obsm=obsm, varm=varm,
+#                              uns=uns, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+#                              gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
+#                                         default_omics1 = NA, default_omics2 = NA, default_multi = NA,
+#                                         default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+#                                         max_levels_ui = 50)
 
 #vilas_A_conf = readRDS(file.path(db_dir,"test1conf.rds"))
 vilas_A_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )

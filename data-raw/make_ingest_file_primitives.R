@@ -56,9 +56,8 @@ require("RColorBrewer")
 #' @param db_prefix specify file prefix
 #' @param db_dir specify directory to place files (e.g. ingest / data-raw)
 #'
-#' @param default_omics1 specify primary default omics to show
-#' @param default_omics2 specify secondary default omics to show
-#' @param default_multi character vector specifying default omics_ to
+#' @param default_omic specify secondary default omics to show
+#' @param default_omic character vector specifying default omics_ to
 #'   show in bubbleplot / heatmap
 #' @param default_dimred character vector specifying the two default dimension
 #'   reductions. Default is to use UMAP if not TSNE embeddings
@@ -88,8 +87,8 @@ require("RColorBrewer")
 #' )
 #' @export
 make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
-                                        default_multi,
-                                        default_dimred , meta_to_include = NA,
+                                        observables, comparables,dimreds,
+                                        default_omic = NA, default_dimred = NA, meta_to_include = NA,
                                         gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
                                         gene_mapping = FALSE, db_prefix = "test1", db_dir = "data-raw",
                                         chunk_size = 500,  legend_cols = 4,
@@ -100,7 +99,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
   ###################################
   ### Preprocessing and checks
 
-  matdim <- rev(dim(X))
+  X_matdim <- rev(dim(X))
   X_rownm <- rownames(var_)
   X_colnm <- rownames(obs)
   def_omics = X_rownm[1:10]
@@ -121,41 +120,64 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
 
 
   ############
-  dimred_exist <- TRUE  #start assuming its true, but its not if i
-  comp_exist <- TRUE
 
   obsm_exist <-  !is.null(obsm)
   varm_exist <-  !is.null(varm)
   uns_exist <-  !is.null(uns)
-  if (!isTRUE(obsm_exist)){
-    dimred_exist <- FALSE
-  }
 
 
   if (isTRUE(obsm_exist)) {
     obsm_keys <- names(obsm)
     keys <- obsm_keys
     i_v <- 'obsm'
-    # Start making config data.table
     m_conf <- data.table()
-    tmp_conf <- data.table(
-      ID = i_v, UI = i_v, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0, grp = FALSE, comp=FALSE
-    )
-    # Additional preprocessing for categorical metadata
-    n_levels <- length(keys)
-    if (n_levels <= max_levels) {
-      if (n_levels >= 2) {
-        tmp_conf$fID <- paste0(keys, collapse = "|")
-        tmp_conf$fUI <- tmp_conf$fID
-        tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels),collapse = "|" )
-      } else if (n_levels == 1) {
-        tmp_conf$fID <- keys
-        tmp_conf$fUI <- tmp_conf$fID
-        tmp_conf$fCL <- "black"
+    for (key_i in keys) {
+      tmp_conf <- data.table(
+        ID = i_v, UI = i_v, fID = NA, fUI = NA,
+        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+      )
+
+      if (is.data.frame(obsm[[key_i]])) {
+        i_levels <- levels(obsm[[key_i]])
+      } else {
+        i_levels <- 1:dim(obsm[[key_i]])[2] #maybe should check uns?
       }
+      n_levels <- length(i_levels)
+      if (n_levels <= max_levels) {
+        if (n_levels >= 2) {
+          tmp_conf$fID <- paste0(i_levels, collapse = "|")
+          tmp_conf$fUI <- tmp_conf$fID
+          tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels),
+                                 collapse = "|"
+          )
+          tmp_conf$fRow <- ceiling(n_levels / legend_cols)
+          tmp_conf$grp <- TRUE
+        } else if (n_levels == 1) {
+          tmp_conf$fID <- NA
+          tmp_conf$fUI <- tmp_conf$fID
+          tmp_conf$fCL <- "black"
+          tmp_conf$fRow <- 1
+        }
+      }
+      #TODO: test for comp measure...
+      if (!is.na(dimreds$obsm)){
+        if (key_i %in% dimreds$obsm){
+          tmp_conf$dimred <- TRUE
+        }
+      }
+      if (!is.na(observables$obsm[1])){
+        if (key_i %in% comparables$obsm){
+          tmp_conf$observ <- TRUE
+        }
+      }
+      if (!is.na(comparables$obsm[1])){
+        if (key_i %in% comparables$obsm){
+          tmp_conf$comp <- TRUE
+        }
+      }
+      m_conf <- rbindlist(list(m_conf, tmp_conf))
+
     }
-    m_conf <- rbindlist(list(m_conf, tmp_conf))
     obsm_conf <- m_conf
   } else {
     print('no matrix obs')
@@ -170,26 +192,49 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
 
     keys <- varm_keys
     i_v <- 'varm'
-    # Start making config data.table
     m_conf <- data.table()
-    tmp_conf <- data.table(
-      ID = i_v, UI = i_v, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0, grp = FALSE, comp=FALSE
-    )
-    # Additional preprocessing for categorical metadata
-    n_levels <- length(keys)
-    if (n_levels <= max_levels) {
-      if (n_levels >= 2) {
-        tmp_conf$fID <- paste0(keys, collapse = "|")
-        tmp_conf$fUI <- tmp_conf$fID
-        tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels),collapse = "|" )
-      } else if (n_levels == 1) {
-        tmp_conf$fID <- keys
-        tmp_conf$fUI <- tmp_conf$fID
-        tmp_conf$fCL <- "black"
+    for (key_i in keys) {
+      tmp_conf <- data.table(
+        ID = i_v, UI = i_v, fID = NA, fUI = NA,
+        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+      )
+
+      if (is.data.frame(varm[[key_i]])) {
+        i_levels <- levels(varm[[key_i]])
+      } else {
+        i_levels <- 1:dim(varm[[key_i]])[2]
       }
-    }
+      n_levels <- length(i_levels)
+      if (n_levels <= max_levels) {
+        if (n_levels >= 2) {
+          tmp_conf$fID <- paste0(i_levels, collapse = "|")
+          tmp_conf$fUI <- tmp_conf$fID
+          tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels),
+                                 collapse = "|"
+          )
+          tmp_conf$fRow <- ceiling(n_levels / legend_cols)
+          tmp_conf$grp <- TRUE
+        } else if (n_levels == 1) {
+          tmp_conf$fID <- NA
+          tmp_conf$fUI <- tmp_conf$fID
+          tmp_conf$fCL <- "black"
+          tmp_conf$fRow <- 1
+        }
+      }
+        #TODO: test for comp measure...
+      if (!is.na(dimreds$varm[1])){
+        if (key_i %in% dimreds$varm){
+          tmp_conf$dimred <- TRUE
+        }
+      }
+
+      if (!is.na(comparables$varm[1])){
+        if (key_i %in% comparables$varm){
+          tmp_conf$comp <- TRUE
+        }
+      }
     m_conf <- rbindlist(list(m_conf, tmp_conf))
+    }
     varm_conf <- m_conf
   } else {
     print('no matrix vars')
@@ -206,7 +251,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     m_conf <- data.table()
     tmp_conf <- data.table(
       ID = i_v, UI = i_v, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0, grp = FALSE, comp=FALSE
+      fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
     )
     # Additional preprocessing for categorical metadata
     n_levels <- length(keys)
@@ -215,10 +260,12 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
         tmp_conf$fID <- paste0(keys, collapse = "|")
         tmp_conf$fUI <- tmp_conf$fID
         tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels),collapse = "|" )
+        tmp_conf$fRow <- ceiling(n_levels / legend_cols)
       } else if (n_levels == 1) {
         tmp_conf$fID <- keys
         tmp_conf$fUI <- tmp_conf$fID
         tmp_conf$fCL <- "black"
+        tmp_conf$fRow <- 1
       }
 
     }
@@ -244,17 +291,96 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     }
 
 
-  m_conf <- rbindlist(list(obsm_conf, varm_conf,uns_conf))
 
-  # if (layers_exist) {
-  #   # TODO: do sometghing to meta_to_include
-  #   layers_keys <- names(varm)
-  # } else {
-  #   print('no unstructured meta')
-  # }
-  #
-  #### UI Config section
-  ####
+
+  # now add the rest of the observables...
+  if (!is.na(observables$var[1])){
+
+    keys <- observables$var
+
+    i_v <- 'var'
+    m_conf <- data.table()
+    for (key_i in keys) {
+      tmp_conf <- data.table(
+        ID = i_v, UI = i_v, fID = NA, fUI = NA,
+        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+      )
+      tmp_conf$fID <- key_i
+      tmp_conf$fUI <- tmp_conf$fID
+
+      tmp_conf$observ <- TRUE
+      m_conf <- rbindlist(list(m_conf, tmp_conf))
+    }
+    var_conf <- m_conf
+  } else {var_conf <- data.table() }
+
+  # now add the rest of the observables...
+  if (!is.na(observables$obs[1])){
+
+    keys <- observables$obs
+
+    i_v <- 'obs'
+    m_conf <- data.table()
+    for (key_i in keys) {
+      tmp_conf <- data.table(
+        ID = i_v, UI = i_v, fID = NA, fUI = NA,
+        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+      )
+      tmp_conf$fID <- key_i
+      tmp_conf$fUI <- tmp_conf$fID
+
+      tmp_conf$observ <- TRUE
+      m_conf <- rbindlist(list(m_conf, tmp_conf))
+    }
+    obs_conf <- m_conf
+  } else { obs_conf <- data.table() }
+
+  # now add the rest of the observables...
+  if (!is.na(observables$layers[1])){
+
+    keys <- observables$layers
+
+    i_v <- 'layer'
+    m_conf <- data.table()
+    for (key_i in keys) {
+      tmp_conf <- data.table(
+        ID = i_v, UI = i_v, fID = NA, fUI = NA,
+        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+      )
+      tmp_conf$fID <- key_i
+      tmp_conf$fUI <- tmp_conf$fID
+
+      tmp_conf$observ <- TRUE
+      m_conf <- rbindlist(list(m_conf, tmp_conf))
+    }
+    layer_conf <- m_conf
+  } else { layer_conf <- data.table() }
+
+  # now add the rest of the observables...
+  if (!is.na(observables$raw[1])){
+
+    keys <- observables$raw
+
+    i_v <- 'raw'
+    m_conf <- data.table()
+    for (key_i in keys) {
+      tmp_conf <- data.table(
+        ID = i_v, UI = i_v, fID = NA, fUI = NA,
+        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+      )
+      tmp_conf$fID <- key_i
+      tmp_conf$fUI <- tmp_conf$fID
+
+      tmp_conf$observ <- TRUE
+      m_conf <- rbindlist(list(m_conf, tmp_conf))
+    }
+    raw_conf <- m_conf
+  } else { raw_conf <- data.table() }
+
+  m_conf <- rbindlist(list(obsm_conf, varm_conf,uns_conf, obs_conf, var_conf, layer_conf, raw_conf), fill= TRUE)
+  dimred_exist <- any(m_conf$dimred)
+
+
   # Checks and get list of metadata to include
   if (is.na(meta_to_include[1])) {
     meta_to_include <- colnames(obs_meta)
@@ -268,7 +394,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
   for (i_meta in meta_to_include) {
     tmp_conf <- data.table(
       ID = i_meta, UI = i_meta, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0, grp = FALSE, comp=FALSE
+      fCL = NA, fRow = NA, default = 0, grp = FALSE
     )
 
     # Additional preprocessing for categorical metadata
@@ -354,23 +480,22 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
 
 
   # Check default.gene1 / default.gene2 / default.multigene
-  if (is.na(default_multi[1])) {
-    default_multi <- def_omics
-  } else if (all(default_multi %in% gene_mapping)) {
-    default_multi <- default_multi
-  } else if (all(default_multi %in% names(gene_mapping))) {
-    default_multi <- gene_mapping[default_multi]
+  if (is.na(default_omic[1])) {
+    default_omic <- def_omics
+  } else if (all(default_omic %in% gene_mapping)) {
+    default_omic <- default_omic
+  } else if (all(default_omic %in% names(gene_mapping))) {
+    default_omic <- gene_mapping[default_omic]
   } else {
     warning(paste0(
-      "default_multi doesn't exist in gene expression, ",
+      "default_omic doesn't exist in gene expression, ",
       "using defaults..."
     ))
-    default_multi <- def_omics
+    default_omic <- def_omics
   }
 
 
   ##################################
-  ### Actual object generation
   # Make XXXmeta.rds and XXXconf.rds (updated with dimred info)
   ###################################
   ui_conf$dimred <- FALSE
@@ -383,7 +508,6 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     levels(obs_meta[[i]]) <- strsplit(ui_conf[ID == i]$fUI, "\\|")[[1]]
     ui_conf[ID == i]$fID <- ui_conf[ID == i]$fUI
   }
-
 
   if (isTRUE(dimred_exist)) {
     # TODO:  code extracting this from obsm "pca", "tsne", "umap" etc
@@ -442,45 +566,45 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
   om1_omics <- om1_omics[order(nchar(names(om1_omics)))]
 
 
-  ###################################
-  # Make XXXdef.rds (list of defaults)
-  #####################################
-
-  if ( isTRUE(dimred_exist) ) {
-    # wwe have dimred available so make the defaults
-    if (all(default_dimred %in% ui_conf[dimred == TRUE]$ID)) {
-      default_dimred[1] <- ui_conf[ID == default_dimred[1]]$UI
-      default_dimred[2] <- ui_conf[ID == default_dimred[2]]$UI
-    } else if (all(default_dimred %in% ui_conf[dimred == TRUE]$UI)) {
-      default_dimred <- default_dimred # Nothing happens
-    } else {
-      warn <- TRUE
-      if (is.na(default_dimred[1])) {
-        default_dimred <- "umap"
-        warn <- FALSE
-      }
-      # Try to guess... and give a warning
-      guess <- gsub("[0-9]", "", default_dimred[1])
-      if (length(grep(guess, ui_conf[dimred == TRUE]$UI, ignore.case = TRUE)) >= 2) {
-        default_dimred <- ui_conf[dimred == TRUE]$UI[
-          grep(guess, ui_conf[dimred == TRUE]$UI, ignore.case = TRUE)[1:2]
-        ]
-      } else {
-        nDR <- length(ui_conf[dimred == TRUE]$UI)
-        default_dimred <- ui_conf[dimred == TRUE]$UI[(nDR - 1):nDR]
-      }
-      if (warn) {
-        warning(paste0(
-          "default_dimred not found, switching to ",
-          default_dimred[1], " and ", default_dimred[1]
-        ))
-      } # Warn if user-supplied default_dimred is not found
-    }
-
-  } else { #dimred_exist
-    # no dimension reduction (dimred_exist==FALSE) so assert default_dimred is NA
-    default_dimred <- NA
-  }
+  # ###################################
+  # # Make XXXdef.rds (list of defaults)
+  # #####################################
+  #
+  # if ( isTRUE(dimred_exist) ) {
+  #   # wwe have dimred available so make the defaults
+  #   if (all(default_dimred %in% ui_conf[dimred == TRUE]$ID)) {
+  #     default_dimred[1] <- ui_conf[ID == default_dimred[1]]$UI
+  #     default_dimred[2] <- ui_conf[ID == default_dimred[2]]$UI
+  #   } else if (all(default_dimred %in% ui_conf[dimred == TRUE]$UI)) {
+  #     default_dimred <- default_dimred # Nothing happens
+  #   } else {
+  #     warn <- TRUE
+  #     if (is.na(default_dimred[1])) {
+  #       default_dimred <- "umap"
+  #       warn <- FALSE
+  #     }
+  #     # Try to guess... and give a warning
+  #     guess <- gsub("[0-9]", "", default_dimred[1])
+  #     if (length(grep(guess, ui_conf[dimred == TRUE]$UI, ignore.case = TRUE)) >= 2) {
+  #       default_dimred <- ui_conf[dimred == TRUE]$UI[
+  #         grep(guess, ui_conf[dimred == TRUE]$UI, ignore.case = TRUE)[1:2]
+  #       ]
+  #     } else {
+  #       nDR <- length(ui_conf[dimred == TRUE]$UI)
+  #       default_dimred <- ui_conf[dimred == TRUE]$UI[(nDR - 1):nDR]
+  #     }
+  #     if (warn) {
+  #       warning(paste0(
+  #         "default_dimred not found, switching to ",
+  #         default_dimred[1], " and ", default_dimred[1]
+  #       ))
+  #     } # Warn if user-supplied default_dimred is not found
+  #   }
+  #
+  # } else { #dimred_exist
+  #   # no dimension reduction (dimred_exist==FALSE) so assert default_dimred is NA
+  #   default_dimred <- NA
+  # }
 
   # Note that we stored the display name here
   # # make sure that our 1 and 2 are likely to be sensible things to visualize....
@@ -488,9 +612,9 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
   om1_def <- list()
   om1_def$meta1 <- ui_conf[default == 1]$UI # Use display name
   om1_def$meta2 <- ui_conf[default == 2]$UI # Use display name
-  om1_def$omics1 <- default_omics1 # Actual == Display name
-  om1_def$omics2 <- default_omics2 # Actual == Display name
-  om1_def$omics <- default_multi # Actual == Display name
+  om1_def$omics1 <- default_omic[1] # Actual == Display name
+  om1_def$omics2 <- default_omic[2] # Actual == Display name
+  om1_def$omics <- default_omic # Actual == Display name
   om1_def$dimred <- default_dimred # Use display name
   tmp <- nrow(ui_conf[default != 0 & grp == TRUE])
   if (tmp == 2) {
@@ -527,25 +651,6 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
   saveRDS(obs_meta, file = paste0(db_dir, "/", db_prefix, "meta.rds"))
   saveRDS(om1_omics, file = paste0(db_dir, "/", db_prefix, "omics.rds"))
   saveRDS(om1_def, file = paste0(db_dir, "/", db_prefix, "def.rds"))
-
-  if (obsm_exist) {
-    saveRDS(obsm, file = paste0(db_dir, "/", db_prefix, "obsm.rds"))
-  } else {
-    print('no matrix obs to save')
-  }
-
-
-  if (varm_exist) {
-    saveRDS(varm, file = paste0(db_dir, "/", db_prefix, "varm.rds"))
-  } else {
-    print('no matrix vars to save')
-  }
-
-  if (uns_exist) {
-    saveRDS(uns, file = paste0(db_dir, "/", db_prefix, "uns.rds"))
-  } else {
-    print('no unstructured meta to save')
-  }
 
 
   ###   sort X by omics

@@ -29,11 +29,18 @@ class(comp_mat) <- "numeric"  # converts to numbers / NAs
 #ZSCALE the matrix
 zcomp_raw <- scale(comp_mat)
 
+
+
 comp_mat[which(is.na(comp_mat), arr.ind = TRUE)] <- 0
+# FIND columns wiht >2/3 zeros for the "REMOVE ZEROS" MATRIX
+excess_zero_comp <- ( colSums(comp_mat==0) > 2/3*dim(comp_mat)[1] )
+#poor_comp <- which(colSums(comp_mat==0) > 2/3*dim(comp_mat)[1])
+
 # ZSCALE the zeroed matrix
 zcomp <- scale(comp_mat)
-# FIND columns wiht >2/3 zeros for the "REMOVE ZEROS" MATRIX
-poor_comp <- which(colSums(comp_mat==0) > 2/3*dim(comp_mat)[1])
+
+mu_comp <- colMeans(comp_mat)
+var_comp <- apply(comp_mat,2,var)
 
 
 # 2. load concentration data --------------------
@@ -59,16 +66,23 @@ zconc_raw <- scale(conc_mat)
 # zero out NA: is this tricky because its sparse?
 conc_mat[which(is.na(conc_mat), arr.ind = TRUE)] <- 0
 
-poor_conc <- which(colSums(conc_mat==0) > 2/3*dim(conc_mat)[1])
+excess_zero_conc <- ( colSums(conc_mat==0) > 2/3*dim(conc_mat)[1] )
+#poor_conc <- which(colSums(conc_mat==0) > 2/3*dim(conc_mat)[1])
 
 # ZSCALE the matrix
 zconc <- scale(conc_mat)
 
+mu_conc <- colMeans(conc_mat)
+var_conc <- apply(conc_mat,2,var)
+
 # # remove_zeros
 # comp_scl_no0 <- comp[, -ind_rem]
 # conc_scl_no0 <- conc[, -ind_rem]
-all(poor_comp==poor_conc)
+all(excess_zero_conc==excess_zero_comp)
 
+
+obs$var_conc <- apply(conc_mat,1,var)
+obs$mean_conc <-apply(conc_mat,1,mean)
 
 
 # experiment with the scaled (including)
@@ -93,6 +107,13 @@ dim(test_comp)
 
 lipids=colnames(test_comp)
 var_ <- as.data.frame(lipids)
+
+var_$mean_conc <- mu_conc
+var_$var_conc <- var_conc
+var_$mean_comp <- mu_comp
+var_$var_comp <- var_comp
+var_$excess_zero_conc <- excess_zero_conc
+var_$excess_zero_comp <- excess_zero_comp
 
 # choose the "significant" columns via lasso regression (glmnet)
 set.seed(100)
@@ -119,6 +140,7 @@ ind_coef <- which(colnames(test_conc) %in% coef_names)
 uns$conc_lasso_coef <- coef
 
 var_$conc_sig_lasso_coef <- (colnames(test_conc) %in% coef_names)
+
 rownames(var_) <- var_$lipids
 
 
@@ -134,6 +156,28 @@ layers$zconc <- zconc
 
 obsm <- NULL
 varm <- NULL
+
+
+
+
+
+# OBSERVABLES
+#
+observables <- list(obs = c("var_conc","mean_conc"),
+                    var = c("var_conc", "var_comp","mean_conc","mean_comp"),
+                    layers = c("comp", "zcomp","conc","zconc"),
+                    raw = c("X"),
+                    obsm = NA)
+
+
+# COMPARABLES
+comparables <- list(varm = NA,
+                    obsm = NA)
+# Dimred
+dimreds <- list(varm = NA,
+                obsm = NA)
+
+
 
 #######################################################################
 #######################################################################
@@ -176,12 +220,21 @@ db_dir = "data-raw"
 #                                           default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
 #                                           max_levels_ui = 50)
 
+# make_ingest_files_primitive(X,obs,var_,obsm=obsm, varm=varm,
+#                             uns=uns, layers = layers, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+#                             gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
+#                             default_omics1 = NA, default_omics2 = NA, default_multi = NA,
+#                             default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+#                             max_levels_ui = 50)
+
 db_prefix <- "yassene_A_"
-make_ingest_files_primitive(X,obs,var_,obsm=obsm, varm=varm,
-                            uns=uns, layers = layers, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+
+make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
+                            observables, comparables, dimreds,
+                            default_omic = NA, default_dimred = NA, meta_to_include = NA,
+                            gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
                             gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
-                            default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-                            default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+                            chunk_size = 500,  legend_cols = 4,
                             max_levels_ui = 50)
 
 #yassene_A_conf = readRDS(file.path(db_dir,"test1conf.rds"))

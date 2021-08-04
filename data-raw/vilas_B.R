@@ -121,31 +121,35 @@ Convert(out_file_path, dest = "h5ad",overwrite = TRUE)
 ##  Are there arguments to add to make sure that the counts, and "non-scaled" values are written to the file?
 
 require(anndata)
-new_file_path <- gsub(".h5Seurat", ".h5ad", out_file_path)
-ad <- read_h5ad(new_file_path)
+
+
+DATA_DIR <- "ingest"
+DB_NAME <- "Vilas_B"
+
+
+file_name <- file.path(DB_NAME, "new_microglia_data.h5ad")
+file_path <- file.path(DATA_DIR, file_name)
+
+
+ad <- read_h5ad(file_path)
 
 # NOTE:  raw counts are NOT contained in the anndata file... they could be added back with layers from the seurat file *if* needed
 
-# now lets add uns entries for the varm and obsm variables....
-#
-uns <- list(frac_expres=colnames(varm$frac_expres),
-            mean_z = colnames(varm$mean_z),
-            mean_log = colnames(varm$mean_log),
-            mean_z_log = colnames(varm$mean_z_log))
 
 
 
 # OBSERVABLES
 #
 observables <- list(obs = c("nCount_SCT","nFeature_SCT"),
-                    var = names(ad$var)
-                    layers = NULL,
-                    raw = c("X"))
+                    var = names(ad$var),
+                    layers = NA,
+                    raw = c("X"),
+                    obsm = NA)
 
 
 # COMPARABLES
-comparables <- list(varm = names$varm,
-                    obsm = NULL)
+comparables <- list(varm = names(varm),
+                    obsm = NA)
 # Dimred
 dimreds <- list(varm = c('X_pca', 'X_tsne'),
                     obsm = c('PCs'))
@@ -227,20 +231,28 @@ var_ <- ad$var
 varm <- ad$varm
 var_keys <- ad$var_keys()
 uns <- ad$uns
-layers <- ad$obs
+layers <- ad$layers
 rawX <- ad$raw$X
 rawvar <- ad$raw$var
 
 
 db_dir = "data-raw"
 db_prefix <- "Vilas_B_"
-make_ingest_file_primitives(X,obs,var_,obsm=obsm, varm=varm,
-                            uns=uns, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
-                            default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-                            default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
+                            observables, comparables, dimreds,
+                            default_omic = NA, default_dimred = NA, meta_to_include = NA,
+                            gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = db_dir,
+                            chunk_size = 500,  legend_cols = 4,
                             max_levels_ui = 50)
-
+#
+# make_ingest_file_primitives(X,obs,var_,obsm=obsm, varm=varm,
+#                              uns=uns, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+#                              gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
+#                                         default_omics1 = NA, default_omics2 = NA, default_multi = NA,
+#                                         default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+#                                         max_levels_ui = 50)
+#
 #vilas_B_conf = readRDS(file.path(db_dir,"test1conf.rds"))
 vilas_B_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
 
@@ -320,18 +332,19 @@ ad
 #
 ad$write_h5ad(filename="data-raw/vilas_B.h5ad")
 
+# does not have the "RAW" counts included  195MB
 
 
 
 
-
-new_file_path <- gsub(".h5Seurat", ".h5ad", out_file_path)
+ad$new_file_path <- gsub(".h5Seurat", ".h5ad", out_file_path)
 ad_og <- read_h5ad(new_file_path)
 
 ad_og
 
 ad_og$write_h5ad(filename="data-raw/vilas_Bog.h5ad")
 
+# HAS the "RAW" counts included  570MB
 
 # source("data-raw/domenico_A.R",echo = FALSE)
 
