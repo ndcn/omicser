@@ -5,7 +5,8 @@ dataset_names <- c(
   "Domenico Tsc Long" = "DomenicoA",
   "Vilas Transcript" = "VilasA",
   "Vilas Microglia" = "VilasB",
-  "Yassene Lipidomics" ="YasseneA"
+  "Yassene Lipidomics" ="YasseneA",
+  "Oscar Microglia" ="OscarA"
 )
 
 dataset_type <- c(
@@ -21,7 +22,7 @@ observation_type <- c(
   "Comparitive Quantity" = "comp",
   "Grouping" = "group"
 )
-require(anndata)
+#require(anndata)
 
 #' ingestor UI Function
 #'
@@ -119,25 +120,25 @@ mod_ingestor_ui <- function(id) {
     #   #   shinyjs::disabled( checkboxInput(ns("CB_obs_group"), "grouping var?",value=FALSE))
     #   #   )
     # ),
-    fluidRow(
-      col_4(
-        shinyjs::disabled(
-          selectizeInput(ns("SI_obs_raw"), "Raw", "",
-            multiple = FALSE, options = list(placeholder = "")
-          )
-        )
-      ),
-      col_4(
-        shinyjs::disabled(
-          selectizeInput(ns("SI_obs_comp"), "comparative", "",
-                         multiple = FALSE, options = list(placeholder = "")
-          )
-        ))
-      ),
+    # fluidRow(
+    #   col_4(
+    #     shinyjs::disabled(
+    #       selectizeInput(ns("SI_obs_raw"), "Raw", "",
+    #         multiple = FALSE, options = list(placeholder = "")
+    #       )
+    #     )
+    #   ),
+    #   col_4(
+    #     shinyjs::disabled(
+    #       selectizeInput(ns("SI_obs_comp"), "comparative", "",
+    #                      multiple = FALSE, options = list(placeholder = "")
+    #       )
+    #     ))
+    #   ),
     fluidRow(
       col_3(
         shinyjs::disabled(
-          actionButton(ns("AB_ingest_load"), label = "(Re) load !")
+          actionButton(ns("AB_ingest_load"), label = "Load Database")
         )
       )
     )
@@ -159,13 +160,10 @@ mod_ingestor_server <- function(id) {
     ############################ +
     to_return <- reactiveValues(
       # these values hold the database contents (only reactive because we can choose)
-
       database_name = NULL,
       omics_type = NULL, # Transcript-omics, Prote-omics, Lipid-omics, Metabol-omics, misc-
       #  Everything is packed into an anndata object
       ad = NULL,
-
-
       # these reflect the choices made in the ingestor
       # omics key feature i.e. genes, proteins, lipids
       #  primary & auxilarry
@@ -173,7 +171,7 @@ mod_ingestor_server <- function(id) {
       aux_features = NULL,
       # observables:  experiemntal factor... i.e. patient/control, old/young,
       #   plust aucuilarry observations. e.g. QC- batch, sex, etc  or inferred: cluster, label, cell-type
-      exp_factor = NULL,
+      #exp_factor = NULL,
       aux_group = NULL,
       aux_comp = NULL,
       aux_raw = NULL,
@@ -192,7 +190,6 @@ mod_ingestor_server <- function(id) {
     #   if (!is.null(input$SI_dataset)) {
     # load the data every time this changes...
     observeEvent(input$SI_dataset, {
-
       if (!is.null(input$SI_dataset)) { # unnesscasary defensive?
 
         ds_name <- (input$SI_dataset)
@@ -223,7 +220,7 @@ mod_ingestor_server <- function(id) {
             omicconf <- omicser::vilas_B_conf
             omicdef <- omicser::vilas_B_def
             omics <- omicser::vilas_B_omics
-            omicsomicmeta <- omicser::vilas_B_meta
+            omicmeta <- omicser::vilas_B_meta
 
             to_return$database_name <- ds_name
             to_return$omics_type <- "transcript"
@@ -275,6 +272,25 @@ mod_ingestor_server <- function(id) {
             to_return$config <- omicconf
             to_return$default <- omicdef
 
+          } else if (ds_name == "OscarA") { # "Oscar Microglia"
+
+            ad <- anndata::read_h5ad(filename="data-raw/oscar_A.h5ad")
+
+            omicconf <- omicser::oscar_A_conf
+            omicdef <- omicser::oscar_A_def
+            omics <- omicser::oscar_A_omics
+            omicmeta <- omicser::oscar_A_meta
+
+            to_return$database_name <- ds_name
+            to_return$omics_type <- "transcript"
+
+            to_return$ad <- ad
+            to_return$omics_feature <- omics
+            to_return$meta <- omicmeta  # this might be too redundant
+
+
+            to_return$config <- omicconf
+            to_return$default <- omicdef
 
           # } else if (ds_name == "OscarB") { # Vilas transc
           #
@@ -298,34 +314,27 @@ mod_ingestor_server <- function(id) {
 
     observe({
       if ( !is.null(to_return$database_name) ) {
-        # var_choices <- isolate(to_return$ad$var_keys())
-        # var_choices <- var_choices[1]  # short circuit for now...
-        # updateSelectizeInput(session, "SI_var_name", choices = var_choices, selected = var_choices[1], server = TRUE)
-        shinyjs::enable("SI_obs_raw")
-        #shinyjs::enable("CB_aux_vars")
+        shinyjs::enable("AB_ingest_load")
 
-        #shinyjs::enable("CB_obs_raw")
-        #shinyjs::enable("CB_obs_comp")
-        #shinyjs::enable("CB_obs_group")
+        # shinyjs::enable("SI_obs_raw")
+        # shinyjs::enable("SI_obs_comp")
 
       } else {
-        # disable check boxes
-        shinyjs::disable("SI_obs_raw")
-        #shinyjs::disable("CB_aux_vars")
-        # shinyjs::disable("CB_obs_raw")
-        # shinyjs::disable("CB_obs_comp")
-        #shinyjs::disable("CB_obs_group")
-
+        # shinyjs::disable("SI_obs_raw")
+        # shinyjs::disable("SI_obs_comp")
+        print(' SI_obs_exp == <empty> ')
+        shinyjs::disable("AB_ingest_load")
         print(" no database loaded... try Vilas Trans or Domenico or Yassene.")
       }
     })
+
+
     output$ui_obs_exp <- renderPrint({
       obs_choices <- isolate(to_return$ad$obs_keys())
-
       if (is.null(obs_choices)) {
         print("(obs_exp) no datbase loaded")
       } else {
-        print(paste0("observ exp: ", paste(obs_choices, collapse = ",")) )
+        print(paste0("observ exp: ", paste(obs_choices[1:min(10,length(obs_choices))], collapse = ","),"... ") )
       }
     })
 
@@ -334,46 +343,11 @@ mod_ingestor_server <- function(id) {
         print("no datbase loaded")
       } else {
         omics <- isolate(to_return$omics_feature)
-        print(paste0("Current database is: ", paste( names(omics)[1:10], collapse = ",")) )
+        print(paste0("Current database omics: ", paste( names(omics)[1:10], collapse = ",")) )
       }
     })
 
-    # # Update selectInput according to dataset
-    # observe({
-    #   req(omic_rv$config)
-    #
-    #   if (input$AB_subset_tog) {
-    #     print("enabled subset ")
-    #     shinyjs::enable("SI_subset")
-    #     updateSelectizeInput(session, "SI_subset","Obs information to subset:",
-    #                          choices = omic_rv$config$meta[grp == TRUE]$UI,
-    #                          selected = omic_rv$default$grp1,  server = TRUE)
-    #
-    #     shinyjs::enable("CB_sub_all")
-    #     shinyjs::enable("CB_sub_none")
-    #   } else {
-    #     print("disabled subset ")
-    #     shinyjs::disable("SI_subset")
-    #     shinyjs::disable("CB_sub_all")
-    #     shinyjs::disable("CB_sub_none")
-    #   }
-    # })
-#
-#     output$ui_subset <- renderUI({
-#       sub = strsplit(omic_rv$config$meta[UI == input$SI_subset]$fID, "\\|")[[1]]
-#       checkboxGroupInput("CB_sub_inner1", "Select which groups to show", inline = TRUE,
-#                          choices = sub, selected = sub)
-#     })
-#     observeEvent(input$CB_sub_all, {
-#       sub = strsplit(omic_rv$config$meta[UI == input$SI_subset]$fID, "\\|")[[1]]
-#       updateCheckboxGroupInput(session, inputId = "CB_sub_inner1", label = "Select which groups to show",
-#                                choices = sub, selected = NULL, inline = TRUE) # WARNING.  make sure subset is null is checked (length(0?))
-#     })
-#     observeEvent(input$CB_sub_none, {
-#       sub = strsplit(omic_rv$config$meta[UI == input$SI_subset]$fID, "\\|")[[1]]
-#       updateCheckboxGroupInput(session, inputId = "CB_sub_inner1", label = "Select which groups to show",
-#                                choices = sub, selected = sub, inline = TRUE)
-#     })
+
 
     # keep these up to date for side_select..
     observe({
@@ -402,66 +376,74 @@ mod_ingestor_server <- function(id) {
     #   }
     # })
 
-    observe({
-      req(to_return$config)
-      raw_choices = to_return$config$mat[observ == TRUE & ID!="raw"]$fID
-      if (length(raw_choices)>0) {
-        updateSelectizeInput(session, "SI_obs_raw","raw measures:",
-                                                    choices = raw_choices,
-                                                    selected = raw_choices[1],  server = TRUE)
-      } else {
-        print("disabled  raw observations ")
-        shinyjs::disable("SI_obs_raw")
-        # change back to placeholder??
-        updateSelectizeInput(session, "SI_obs_raw", "Raw ", "", options = list(placeholder = ""))
-      }
+    # observe({
+    #   req(to_return$config)
+    #   raw_choices = to_return$config$mat[observ == TRUE & ID!="raw"]$fIDloc
+    #   #TODO:  make the choices *named* paste0(to_return$config$fID, fUI)
+    #   # dat_source = to_return$config$mat[fID == rv_in$aux_raw]$ID
+    #   # paste(raw_choices, dat_sourcce)
+    #
+    #   if (length(raw_choices)>0) {
+    #     freezeReactiveValue(input, "SI_obs_raw")
+    #     updateSelectizeInput(session, "SI_obs_raw","raw measures:",
+    #                                                 choices = raw_choices,
+    #                                                 selected = raw_choices[1],  server = TRUE)
+    #   } else {
+    #     print("disabled  raw observations ")
+    #     shinyjs::disable("SI_obs_raw")
+    #     # change back to placeholder??
+    #     freezeReactiveValue(input, "SI_obs_raw")
+    #     updateSelectizeInput(session, "SI_obs_raw", "Raw ", "", options = list(placeholder = ""))
+    #   }
+    #
+    # })
 
-    })
+    # observe({
+    #
+    #   req(to_return$config)
+    #   comp_choices = to_return$config$mat[comp == TRUE ]$fIDloc
+    #   if (length(comp_choices)>0) {
+    #     freezeReactiveValue(input, "SI_obs_comp")
+    #     updateSelectizeInput(session, "SI_obs_comp","comparatives:",
+    #                          choices = comp_choices,
+    #                          selected = comp_choices[1],  server = TRUE)
+    #   } else {
+    #     print("disabled  comparative observations ")
+    #     shinyjs::disable("SI_obs_comp")
+    #     freezeReactiveValue(input, "SI_obs_comp")
+    #     updateSelectizeInput(session, "SI_obs_comp", "comparative", "",
+    #                     options = list(placeholder = "") )
+    #   }
+    #
+    #
+    # })
 
-    observe({
-      req(to_return$config)
-
-      comp_choices = to_return$config$mat[comp == TRUE ]$fID
-      if (length(comp_choices)>0) {
-        updateSelectizeInput(session, "SI_obs_comp","comparatives:",
-                             choices = comp_choices,
-                             selected = comp_choices[1],  server = TRUE)
-      } else {
-        print("disabled  comparative observations ")
-        shinyjs::disable("SI_obs_comp")
-        updateSelectizeInput(session, "SI_obs_comp", "comparative", "",
-                        options = list(placeholder = "") )
-      }
 
 
-    })
-
-
-
-    # Update selectInput SI_obs_exp
-    observe({
-      req(input$SI_obs_raw)
-      if (input$SI_obs_raw != "") { #|| ( !is.na(input$SI_var0) )
-        shinyjs::enable("AB_ingest_load")
-      } else {
-        print(' SI_obs_exp == <empty> ')
-        shinyjs::disable("AB_ingest_load")
-      }
-    })
+    # # Update selectInput SI_obs_exp
+    # observe({
+    #   req(input$SI_obs_raw)
+    #   if (input$SI_obs_raw != "") { #|| ( !is.na(input$SI_var0) )
+    #     shinyjs::enable("AB_ingest_load")
+    #   } else {
+    #     print(' SI_obs_exp == <empty> ')
+    #     shinyjs::disable("AB_ingest_load")
+    #   }
+    # })
 
 
 
     # (Re)load button :: send the reactive object back to the app...
     observeEvent(input$AB_ingest_load, {
+      to_return$trigger <- to_return$trigger + 1
 
-      to_return$exp_factor <- input$SI_obs_exp
       # if (input$CB_aux_vars) {
       #   to_return$aux_features <- input$SI_aux_vars
       # } else {
       #   to_return$aux_features <- NULL
       # }
-      to_return$aux_raw <- input$SI_obs_raw
-      to_return$aux_comp <- input$SI_obs_comp
+      # to_return$aux_raw <- input$SI_obs_raw
+      # to_return$aux_comp <- input$SI_obs_comp
 
       # if (input$CB_obs_raw) {
       #   to_return$aux_raw <- input$SI_obs_raw

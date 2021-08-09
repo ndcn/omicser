@@ -41,12 +41,12 @@ mod_playground_ui <- function(id){
       ),
       # ingest tab
       tabPanel(
-        title = "Values", value = 'raw',
+        title = "Quantities", value = 'raw',
         mod_pg_vis_raw_ui(id=ns("pg_vis_raw_ui_1"))
       ),
       # table tab
       tabPanel(
-        title = "Comparative",value = 'comp',
+        title = "Comparatisons",value = 'comp',
         mod_pg_vis_comp_ui(id=ns("pg_vis_comp_ui_1"))
 
       )
@@ -59,13 +59,13 @@ mod_playground_ui <- function(id){
 #' playground Server Functions
 #'
 #' @noRd
-mod_playground_server <- function(id){
+mod_playground_server <- function(id ,rv_in, p) {
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    mod_pg_table_server("pg_table_ui_2")
-    mod_pg_vis_comp_server("pg_vis_comp_ui_1")
-    mod_pg_vis_comp_ui("pg_vis_comp_ui_1")
+    mod_pg_table_server("pg_table_ui_2",rv_in, p)
+    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_in, p)
+    mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_in, p)
 
 
   })

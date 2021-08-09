@@ -41,18 +41,20 @@ mod_export_server <- function(id, rv_in, p){
 
 
     #mod_vis_server("vis_ui_1",db=db,p=p)
+
     # exp_fact = NULL,
     # aux_fact = NULL,
     # omics_names = NULL,
     # omics_list = NULL,
-    # plot_type = NULL
-    # )
+    # plot_type = NULL,
+    # comp_dat = NULL,
+    # obs_dat = NULL
 
 
     #output$text1     <- renderText({ vecFun()})
-    output$var0      <- renderText({ paste0(isolate(p[["exp_fact"]]),collapse = ", ")  })
+    output$var0      <- renderText({ paste0(isolate(p[["comp_dat"]]),collapse = ", ")  })
 
-    output$var1      <- renderText({ paste0(isolate(p[["aux_fact"]]),collapse = ", ")   })
+    output$var1      <- renderText({ paste0(isolate(p[["obs_dat"]]),collapse = ", ")   })
 
     output$omics_list <- renderText({ paste0(isolate(p$omics_list$value),collapse = ", ")  })
 
@@ -61,8 +63,8 @@ mod_export_server <- function(id, rv_in, p){
 
 
 
-    output$text1<- renderPrint({ list((p$exp_fact),
-                                      (p$aux_fact),
+    output$text1<- renderPrint({ list((p$comp_dat),
+                                      (p$obs_dat),
                                       (p$omics_names),
                                       (p$omics_list$value),
                                       (p$omics_list$viz_now),

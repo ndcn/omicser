@@ -101,7 +101,7 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     # mod_playground_server("playground_ui_1", rvs = rv, p = vis_params  )
-    mod_playground_server("playground_ui_1")
+    mod_playground_server("playground_ui_1", rv_in = rv, p = p_vis)
   }
 
   ############################ +

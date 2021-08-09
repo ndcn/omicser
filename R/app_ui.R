@@ -28,7 +28,7 @@ app_ui <- function(request) {
         div(
           id = "cond_sidebar",
           sidebarPanel(
-            width = 4,
+            width = 5,
             conditionalPanel(
               ' input.top_tab === "welcome" || input.top_tab === "add_info" || input.top_tab === "etc" ',
               mod_side_info_ui("side_info_ui_1")
@@ -40,7 +40,7 @@ app_ui <- function(request) {
           ) # sidebarpanel
         ), # div
         mainPanel(
-          width = 8,
+          width = 7,
           tabsetPanel(
             type = "tabs", # pills look good
             id = "top_tab",

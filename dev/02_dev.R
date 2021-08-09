@@ -20,7 +20,10 @@ usethis::use_package( "thinkr" )
 usethis::use_package("shiny")
 
 #usethis::use_package("shinyWidgets")
+usethis::use_package("ggplot2")
+usethis::use_package("gridExtra")
 
+usethis::use_package("ggdendro")
 usethis::use_package("DT")
 usethis::use_package("dplyr")
 
