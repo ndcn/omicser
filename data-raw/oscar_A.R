@@ -1,71 +1,83 @@
-#######################################################################
-#######################################################################
-##
-##  Vilas "A" dataset.
-##  - info??
-##
-#######################################################################
-#######################################################################
+## code to prepare `oscar_microglia` dataset goes here
 
+# not actually a good idea... better to just keep the annotation separate. as in ANNDATA format
 require(Matrix)
 
-# ingest script -----------------------
-DATA_DIR <- "/Users/ahenrie/Projects/NDCN_dev/omicser/ingest"
+
+# better script -------------------------
+
+DATA_DIR <- "/Users/ahenrie/Projects/NDCN_dev/dbrowse/ingest"
 DATA_DIR <- "ingest"
-DB_NAME = "Vilas_A"
+#basedir <- "/Users/ahenrie/Projects/NDCN_dev/Oscar"
+DB_NAME = "Oscar_microglia1"
 
-# 1. load count data --------------------
-csv_name <- "41467_2020_19737_MOESM15_ESM.csv"
+root <- file.path(DB_NAME,"microglia_")
+file_path <- file.path(DATA_DIR,paste0(root,"matrix.mtx"))
 
-file_name <- file.path(DB_NAME,csv_name)
-file_path <- file.path(DATA_DIR,file_name)
+counts <- Matrix::readMM(file_path) #DGTMATRIX .34GB
 
-#require(readr)
-#count_table <- read_csv(file_path)  #readr returns a tibble
+# META-DATA
+#filenm <- "microglia_meta.csv"
+file_path <- file.path(DATA_DIR,paste0(root,"meta.csv"))
 
-count_table <- read.csv(file=file_path, header=TRUE, sep=",", row.names=1)
-#features <- data.frame("genes" = row.names(count_table))
-features <- row.names(count_table)
+#basedir <- "/Users/ahenrie/Projects/NDCN_dev/dbrowse/ingest/Oscar_microglia1/microglia_matrix.mtx"
+meta_data <- read.csv(file_path, sep = ",", header = TRUE, stringsAsFactors = FALSE)
+# meta_data2 <- vroom::vroom(file_path)
 
+# FEATURES
+#filenm <- "microglia_features.tsv"
+file_path <- file.path(DATA_DIR,paste0(root,"features.tsv"))
+features <- read.csv(file_path, sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+# features2 <- vroom::vroom(file_path,delim = "\t")
+colnames(features) <- "genes"
 
-countm <- as.matrix(count_table)
-countm <- as(countm, "dgTMatrix")
-#counts <- t(countm)  #transpose so samples are rows (as in ANNDATA format)
+# BARCODES
+#filenm <- "microglia_barcodes.tsv"
+file_path <- file.path(DATA_DIR,paste0(root,"barcodes.tsv"))
+barcodes <- read.csv(file_path, sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+# barcodes2 <- vroom::vroom(file_path,delim = "\t")
 
-# data <- read.csv(file=file_path, header=TRUE, sep=",", row.names=1)
-# data1 <- as.matrix(data) #2.2GB
-# data2 <- as(data1, "dgeMatrix") #4.4GB
-# data3 <- as(data1, "dgTMatrix") #0.29GB
+# assert that meta_data$barcode == barcodes
+all(meta_data$barcode == barcodes)
 
+meta_data$sample_id <- paste0("sample_",1:length(meta_data$barcode))
 
-# 2. load annotation data --------------------
-annnot_csv <- "41467_2020_19737_MOESM17_ESM.csv"
-
-#file_name <- file.path(DB_NAME,annnot_csv)
-file_path <- file.path(DATA_DIR,DB_NAME,annnot_csv)
-
-#annots <- read_csv(file_path)
-obs_annots <- read.csv(file=file_path, header=TRUE, sep=",", row.names=NULL)
-#obs_annots$obs_names <- obs$sample_id
-obs_annots$cluster_name = paste0("Cluster_",obs_annots$cluster_label)
-obs_annots$cluster_id = obs_annots$cluster_label
-row.names(obs_annots) <- obs_annots$sample_id
-
-# pack into X, obs, var, meta?
-#
-X <- t(countm)[obs_annots$sample_id,features]
-Vilas_A_X <- X
-Vilas_A_obs <- obs_annots
-Vilas_A_var <- data.frame(features,row.names = features)
-
-# var_names <- row.names(var)
-# obs_names <- row.names(obs)
+# # Reload meta-data as factors for sumplicity
+# meta_data$PA_DB_UID <- factor(meta_data$PA_DB_UID)
+# meta_data$Sample_ID <- factor(meta_data$Sample_ID)
+# meta_data$Gender <- factor(meta_data$Gender)
+# meta_data$Status <- factor(meta_data$Status)
+# meta_data$nAPOE <- factor(meta_data$nAPOE)
+# meta_data$AOD <- factor(meta_data$AOD)
+# meta_data$FBW <- factor(meta_data$FBW)
+# meta_data$Cluster <- factor(meta_data$Cluster)
 
 
-#usethis::use_data(Vilas_A_X,Vilas_A_obs,Vilas_A_var,overwrite = TRUE)
-#usethis::use_data(Vilas_A_var,overwrite = TRUE)
+dimnames(counts) <- list(
+  features$genes,  # row names
+  meta_data$sample_id # column names / or barcodes$V1
+)
+
+X <- t(counts)  #transpose so rows and colums correspond to anndata expectation
+obs <- meta_data
+var_ <- features
 
 
+# counts2 <- as(counts, "dgCMatrix") #0.257FGB
+# counts3 <- as(counts, "dgeMatrix") #2.3GB
+
+#save(data_matrix,file=out_file_path)
+
+
+oscar_A_X <- X
+oscar_A_obs <- obs
+
+# usethis::use_data(oscar_A_X,oscar_A_obs,oscar_A_var)
+
+
+
+X <- oscar_A_X
+obs <- oscar_A_obs
 
 
 ##################################################v
@@ -82,16 +94,14 @@ Vilas_A_var <- data.frame(features,row.names = features)
 ##################################################
 ##################################################
 ##################################################
-
-
 # 3. calculate fractional expression and differential levels in groups/clusters --------------------
-X <- Vilas_A_X
-obs <- Vilas_A_obs
-var_ <- Vilas_A_var
 
+##################
+##################
 # calculate the fractional expression for each gene within each group.
 
-all_clusters <- unique(obs_annots$cluster_name[order(obs_annots$cluster_label)])
+meta_data$cluster_label <- paste0("Cluster_", meta_data$Cluster)
+all_clusters <- unique(meta_data$cluster_label[order(meta_data$Cluster)])
 
 frac_exp_mat <- matrix(0, nrow = ncol(X), ncol = length(all_clusters) )
 
@@ -135,6 +145,8 @@ var_ <- cbind(var_,fracexp=fracexp,
               mulogexp=mu_log,
               sdlogexp=sd_log)
 
+oscar_A_var <- var_
+
 
 
 mu_matr <- rowMeans(X)
@@ -144,20 +156,19 @@ mu_logr <- rowMeans(log_X)
 sd_logr <- apply(log_X,1,sd)
 fracexpr <- rowMeans(X>0)
 obs <- cbind(obs,fracexp=fracexpr,
-             meanexp=mu_matr,
-             sdexp=sd_matr,
-             mulogexp=mu_logr,
-             sdlogexp=sd_logr)
+              meanexp=mu_matr,
+              sdexp=sd_matr,
+              mulogexp=mu_logr,
+              sdlogexp=sd_logr)
 
-Vilas_A_obs <- obs
-Vilas_A_var <- var_
-
+oscar_A_obs <- obs
 
 # i should just be able to normalize these....
 # expressed <- (X > 0)
 
 for (clust_i in all_clusters) {
-  subs <- obs_annots$sample_id[ obs_annots$cluster_name == clust_i ]
+  subs <- meta_data$sample_id[ meta_data$cluster_label == clust_i ]
+  #subs <- meta_data$barcode[ meta_data$Cluster == clust_i ]
 
   # is colmeans more performant?
   frac_exp_mat[, clust_i] <- colMeans(X[subs,]>0)
@@ -178,17 +189,6 @@ mean_log_mat <- cbind(mean_log_mat,mu=mu_log,sd=sd_log)
 
 mean_z_log_mat <- cbind(mean_z_log_mat,mu=mu_log,sd=sd_log)
 
-
-# # now stack the summary frac_mat, mean_z_mat, mean_log_mat,mean_z_log_mat into vars
-# colnames(frac_mat) <- paste0("frac_exp_",all_clusters)
-# colnames(mean_z_mat) <- paste0("mean_z_",all_clusters)
-# colnames(mean_log_mat) <- paste0("mean_log10mu_",all_clusters)
-# colnames(mean_z_log_mat) <- paste0("mean_zlog10_", all_clusters)
-#
-# new_vars <- cbind(frac_mat,mean_z_mat,mean_log_mat,mean_z_log_mat)
-#
-#
-
 ######3   these go in var... probably don't need varm... but they would be
 ######
 #######varM for "matrix"... put things like dimreduction and 'PCs'
@@ -202,63 +202,39 @@ varm = list(
 obsm = NULL
 layers <- NULL
 
-Vilas_A_obsm <- obsm
-Vilas_A_varm <- varm
+oscar_A_obsm <- obsm
+oscar_A_varm <- varm
 
 uns <- list(frac_expres=colnames(varm$frac_expres),
             mean_z = colnames(varm$mean_z),
             mean_log = colnames(varm$mean_log),
             mean_z_log = colnames(varm$mean_z_log))
 
-Vilas_A_uns <- uns
-Vilas_A_var <- var_
-Vilas_A_layers <- layers
-#usethis::use_data(Vilas_A_obsm,Vilas_A_varm,Vilas_A_uns,overwrite = TRUE)
+oscar_A_uns <- uns
+oscar_A_var <- var_
+oscar_A_layers <- layers
 
-db_prefix = "41467_2020_19737_intermediate"
-db_dir = "ingest/Vilas_A"
-
-###   sort X by omics
-saveRDS(X, file = paste0(db_dir, "/", db_prefix, "X.rds"))
-
-saveRDS(obs, file = paste0(db_dir, "/", db_prefix, "obs.rds"))
-
-saveRDS(var_, file = paste0(db_dir, "/", db_prefix, "var.rds"))
-saveRDS(layers, file = paste0(db_dir, "/", db_prefix, "layers.rds"))
-saveRDS(obsm, file = paste0(db_dir, "/", db_prefix, "obsm.rds"))
-saveRDS(varm, file = paste0(db_dir, "/", db_prefix, "varm.rds"))
-saveRDS(uns, file = paste0(db_dir, "/", db_prefix, "uns.rds"))
+##################
+##################
+##################
+##################
+##################
+##################
+##################
+##################
+##################
+##################
+##################
 
 
+#usethis::use_data(oscar_A_obsm,oscar_A_varm,overwrite = TRUE)
 
-#############################################################
-#############################################################
-#############################################################
-#
-#
-#
-#
-#
-#############################################################
-#############################################################
-#############################################################
-
-X = readRDS( paste0(db_dir,"/",db_prefix,"X.rds") )
-obs = readRDS( paste0(db_dir,"/",db_prefix,"obs.rds") )
-obsm = readRDS( paste0(db_dir,"/",db_prefix,"obsm.rds") )
-var_ = readRDS( paste0(db_dir,"/",db_prefix,"var.rds") )
-varm = readRDS( paste0(db_dir,"/",db_prefix,"varm.rds") )
-uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
-layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
 
 # OBSERVABLES
 #
-
 marginal_measures <- c("fracexp", "meanexp", "sdexp", "mulogexp", "sdlogexp")
-
-
 observables <- list(obs = marginal_measures,
-                    var = names(var_)[-1],
+                    var = marginal_measures,
                     layers = NA,
                     raw = c("X"),
                     obsm = NA) # this might not even be possible
@@ -288,12 +264,12 @@ dimreds <- list(varm = NA,
 #######################################################################
 #######################################################################
 
-# X <- omicser::Vilas_A_X
-# obs <- omicser::Vilas_A_obs
-# var_ <- omicser::Vilas_A_var
-# obsm <- omicser::Vilas_A_obsm
-# varm <- omicser::Vilas_A_varm
-# uns <- omicser::Vilas_A_uns
+# X <- omicser::oscar_A_X
+# obs <- omicser::oscar_A_obs
+# var_ <- omicser::oscar_A_var
+# obsm <- omicser::oscar_A_obsm
+# varm <- omicser::oscar_A_varm
+# uns <- omicser::oscar_A_uns
 
 
 #TODO:  pack into a list or anndata structure for simplicity...
@@ -309,7 +285,7 @@ helper_function<-('data-raw/make_ingest_file_primitives.R')
 source(helper_function)
 
 db_dir = "data-raw"
-db_prefix <- "Vilas_A_"
+db_prefix <- "Oscar_A_"
 
 make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
                             observables, comparables, dimreds,
@@ -326,30 +302,30 @@ make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
 #                                         default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
 #                                         max_levels_ui = 50)
 
-#vilas_A_conf = readRDS(file.path(db_dir,"test1conf.rds"))
-vilas_A_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
+#oscar_A_conf = readRDS(file.path(db_dir,"test1conf.rds"))
+oscar_A_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
 
 # defaults:  list of meta1, meta2, omics1, omics2, omics (list of 10). dimred, grp1, grp2
-vilas_A_def = readRDS( paste0(db_dir,"/",db_prefix,"def.rds") )
+oscar_A_def = readRDS( paste0(db_dir,"/",db_prefix,"def.rds") )
 
 # list of vars )e/g/ 3000 genes with counts?
-vilas_A_omics = readRDS( paste0(db_dir,"/",db_prefix,"omics.rds") )
+oscar_A_omics = readRDS( paste0(db_dir,"/",db_prefix,"omics.rds") )
 # use this sorted one to resort everything before packing into anndata
 
-vilas_A_meta = readRDS( paste0(db_dir,"/",db_prefix,"meta.rds") )
-vilas_A_X = readRDS( paste0(db_dir,"/",db_prefix,"X.rds") )
-vilas_A_obs = readRDS( paste0(db_dir,"/",db_prefix,"obs.rds") )
-vilas_A_obsm = readRDS( paste0(db_dir,"/",db_prefix,"obsm.rds") )
-vilas_A_var = readRDS( paste0(db_dir,"/",db_prefix,"var.rds") )
-vilas_A_varm = readRDS( paste0(db_dir,"/",db_prefix,"varm.rds") )
-vilas_A_uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
-vilas_A_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
+oscar_A_meta = readRDS( paste0(db_dir,"/",db_prefix,"meta.rds") )
+oscar_A_X = readRDS( paste0(db_dir,"/",db_prefix,"X.rds") )
+oscar_A_obs = readRDS( paste0(db_dir,"/",db_prefix,"obs.rds") )
+oscar_A_obsm = readRDS( paste0(db_dir,"/",db_prefix,"obsm.rds") )
+oscar_A_var = readRDS( paste0(db_dir,"/",db_prefix,"var.rds") )
+oscar_A_varm = readRDS( paste0(db_dir,"/",db_prefix,"varm.rds") )
+oscar_A_uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
+oscar_A_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
 
 
 
-# usethis::use_data(vilas_A_X,vilas_A_var,vilas_A_obs, overwrite = TRUE)
-# usethis::use_data(vilas_A_obsm,vilas_A_varm,vilas_A_layers,vilas_A_uns, overwrite = TRUE)
-usethis::use_data(vilas_A_conf, vilas_A_def, vilas_A_omics, vilas_A_meta, overwrite = TRUE)
+# usethis::use_data(oscar_A_X,oscar_A_var,oscar_A_obs, overwrite = TRUE)
+# usethis::use_data(oscar_A_obsm,oscar_A_varm,oscar_A_layers,oscar_A_uns, overwrite = TRUE)
+usethis::use_data(oscar_A_conf, oscar_A_def, oscar_A_omics, oscar_A_meta, overwrite = TRUE)
 
 #######################################################################
 #######################################################################
@@ -373,23 +349,23 @@ usethis::use_data(vilas_A_conf, vilas_A_def, vilas_A_omics, vilas_A_meta, overwr
 library(anndata)
 
 #
-# X <- omicser::vilas_A_X
-# obs <- omicser::vilas_A_obs
-# var_ <- omicser::vilas_A_var
-# obsm <- omicser::vilas_A_obsm
-# varm <- omicser::vilas_A_varm
-# uns <- omicser::vilas_A_varm
-# layers <- omicser::vilas_A_layers
+# X <- omicser::oscar_A_X
+# obs <- omicser::oscar_A_obs
+# var_ <- omicser::oscar_A_var
+# obsm <- omicser::oscar_A_obsm
+# varm <- omicser::oscar_A_varm
+# uns <- omicser::oscar_A_varm
+# layers <- omicser::oscar_A_layers
 #
 #
 #
-# a_X <- omicser::vilas_A_X
-# a_obs <- omicser::vilas_A_obs
-# a_var_ <- omicser::vilas_A_var
-# a_obsm <- omicser::vilas_A_obsm
-# a_varm <- omicser::vilas_A_varm
-# a_uns <- omicser::vilas_A_varm
-# a_layers <- omicser::vilas_A_layers
+# a_X <- omicser::oscar_A_X
+# a_obs <- omicser::oscar_A_obs
+# a_var_ <- omicser::oscar_A_var
+# a_obsm <- omicser::oscar_A_obsm
+# a_varm <- omicser::oscar_A_varm
+# a_uns <- omicser::oscar_A_varm
+# a_layers <- omicser::oscar_A_layers
 #
 #
 # X <- omicser::Domenico_A_X
@@ -401,13 +377,13 @@ library(anndata)
 #
 #
 
-X <- vilas_A_X
-obs <- vilas_A_obs
-var_ <- vilas_A_var
-obsm <- vilas_A_obsm
-varm <- vilas_A_varm
-uns <- vilas_A_uns
-layers <- vilas_A_layers
+X <- oscar_A_X
+obs <- oscar_A_obs
+var_ <- oscar_A_var
+obsm <- oscar_A_obsm
+varm <- oscar_A_varm
+uns <- oscar_A_uns
+layers <- oscar_A_layers
 
 ad <- AnnData(
   X = X,
@@ -424,9 +400,15 @@ ad
 #write_h5ad(anndata = ad, filename = file.path(db_dir,"data-raw/Vilas_A.h5ad"))
 # anndata R wrapper is broken.. .invoke python
 #
-ad$write_h5ad(filename="data-raw/vilas_A.h5ad")
-# AnnData object with n_obs × n_vars = 16245 × 33660
-# obs: 'sample_id', 'cluster_label', 'batch', 'color', 'cluster_name', 'cluster_id'
-# var: 'features', 'fracexp', 'meanexp', 'sdexp', 'mulogexp', 'sdlogexp'
-# uns: 'frac_expres', 'mean_z', 'mean_log', 'mean_z_log'
-# varm: 'frac_expres', 'mean_z', 'mean_log', 'mean_z_log'
+ad$write_h5ad(filename="data-raw/oscar_A.h5ad")
+
+#######################################################################
+#######################################################################
+##
+##  Create some "differential tables" of type:
+##  1. aggregated over "observations"
+##  2. aggregated over "features"
+##  3. aggretated over features and observations.
+##
+#######################################################################
+#######################################################################

@@ -92,7 +92,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
                                         gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
                                         gene_mapping = FALSE, db_prefix = "test1", db_dir = "data-raw",
                                         chunk_size = 500,  legend_cols = 4,
-                                        max_levels_ui = 50){
+                                        max_levels_ui = 50) {
   max_levels <- 100
   ##################################
   ## PREPROCESS
@@ -101,12 +101,17 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
 
   X_matdim <- rev(dim(X))
   X_rownm <- rownames(var_)
+  if (!is.null(obs$sampleID)){ #if we already have sampleID
+    # call sampleID sampleIDog
+    obs <- dplyr::rename(obs,sampleID_0=sampleID)
+  }
+
   X_colnm <- rownames(obs)
   def_omics = X_rownm[1:10]
 
   obs_meta = data.table(sampleID = X_colnm)  # redundant but makes naming explicit..
   obs_meta = cbind(obs_meta, obs)
-  #colnames(obs_meta) = c("sampleID", colnames(obs))
+  colnames(obs_meta) = c("sampleID", colnames(obs))
 
   for (i_meta in colnames(obs_meta)[-1]) {
     obs_meta[[i_meta]] = unlist(obs_meta[[i_meta]]) # unlist and refactor
@@ -120,7 +125,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
 
 
   ############
-
+  # TODO:  simlify by changin the x_exist to !is.null in test...
   obsm_exist <-  !is.null(obsm)
   varm_exist <-  !is.null(varm)
   uns_exist <-  !is.null(uns)
@@ -130,19 +135,28 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     obsm_keys <- names(obsm)
     keys <- obsm_keys
     i_v <- 'obsm'
-    m_conf <- data.table()
+    m_conf <- data.table() #our working table...
     for (key_i in keys) {
       tmp_conf <- data.table(
         ID = i_v, UI = i_v, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+        fCL = NA, fRow = NA, fIDloc = NA,  fIDchs = NA,  # location and choices of data/cols
+        default = 0, grp=FALSE,
+        observ=FALSE, comp=FALSE, dimred=FALSE
       )
+      obsm_i <- obsm[[key_i]]
 
-      if (is.data.frame(obsm[[key_i]])) {
-        i_levels <- levels(obsm[[key_i]])
+      if (!is.data.frame(obsm_i)) {
+        obsm_i <- as.data.frame(obsm_i)
+        if (!is.null(uns[[key_i]])){
+          i_levels <- uns[[key_i]]
+        } else {
+          i_levels <- 1:dim(obsm_i)[2] #maybe should check uns?
+        }
       } else {
-        i_levels <- 1:dim(obsm[[key_i]])[2] #maybe should check uns?
+        i_levels <- levels(obsm_i)
       }
       n_levels <- length(i_levels)
+
       if (n_levels <= max_levels) {
         if (n_levels >= 2) {
           tmp_conf$fID <- paste0(i_levels, collapse = "|")
@@ -163,16 +177,22 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
       if (!is.na(dimreds$obsm)){
         if (key_i %in% dimreds$obsm){
           tmp_conf$dimred <- TRUE
+          # put the path to the dimred...
+          tmp_conf$fIDloc <- paste0("obsm|",key_i)
         }
       }
       if (!is.na(observables$obsm[1])){
         if (key_i %in% comparables$obsm){
           tmp_conf$observ <- TRUE
+          tmp_conf$fIDloc <- paste0(i_v,key_i, collapse = "|")
+
         }
       }
       if (!is.na(comparables$obsm[1])){
         if (key_i %in% comparables$obsm){
           tmp_conf$comp <- TRUE
+          tmp_conf$fIDloc <- paste0(i_v,key_i, collapse = "|")
+
         }
       }
       m_conf <- rbindlist(list(m_conf, tmp_conf))
@@ -196,22 +216,30 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     for (key_i in keys) {
       tmp_conf <- data.table(
         ID = i_v, UI = i_v, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+        fCL = NA, fRow = NA, fIDloc = NA,  fIDchs = NA,  # location and choices of data/cols
+        default = 0,  grp=FALSE,
+        observ=FALSE, comp=FALSE, dimred=FALSE
       )
+      # all varm should have the columnnames packed in uns
+      varm_i <- varm[[key_i]]
 
-      if (is.data.frame(varm[[key_i]])) {
-        i_levels <- levels(varm[[key_i]])
+      if (!is.data.frame(varm_i)) {
+        varm_i <- as.data.frame(varm_i)
+        if (!is.null(uns[[key_i]])){
+          i_levels <- uns[[key_i]]
+        } else {
+          i_levels <- 1:dim(varm_i)[2] #maybe should check uns?
+        }
       } else {
-        i_levels <- 1:dim(varm[[key_i]])[2]
+        i_levels <- levels(varm_i)
       }
       n_levels <- length(i_levels)
+
       if (n_levels <= max_levels) {
         if (n_levels >= 2) {
           tmp_conf$fID <- paste0(i_levels, collapse = "|")
           tmp_conf$fUI <- tmp_conf$fID
-          tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels),
-                                 collapse = "|"
-          )
+          tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels),collapse = "|")
           tmp_conf$fRow <- ceiling(n_levels / legend_cols)
           tmp_conf$grp <- TRUE
         } else if (n_levels == 1) {
@@ -225,12 +253,14 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
       if (!is.na(dimreds$varm[1])){
         if (key_i %in% dimreds$varm){
           tmp_conf$dimred <- TRUE
+          tmp_conf$fIDloc <- paste0(i_v,"|",key_i)
         }
       }
 
       if (!is.na(comparables$varm[1])){
         if (key_i %in% comparables$varm){
           tmp_conf$comp <- TRUE
+          tmp_conf$fIDloc <- paste0(i_v,"|",key_i)
         }
       }
     m_conf <- rbindlist(list(m_conf, tmp_conf))
@@ -251,7 +281,9 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     m_conf <- data.table()
     tmp_conf <- data.table(
       ID = i_v, UI = i_v, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+      fCL = NA, fRow = NA, fIDloc = NA,  fIDchs = NA,  # location and choices of data/cols
+      default = 0,  grp=FALSE,
+      observ=FALSE, comp=FALSE, dimred=FALSE
     )
     # Additional preprocessing for categorical metadata
     n_levels <- length(keys)
@@ -271,6 +303,21 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     }
     uns_conf <- rbindlist(list(m_conf, tmp_conf))
 
+    #TODO: test for comp measure...
+    if (!is.na(dimreds$varm[1])){
+      if (key_i %in% dimreds$varm){
+        tmp_conf$dimred <- TRUE
+        tmp_conf$fIDloc <- paste0(i_v,"|",key_i)
+      }
+    }
+
+    if (!is.na(comparables$varm[1])){
+      if (key_i %in% comparables$varm){
+        tmp_conf$comp <- TRUE
+        tmp_conf$fIDloc <- paste0(i_v,"|",key_i)
+
+      }
+    }
     # # add the varm keys to the uns
     # if (varm_exist) {
     #   uns_keys <- names(varm)
@@ -303,12 +350,16 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     for (key_i in keys) {
       tmp_conf <- data.table(
         ID = i_v, UI = i_v, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+        fCL = NA, fRow = NA, fIDloc = NA,  fIDchs = NA,  # location and choices of data/cols
+        default = 0,
+        observ=FALSE,comp=FALSE,dimred=FALSE
       )
       tmp_conf$fID <- key_i
       tmp_conf$fUI <- tmp_conf$fID
 
       tmp_conf$observ <- TRUE
+      tmp_conf$fIDloc <- paste0(i_v,"|",key_i)
+
       m_conf <- rbindlist(list(m_conf, tmp_conf))
     }
     var_conf <- m_conf
@@ -324,12 +375,15 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     for (key_i in keys) {
       tmp_conf <- data.table(
         ID = i_v, UI = i_v, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+        fCL = NA, fRow = NA, fIDloc = NA,  fIDchs = NA,  # location and choices of data/cols
+        default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
       )
       tmp_conf$fID <- key_i
       tmp_conf$fUI <- tmp_conf$fID
 
       tmp_conf$observ <- TRUE
+      tmp_conf$fIDloc <- paste0(i_v,"|",key_i)
+
       m_conf <- rbindlist(list(m_conf, tmp_conf))
     }
     obs_conf <- m_conf
@@ -345,12 +399,15 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     for (key_i in keys) {
       tmp_conf <- data.table(
         ID = i_v, UI = i_v, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+        fCL = NA, fRow = NA, fIDloc = NA,  fIDchs = NA,  # location and choices of data/cols
+        default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
       )
       tmp_conf$fID <- key_i
       tmp_conf$fUI <- tmp_conf$fID
 
       tmp_conf$observ <- TRUE
+      tmp_conf$fIDloc <- paste0(i_v,"|",key_i)
+
       m_conf <- rbindlist(list(m_conf, tmp_conf))
     }
     layer_conf <- m_conf
@@ -366,13 +423,14 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     for (key_i in keys) {
       tmp_conf <- data.table(
         ID = i_v, UI = i_v, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
+        fCL = NA, fRow = NA, fIDloc = NA,  fIDchs = NA,  # location and choices of data/cols
+        default = 0,  observ=FALSE,comp=FALSE,dimred=FALSE
       )
       tmp_conf$fID <- key_i
       tmp_conf$fUI <- tmp_conf$fID
 
       tmp_conf$observ <- TRUE
-      m_conf <- rbindlist(list(m_conf, tmp_conf))
+      tmp_conf$fIDloc <- paste0(i_v,"|",key_i)
     }
     raw_conf <- m_conf
   } else { raw_conf <- data.table() }
@@ -394,7 +452,8 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
   for (i_meta in meta_to_include) {
     tmp_conf <- data.table(
       ID = i_meta, UI = i_meta, fID = NA, fUI = NA,
-      fCL = NA, fRow = NA, default = 0, grp = FALSE
+      fCL = NA, fRow = NA, fIDloc = NA,  fIDchs = NA,  # location and choices of data/cols
+      default = 0, grp = FALSE
     )
 
     # Additional preprocessing for categorical metadata
@@ -420,11 +479,10 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
     }
   }
 
-  # this isn't actually doing anything... leave for now
-  # TODO:  remove $default
+
   # Set defaults
-  def1 <- grep("ident|library", ui_conf$ID, ignore.case = TRUE)[1]
-  def2 <- grep("clust", ui_conf$ID, ignore.case = TRUE)
+  def1 <- grep("ident|library|cond|label", ui_conf$ID, ignore.case = TRUE)[1]
+  def2 <- grep("clust|group", ui_conf$ID, ignore.case = TRUE)
   def2 <- setdiff(def2, def1)[1]
   if (is.na(def1)) {
     def1 <- setdiff(c(1, 2), def2)[1]
@@ -528,6 +586,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
       tmp = data.table(
         ID = colnames(dr_mat), UI = colnames(dr_mat),
         fID = NA, fUI = NA, fCL = NA, fRow = NA,
+        fIDloc = NA,  fIDchs = NA,  # location and choices of data/cols
         default = 0, grp = FALSE, dimred = TRUE
       )
       tmp$UI = gsub("_", "", tmp$UI) # now underscores allowed
@@ -548,7 +607,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
 
   #scGEX <- t(X)
 
-
+  # force sampleID to match X column names
   if (!isTRUE(all.equal(obs_meta$sampleID, X_colnm))) {
     obs_meta$sampleID <- factor(obs_meta$sampleID, levels = X_colnm)
     obs_meta <- obs_meta[order(sampleID)]
@@ -562,6 +621,7 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
   names(gene_mapping) <- NULL
   names(om1_omics) <- gene_mapping
 
+  # sort alphabetically and by length
   om1_omics <- om1_omics[order(names(om1_omics))]
   om1_omics <- om1_omics[order(nchar(names(om1_omics)))]
 
@@ -648,9 +708,12 @@ make_ingest_file_primitives <- function(X,obs,var_,obsm,varm,uns, layers,
   ###
   conf <- list(meta=ui_conf,mat=m_conf)
   saveRDS(conf, file = paste0(db_dir, "/", db_prefix, "conf.rds"))
+
+  saveRDS(om1_def, file = paste0(db_dir, "/", db_prefix, "def.rds"))
+
   saveRDS(obs_meta, file = paste0(db_dir, "/", db_prefix, "meta.rds"))
   saveRDS(om1_omics, file = paste0(db_dir, "/", db_prefix, "omics.rds"))
-  saveRDS(om1_def, file = paste0(db_dir, "/", db_prefix, "def.rds"))
+
 
 
   ###   sort X by omics

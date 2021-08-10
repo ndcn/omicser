@@ -17,9 +17,58 @@ mod_side_selector_ui <- function(id){
     helpText(
        HTML("Choose a Dataset. Change visualization by selecting muscle-type and condition. Proteins can be selected directly from the <i>Visualize</i> tab,  from <i>Browse Table</i> tab, or by typing the protein name into the <i>Selected genes</i> window below.")
        ),
-    fluidRow(textOutput(ns("ui_curr_database"))),
-    fluidRow(uiOutput(ns("ui_DIV_warn"))),
-    fluidRow(textOutput(ns("ui_exp_fact_name"))), #fluidRow 1a
+     hr(style = "border-top: 1px solid #000000;"),
+    #TODO:  change these to render prper HTML
+
+    fluidRow(
+        htmlOutput( ns( "ui_curr_database" ))
+      ),
+    fluidRow(
+      uiOutput( ns( "ui_DIV_warn" ))
+      ),
+    fluidRow(
+      htmlOutput( ns( "ui_db_type" ))
+      ), #fluidRow 1a
+
+    fluidRow(
+
+      column(
+        width=10,
+        offset=0,
+        h5("Sample/Omics- information"),
+        "Choose cells/samples, grouping/subsetting variables, observables, and omic features ",
+        "to visualize in the playground",
+        br(),br(),
+        selectizeInput(ns("SI_x_info"), "Annotation information (X-axis):", choices=NULL), # options = list(placeholder = ""))
+
+        )
+      ),
+    fluidRow(
+      column(
+        width=3,
+        offset=0,
+        br(),
+        "",
+        h5("Measures"),
+        h5("(Y-Axis)")
+        ),
+      column(
+        width = 8,
+        offset = 0,
+        selectizeInput(ns("SI_obs_raw"), "Raw vals", choices=NULL)
+        )
+
+      ),
+    fluidRow(
+
+      column(
+        width = 8,
+        offset=3,
+        selectizeInput(ns("SI_obs_comp"), "Comparatives", choices=NULL)
+      )
+
+    ),
+
 
     # fluidRow(
     #       col_8(
@@ -27,21 +76,17 @@ mod_side_selector_ui <- function(id){
     #                   options = list(placeholder = "load database first"))
     #         )
     # ), #fluidRow 1b
+    #########################################
+    # subset
+    #########################################
     fluidRow(
-      column(width = 6,
+      column(width = 5,
         offset = 1,
         #actionButton(ns("AB_subset_tog"), "Toggle subset observations"), #TODO: change text when toggled
         shinyjs::disabled(selectizeInput(ns("SI_subset"), "Obs information to subset:", "",
                                          multiple = FALSE, options = list(placeholder = "choose dataset first"))),
       )
-      #,  # not implimented ... need to generate var annotations groups
-      # column(width = 4,
-      #        offset = 1,
-      #        #actionButton(ns("AB_subset_tog"), "Toggle subset observations"), #TODO: change text when toggled
-      #        shinyjs::disabled(selectizeInput(ns("SI_var_subset"), "omic subset?:", "",
-      #                                         multiple = FALSE, options = list(placeholder = "choose dataset first"))),
-      # )
-      ),
+    ),
     fluidRow(
       column(width = 10,
         offset = 1,
@@ -49,12 +94,18 @@ mod_side_selector_ui <- function(id){
         )
       ),
     fluidRow(
-      column(width = 5,shinyjs::disabled(actionButton(ns("CB_sub_all"), "Select all groups", class = "btn btn-primary"))),
-      column(width = 5,
-        offset=1,
-        shinyjs::disabled(actionButton(ns("CB_sub_none"), "Deselect all groups", class = "btn btn-primary") )
+      column(
+        width = 5,
+        offset = 1,
+        shinyjs::disabled(actionButton(ns("CB_sub_all"), "Select All", class = "btn btn-primary"))),
+      column(
+        width = 5,
+        offset=0,
+        shinyjs::disabled(actionButton(ns("CB_sub_none"), "Select None", class = "btn btn-primary") )
         )
       ),
+
+
 
     # fluidRow(
     #   # col_3(offset=1,
@@ -93,48 +144,38 @@ mod_side_selector_ui <- function(id){
 #       )
 #     ), #fluidRow 1c
 
-    # fluidRow(
-    #   selectizeInput(
-    #     ns("SI_omics_select"), "Select omic features", "",
-    #     multiple=TRUE, options = list(placeholder = "Choose omic feature (i.e. genes,proteins,lipids...)")
-    #   )
-    # ), #fluidRow 2
     #
-    # fluidRow(
-    #   col_4(offset = 0, style='padding-left:0px; padding-right:1px',
-    #          actionButton(ns("AB_omics_submit"),"Submit",class="hidableSubmit")
-    #   ),
-    #   col_4( offset = 2, style='padding-left:0px; padding-right:1px',
-    #          actionButton(ns("AB_omics_reset"), "Clear",class="hidableClear")
-    #   )
-    #   ),
 
+
+#optCrt="
     mod_omic_selector_ui(ns("omic_selector_ui_1")),
 
     fluidRow(
       uiOutput(ns("ui_text_warn"), width = "100%"),
-        ), #fluidRow
-    fluidRow(
-      column(
-           width=6,
-           style="border-right: 2px solid black",
-           h4("quantaties"),
-           fluidRow(
-             radioButtons(ns("RB_raw_plot_type"), "Plot type",
-                           choices = quant_plot_types,
-                           selected = quant_plot_types[3], inline = TRUE )
-             )
-      ),
-      column(
-        width=6,
-        h4("comparisons"),
-        fluidRow(
-          radioButtons(ns("RB_comp_plot_type"), "Plot type",
-                       choices = comp_plot_types,
-                       selected = comp_plot_types[1], inline = TRUE )
-          )
-      )
-    ) #fluidRow 4
+        ) #fluidRow
+
+# # TODO:  make this conditional on what kind of data is loaded.. and just a single plot type
+#     fluidRow(
+#       column(
+#            width=6,
+#            style="border-right: 2px solid black",
+#            h4("quantaties"),
+#            fluidRow(
+#              radioButtons(ns("RB_raw_plot_type"), "Plot type",
+#                            choices = quant_plot_types,
+#                            selected = quant_plot_types[3], inline = TRUE )
+#              )
+#       ),
+#       column(
+#         width=6,
+#         h4("comparisons"),
+#         fluidRow(
+#           radioButtons(ns("RB_comp_plot_type"), "Plot type",
+#                        choices = comp_plot_types,
+#                        selected = comp_plot_types[1], inline = TRUE )
+#           )
+#       )
+#     ) #fluidRow 4
   ) #taglist
 
   return(selector_tags)
@@ -153,48 +194,75 @@ mod_side_selector_server <- function(id, rv_in){
     ## out_params:  generated here and shared out
     ## rv_in:  input values shared by modules
     ############################ +
-    out_params <-reactiveValues(
+    out_params <- reactiveValues(
 
       #omics_names = NULL,
       omics_list = NULL,
-      raw_plot_type = NULL,
-      comp_plot_type = NULL,
+
+      # aggregate obs
+      feat_grp = NULL,
+      feat_subsel = NULL,
+
       observ_grp = NULL,
       observ_subsel = NULL,
 
-      # get ride of these
-      exp_fact = NULL,
-      aux_fact = NULL,
-      comp_dat = NULL,
-      obs_dat = NULL
+      #
+      observ_x = NULL,
+      observ_y_raw = NULL,
+      observ_y_comp = NULL,
 
+      # aggregate var
+      feat_grp = NULL,
+      feat_subsel = NULL,
+
+      # until this is set we don't actually plot ayhting.
+      measure_type = NULL, #"raw" or "comp"
+      # TODO:  make this conditional on what kind of data is loaded.. and just a single plot type
+      raw_plot_type = NULL,
+      comp_plot_type = NULL
+
+      # out_params$aux_raw <- input$SI_obs_raw
+      # out_params$aux_comp <- input$SI_obs_comp
     )
+
 
     # omics_for_selector <- reactive(rv_in$omics_feature)
     # omics_list <- mod_omic_selector_server("omic_selector_ui_1", omics_for_selector)
-    #
     omics_out <- reactive( rv_in$omics_feature )
 
     omics_list <- mod_omic_selector_server("omic_selector_ui_1", omics_out )
 
 
-    output$ui_curr_database <- renderPrint({
+    output$ui_curr_database <- renderUI({
       if (is.null(rv_in$database_name)) {
-        print("no datbase loaded")
+        out_text <- "No data loaded"
         } else {
-        print(paste("Current database is: ", rv_in$database_name))
+          out_text <- paste("Current dataset: ", rv_in$database_name)
         }
-      })
+      out_text <- h4(out_text)
+      return(out_text)
+    })
 
     # Warning if no data loaded
     output$ui_DIV_warn <- renderUI( {
       if (is.null(rv_in$database_name)) {
         div(
           tags$br(),
-          span(class = "warn", "No dataset loaded"),
-          print("warning:::!")
-          ) }
+          span(class = "warn", "No dataset loaded")
+         )
+        }
       })
+
+    # show the factors that have been loaded
+    output$ui_db_type <- renderUI({
+      req(rv_in$omics_type)
+      out_text <- paste("<h6>Data type: <i>", rv_in$omics_type, "</i>-omics</h6>")
+
+      out_text <- HTML(out_text)
+      return(out_text)
+      })
+
+
 
     ############################+
     ## update factors if data just loaded
@@ -218,8 +286,18 @@ mod_side_selector_server <- function(id, rv_in){
         shinyjs::enable("CB_sub_all")
         shinyjs::enable("CB_sub_none")
 
+        shinyjs::enable("SI_obs_raw")
+        shinyjs::enable("SI_obs_comp")
+
         # update omics_out
         omics_out <- rv_in$omics_feature
+
+
+
+
+        # options = list(
+        #   maxOptions = length(Van_conf[is.na(fID)]$UI) + 3,
+        #   create = TRUE, persist = TRUE, render = I(optCrt)))
 
         # # Update selectInput according to dataset
         # if (!is.null(rv_in$config)) {
@@ -246,11 +324,6 @@ mod_side_selector_server <- function(id, rv_in){
     ) #observe event
 
 
-    # show the factors that have been loaded
-    output$ui_exp_fact_name <- renderText({
-      req(input$SI_subset)
-      print(paste("current experimental factor: ", input$SI_subset))
-    })
 
 
     output$ui_subset <- renderUI({
@@ -311,89 +384,101 @@ mod_side_selector_server <- function(id, rv_in){
     })
 
 
+    observe({
+      req(rv_in$config)
+      raw_choices = rv_in$config$mat[observ == TRUE & ID!="raw"]$fIDloc
+      #TODO:  make the choices *named* paste0(rv_in$config$fID, fUI)
+      # dat_source = rv_in$config$mat[fID == rv_in$aux_raw]$ID
+      # paste(raw_choices, dat_sourcce)
+
+      if (length(raw_choices)>0) {
+        freezeReactiveValue(input, "SI_obs_raw")
+        updateSelectizeInput(session, "SI_obs_raw","Raw vals:",
+                                                    choices = raw_choices,
+                                                    selected = raw_choices[1],  server = TRUE)
+      } else {
+        print("disabled  raw observations ")
+        shinyjs::disable("SI_obs_raw")
+        # change back to placeholder??
+        freezeReactiveValue(input, "SI_obs_raw")
+        updateSelectizeInput(session, "SI_obs_raw", "Raw vals: ", "", options = list(placeholder = ""))
+      }
+
+    })
+
+    observe({
+
+      req(rv_in$config)
+      comp_choices = rv_in$config$mat[comp == TRUE ]$fIDloc
+      if (length(comp_choices)>0) {
+        freezeReactiveValue(input, "SI_obs_comp")
+        updateSelectizeInput(session, "SI_obs_comp","Comparatives:",
+                             choices = comp_choices,
+                             selected = comp_choices[1],  server = TRUE)
+      } else {
+        print("disabled  comparative observations ")
+        shinyjs::disable("SI_obs_comp")
+        freezeReactiveValue(input, "SI_obs_comp")
+        updateSelectizeInput(session, "SI_obs_comp", "Comparatives:", "",
+                        options = list(placeholder = "") )
+      }
+
+
+   })
+
+
+
+
+    observe({
+        req(rv_in$config)
+        updateSelectizeInput(session, "SI_x_info", server = TRUE,
+                           choices = rv_in$config$meta[grp == TRUE]$UI,
+                           selected = rv_in$default$grp2)
+    })
+
+    # raw2_choices = rv_in$config$mat[observ == TRUE & ID!="raw"]$fIDloc
+    # comp2_choices = rv_in$config$mat[comp == TRUE ]$fIDloc
+    #
+    # names(comp2_choices) <- comp2_choices
+    # names(raw2_choices) <- raw2_choices
+    #
+    # if (length(raw2_choices)<1){
+    #
+    #   if (length(comp2_choices)<1){
+    #     #no Y!!!
+    #     sel2 <- charachter(0)
+    #     sel2_choices <- raw2_choices #NULL
+    #
+    #   } else {
+    #     sel2 <- comp2_choices[1]
+    #     sel2_choices <- comp2_choices
+    #
+    #   }
+    # } else {
+    #   if (length(comp2_choices)<1){
+    #     sel2 <- raw2_choices[1]
+    #     sel2_choices <- raw2_choices
+    #   }  else {
+    #     sel2_choices <- list(raw=raw2_choices , comp=comp2_choices)
+    #     sel2 <- raw2_choices[1]
+    #   }
+    # }
+
+    #TODO:  make the choices *named* paste0(rv_in$config$fID, fUI)
+    # dat_source = rv_in$config$mat[fID == rv_in$aux_raw]$ID
+    # paste(raw_choices, dat_sourcce)
+    #{ option_create: function(data,escape) {return('<div class=\"create\"><strong>' + '</strong></div>');} }"
+
+    #
+      # updateSelectizeInput(session, "SI_y_info", server = TRUE,
+      #                      choices = sel2_choices,
+      #                      selected = sel2)
+    # })
     # TODO:  wrap this in a module..
     #
     #
 
-    # ############################+
-    # ## gene selection:
-    # ############################+
-    # # keep track of which proteins have been selected
-    # omics_list <- reactiveValues(value=character(0), viz_now=FALSE)
-    #
-    # # Error handling: check if too many omics selected
-    # # NOT within_limit  --> print error statement
-    # # within_limit --> Update the protein selection
-    # # THIS GETS RUN ON EVERY CLICK!!
-    # max_omic_feats <- 100
-    #
-    # observe({
-    #   if ( length(unique(omics_list$value ) ) >= max_omic_feats ) {
-    #     # will this work?  or is the "observing" affecting a reactive with this render?
-    #     output$ui_text_warn <- renderUI({
-    #       tags$div(class = "warning", checked = NA,
-    #                HTML(
-    #                  paste('
-    #                   </head>
-    #                   <style>
-    #                   .warning div {text-align: left; padding: 50px 70px 100px;}
-    #                   </style>
-    #                   </head>
-    #
-    #                   <body>
-    #                   <div>
-    #                   Omic-selection limit reached, choose fewer items for
-    #                   faster computation ! <br> Continue by pressing "Clear".
-    #                   </div>
-    #                   </body>')))
-    #     })
-    #
-    #
-    #   } else {
-    #     #omics_choice_list <- rv_in$var[[rv_in$omics_feature]]
-    #     omics_choice_list <- isolate(rv_in$omics_feature)
-    #     #if ( !is.null(omics_choice_list$var) & !is.null(rv_in$omics_feature) ) {
-    #     if ( is.null(omics_choice_list)  ) {
-    #       omics_choice_list <- "" #rownames(rv_in$var)
-    #     } else {
-    #       omics_choice_list <- names(omics_choice_list)
-    #     }
-    #
-    #     omics_choices <- isolate(omics_list$value)
-    #     freezeReactiveValue(input, "SI_omics_select")
-    #     updateSelectizeInput(session, "SI_omics_select",
-    #                          choices = isolate(omics_choice_list),
-    #                          selected = omics_choices, server=TRUE)
-    #     # # DEBUG
-    #     # print("   ::updated omics list::  ")
-    #     # print(isolate(omics_list$value))
-    #   }
-    #   #print(paste0("current number of selected omics:  ",length(unique(isolate(omics_list$value)))))
-    #
-    # })
-    #
-    #
-    # ############################+
-    # ## "reset" and "submit" simply sets the viz_now flag
-    # ############################+
-    # ############################
-    # observe({ # turn on if the "placeholder" is gone
-    #   shinyjs::toggleState("AB_omics_submit", !all(input$SI_omics_select == "Choose omic feature (i.e. genes,proteins,lipids...)"))
-    # })
-    #
-    # observeEvent(input$AB_omics_reset, {
-    #   omics_list$viz_now = FALSE
-    #   omics_list$value <- character(0)
-    #   # get rid of error message when resetting selection
-    #   output$ui_text_warn <- renderUI({ })
-    # })
-    #
-    # observeEvent(input$AB_omics_submit, {
-    #   if(length(unique(omics_list$value)) < max_omic_feats ) { #defensive
-    #     omics_list$value <- input$SI_omics_select #include direct selection from protein-box when pressing submit
-    #     omics_list$viz_now = TRUE
-    #   } # else ?? print warning??
-    # })
+
 
 
     observeEvent( omics_list$viz_now, {
@@ -403,43 +488,26 @@ mod_side_selector_server <- function(id, rv_in){
       out_params$observ_grp = input$SI_subset
       out_params$observ_subsel = input$CB_sub_inner1
 
+      # # aggregate var
+      # out_params$feat_grp <- input$SI_feat_grp
+      # out_params$feat_subsel <- input$SI_feat_subsel
+
+      out_params$observ_x <- input$SI_x_info
+      out_params$observ_y_raw <- input$SI_obs_raw
+      out_params$observ_y_rcomp <- input$SI_obs_comp
+
+
     })
-      #
-      # if (!is.null(rv_in$aux_raw)){
-      #   # could also extract from the name instead of lookkup
-      #   #       subs <- strsplit(rv_in$aux_raw, "\\|")[[1]]
-      #   # rv_in$ad[[subs[1]]][[subs[2]]]
-      #   dat_source = rv_in$config$mat[fIDloc == rv_in$aux_raw]$ID
-      #   dat_key = rv_in$config$mat[fIDloc == rv_in$aux_raw]$fID
-      #   #dd <- isolate(rv_in$ad[[rv_in$config$mat[fID == rv_in$aux_raw]$ID]][[rv_in$aux_raw]])
-      #   if (dat_source == "obs") {
-      #     aux_raw_names <- isolate(rv_in$ad$obs[[dat_key]])
-      #   } else if (dat_source == "var") {
-      #     aux_raw_names <- isolate(rv_in$ad$var[[dat_key]])
-      #   } else {
-      #     aux_raw_names <- NULL
-      #   }
-      #   out_params$obs_dat = aux_raw_names
-      # }
-      #
-      # # comparatives are packed in obsm and varm
-      # if (!is.null(rv_in$aux_comp)){
-      #   dat_source = rv_in$config$mat[fIDloc == rv_in$aux_comp]$ID
-      #   dat_key = rv_in$config$mat[fIDloc == rv_in$aux_comp]$fID
-      #   if (dat_source == "obsm") {
-      #     aux_comp_names <- isolate(rv_in$ad$uns[[rv_in$aux_comp]])
-      #   } else if (dat_source == "varm") {
-      #     aux_comp_names <- isolate(rv_in$ad$uns[[rv_in$aux_comp]])
-      #   } else {
-      #     aux_comp_names <- NULL
-      #
-      #   }
-      #   out_params$comp_dat <- aux_comp_names
-      # }
-      #
-      #
-      #
-      #
+
+#
+#   observe(input$observ_y_raw)({
+#
+#     # TODO
+#     # set whether we are updating "raw" or "comp" data for visualization based on selected Y
+#
+#     out_params$measure_type <- c("raw")
+#
+#   })
 
 
     # keep these updated

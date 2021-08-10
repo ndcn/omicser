@@ -8,6 +8,7 @@
 #################################################
 
 require(glmnet)
+require(readxl)
 
 DATA_DIR <- "ingest"
 DB_NAME = "Yassene_A"
@@ -146,6 +147,10 @@ rownames(var_) <- var_$lipids
 
 
 
+
+
+
+
 raw <- conc_mat
 X <- zconc
 
@@ -157,8 +162,106 @@ layers$zconc <- zconc
 obsm <- NULL
 varm <- NULL
 
+## TODO:
+##    1. calculate differential expression
+##    2. calculate PCAs & UMAPS
+##    3. incorporate lipid classes ... as feature_annotations (in var_)
 
 
+###  here's some annotation
+xlsx_name <- "Lipid_classification.xlsx"
+file_name <- file.path(DATA_DIR,DB_NAME,xlsx_name)
+
+lipid_class <- read_excel(file_name)
+
+merge_data <- function(lipid_data, lipid_class = NULL, by = NULL) {
+  # make the lipid data long and add some extra columns, same as in tidy_lipids
+  lipid_data_long <- lipid_data %>%
+    mutate(sample_type = factor(tolower(str_extract(string = .data$sample_name,
+                                                    pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)")))) %>%
+    # join the meta data
+    left_join(y = meta_data,
+              by = c("sample_name" = by),
+              suffix = c("", ".y"))
+
+
+  return(lipid_data_long)
+}
+
+results_test <- do_stat_test(lipid_data = isolate(all_data$analysis_data),
+                             group = input$test_select_group,
+                             group1_name = input$test_group1,
+                             group2_name = input$test_group2,
+                             normalization = input$select_test_normalization,
+                             transformation = input$select_test_transformation,
+                             test = input$select_test)
+
+volcano_plot(lipid_data = test_result(),
+             pvalue_adjust = input$test_cor_pvalue,
+             title = paste0(input$test_group1, " vs ", input$test_group2))
+
+
+volcano_plot <- function(lipid_data, pvalue_adjust = FALSE, title = "") {
+  # create y-axis title
+  y_title <- ifelse(pvalue_adjust == FALSE,
+                    "-log10(p value)",
+                    "-log10(cor. p value)")
+
+  # create the plot
+  p <- lipid_data %>%
+    mutate(show_p = case_when(
+      pvalue_adjust == FALSE ~ .data$p_log10,
+      pvalue_adjust == TRUE ~ .data$p_log10_adj
+    )) %>%
+    plot_ly(x = ~fc_log2,
+            y = ~show_p,
+            text = ~ShortLipidName,
+            colors = rainbow(n = 100),
+            customdata = lipid_data$ShortLipidName,
+            source = "volcano_plot_click") %>%
+    add_markers(color = ~LipidClass,
+                size = 3) %>%
+    layout(xaxis = list(zeroline = FALSE,
+                        title = "log2(fold change)"),
+           yaxis = list(title = y_title),
+           shapes = list(vline(-1),
+                         vline(1),
+                         hline(-log10(0.05))),
+           legend = list(orientation = "h"),
+           title = list(text = title,
+                        x = 0)) %>%
+    event_register(event = "plotly_click")
+
+  return(p)
+}
+
+vline <- function(x = 0, color = "blue") {
+  list(
+    type = "line",
+    y0 = 0,
+    y1 = 1,
+    yref = "paper",
+    x0 = x,
+    x1 = x,
+    line = list(color = color,
+                width = 1,
+                dash = "dash")
+  )
+}
+
+hline <- function(y = 0, color = "blue") {
+  list(
+    type = "line",
+    x0 = 0,
+    x1 = 1,
+    xref = "paper",
+    y0 = y,
+    y1 = y,
+    line = list(color = color,
+                width = 1,
+                dash = "dash")
+  )
+}
 
 
 # OBSERVABLES
@@ -167,7 +270,8 @@ observables <- list(obs = c("var_conc","mean_conc"),
                     var = c("var_conc", "var_comp","mean_conc","mean_comp"),
                     layers = c("comp", "zcomp","conc","zconc"),
                     raw = c("X"),
-                    obsm = NA)
+                    obsm = NA,
+                    rawvar = NA)
 
 
 # COMPARABLES
@@ -258,9 +362,9 @@ yassene_A_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
 
 
 
-usethis::use_data(yassene_A_X,yassene_A_var,yassene_A_obs,
-                  yassene_A_obsm,yassene_A_varm,yassene_A_layers,yassene_A_uns,
-                  yassene_A_conf, yassene_A_def, yassene_A_omics, yassene_A_meta, overwrite = TRUE)
+# usethis::use_data(yassene_A_X,yassene_A_var,yassene_A_obs, overwrite = TRUE)
+# usethis::use_data(yassene_A_obsm,yassene_A_varm,yassene_A_layers,yassene_A_uns, overwrite = TRUE)
+usethis::use_data(yassene_A_conf, yassene_A_def, yassene_A_omics, yassene_A_meta, overwrite = TRUE)
 
 #######################################################################
 #######################################################################

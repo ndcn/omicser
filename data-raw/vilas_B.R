@@ -144,15 +144,16 @@ observables <- list(obs = c("nCount_SCT","nFeature_SCT"),
                     var = names(ad$var),
                     layers = NA,
                     raw = c("X"),
-                    obsm = NA)
+                    obsm = NA,
+                    rawvar = names(ad$raw$var))
 
 
 # COMPARABLES
-comparables <- list(varm = names(varm),
+comparables <- list(varm = NA,
                     obsm = NA)
 # Dimred
-dimreds <- list(varm = c('X_pca', 'X_tsne'),
-                    obsm = c('PCs'))
+dimreds <- list(obsm = c('X_pca', 'X_tsne'),
+                    varm = c('PCs'))
 
 
 ####################################
@@ -221,6 +222,7 @@ file_path <- file.path(DATA_DIR, file_name)
 ## TODO:  check if
 ## varm & obsm are backwards...
 ##
+ad <- read_h5ad(file_path)
 
 X <- ad$X
 obs <- ad$obs
@@ -231,10 +233,13 @@ var_ <- ad$var
 varm <- ad$varm
 var_keys <- ad$var_keys()
 uns <- ad$uns
-layers <- ad$layers
+#layers <- ad$layers
+layers <- NULL
 rawX <- ad$raw$X
 rawvar <- ad$raw$var
 
+# raw$X <- rawX
+# raw$var <- rawvar
 
 db_dir = "data-raw"
 db_prefix <- "Vilas_B_"
@@ -274,9 +279,9 @@ vilas_B_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
 
 
 
-usethis::use_data(vilas_B_X,vilas_B_var,vilas_B_obs,
-                  vilas_B_obsm,vilas_B_varm,vilas_B_layers,vilas_B_uns,
-                  vilas_B_conf, vilas_B_def, vilas_B_omics, vilas_B_meta, overwrite = TRUE)
+# usethis::use_data(vilas_B_X,vilas_B_var,vilas_B_obs, overwrite = TRUE)
+# usethis::use_data(vilas_B_obsm,vilas_B_varm,vilas_B_layers,vilas_B_uns, overwrite = TRUE)
+usethis::use_data(vilas_B_conf, vilas_B_def, vilas_B_omics, vilas_B_meta, overwrite = TRUE)
 
 #######################################################################
 #######################################################################
@@ -315,39 +320,64 @@ varm <- vilas_B_varm
 uns <- vilas_B_uns
 layers <- vilas_B_layers
 
-ad <- AnnData(
+# ad <- AnnData(
+#   X = X,
+#   obs = obs,
+#   var = var_,
+#   layers = layers,
+#   raw = raw,
+#   obsm = obsm,
+#   varm = varm,
+#   uns = uns,
+# )
+
+ad_new <- AnnData(
   X = X,
   obs = obs,
   var = var_,
-  layers = layers,
+  uns = uns,
   obsm = obsm,
   varm = varm,
-  uns = uns
 )
 
-ad
+
+ad_new
+
+ad_raw <- Raw(ad_new, X = rawX, var = rawvar, varm = NULL)
+
+ad_new <- AnnData(
+  X = X,
+  obs = obs,
+  var = var_,
+  uns = uns,
+  obsm = obsm,
+  varm = varm,
+  raw = ad_raw
+)
+
 
 #write_h5ad(anndata = ad, filename = file.path(db_dir,"data-raw/Vilas_A.h5ad"))
 # anndata R wrapper is broken.. .invoke python
 #
-ad$write_h5ad(filename="data-raw/vilas_B.h5ad")
+ad_new$write_h5ad(filename="data-raw/vilas_B.h5ad")
 
-# does not have the "RAW" counts included  195MB
+# does not have the "RAW" counts included  395MB
+ad <- read_h5ad(filename="data-raw/vilas_B.h5ad")
 
 
-
-
-ad$new_file_path <- gsub(".h5Seurat", ".h5ad", out_file_path)
-ad_og <- read_h5ad(new_file_path)
+file_name <- file.path(DB_NAME, "new_microglia_data.h5ad")
+file_path <- file.path(DATA_DIR, file_name)
+ad_og <- read_h5ad(file_path)
 
 ad_og
 
 ad_og$write_h5ad(filename="data-raw/vilas_Bog.h5ad")
 
-# HAS the "RAW" counts included  570MB
-
+# HAS the "RAW" counts included  580MB
 # source("data-raw/domenico_A.R",echo = FALSE)
+ad_og <- read_h5ad(filename="data-raw/vilas_Bog.h5ad")
 
+ad
 #
 #
 # ####################################

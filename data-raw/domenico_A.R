@@ -421,11 +421,12 @@ domenico_A_uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
 domenico_A_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
 
 
+#
+# usethis::use_data(domenico_A_X,domenico_A_var,domenico_A_obs, overwrite = TRUE)
+# usethis::use_data(domenico_A_obsm,domenico_A_varm,domenico_A_layers,domenico_A_uns, overwrite = TRUE)
 
-usethis::use_data(domenico_A_X,domenico_A_var,domenico_A_obs, overwrite = TRUE)
 
-usethis::use_data(domenico_A_obsm,domenico_A_varm,domenico_A_layers,domenico_A_uns,
-                  domenico_A_conf, domenico_A_def, domenico_A_omics, domenico_A_meta, overwrite = TRUE)
+usethis::use_data(domenico_A_conf, domenico_A_def, domenico_A_omics, domenico_A_meta, overwrite = TRUE)
 
 #######################################################################
 #######################################################################
@@ -477,7 +478,7 @@ ad$write_h5ad(filename="data-raw/domenico_A.h5ad")
 #> AnnData object with n_obs × n_vars = 2 × 3
 #>     obs: 'group'
 
-source("data-raw/yassene_example.R",echo = FALSE)
+#source("data-raw/yassene_example.R",echo = FALSE)
 
 #######################################################################
 #######################################################################
