@@ -181,7 +181,7 @@ log_data <- log(data)
 
 
 var_ <- comp_data
-var_$geomean <- rowMeans(log_data,na.rm = TRUE)
+var_$geomean <- rowMeans(log_data,na.rm = TRUE) #exp minus 1?
 var_$mean <- rowMeans(data,na.rm = TRUE)
 
 tmp_mat <- data

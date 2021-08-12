@@ -217,7 +217,6 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
 
       # observ_y_raw = NULL,
       # observ_y_comp = NULL,
-
       in_conf <- rv_in$config$meta
       in_meta <- rv_in$meta
 

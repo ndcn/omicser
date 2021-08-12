@@ -1,3 +1,6 @@
+# start_omics <- c("SNAP25,ENO2,SLC17A7,SLC17A6,GAD1,GAD2,SLC32A1,LAMP5,SST,CHODL,PVALB,VIP,CUX2,RORB,RBP4,GJA1,FGFR3,GFAP,OLIG1,OPALIN,PDGFRA,AIF1,TYROBP,NOSTRIN")
+
+
 #' omic_selector UI Function
 #'
 #' @description A shiny Module.
@@ -47,12 +50,16 @@ mod_omic_selector_server <- function(id, omics_in){
 
     # keep track of which proteins have been selected
     omics_list <- reactiveValues(value=character(0), viz_now=FALSE)
-
+    # TODO:  make some resonable defaults when each database loads
+    # start_omic_vals <-strsplit(start_omics, ",| |;|, ")[[1]]
+    # omics_list <- reactiveValues(value=start_omic_vals, viz_now=FALSE)
+    #
     # Error handling: check if too many omics selected
     # NOT within_limit  --> print error statement
     # within_limit --> Update the omics selection
     # THIS GETS RUN ON EVERY CLICK!!
     max_omic_feats <- 100
+
 
 
     observe({
@@ -133,6 +140,21 @@ mod_omic_selector_server <- function(id, omics_in){
         omics_list$viz_now = TRUE
       } # else ?? print warning??
     })
+
+    # # dOES THIS PATTERN HELP US UPDATE PROPERLY???
+    # reset_omics <- reactiveValues(reset = NULL)
+    # observeEvent(input$AB_omics_reset, {
+    #   reset_omics$reset <- TRUE
+    # })
+    # observeEvent(omics_in, {
+    #   reset_omics$reset <- TRUE
+    # })
+    # #    observeEvent(reset_omics$reset, {
+    # omics_list$viz_now = FALSE
+    # omics_list$value <- character(0)
+    # # get rid of error message when resetting selection
+    # output$ui_text_warn <- renderUI({ })
+  })
 
 
   return(omics_list)

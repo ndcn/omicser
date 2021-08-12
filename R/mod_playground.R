@@ -46,7 +46,7 @@ mod_playground_ui <- function(id){
       ),
       # table tab
       tabPanel(
-        title = "Comparatisons",value = 'comp',
+        title = "Comparisons",value = 'comp',
         mod_pg_vis_comp_ui(id=ns("pg_vis_comp_ui_1"))
 
       )

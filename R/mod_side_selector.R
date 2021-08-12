@@ -1,3 +1,5 @@
+
+
 #' side_selector UI Function
 #'
 #' @description A shiny Module.
@@ -15,23 +17,30 @@ mod_side_selector_ui <- function(id){
 
   selector_tags <- tagList(
     helpText(
-       HTML("Choose a Dataset. Change visualization by selecting muscle-type and condition. Proteins can be selected directly from the <i>Visualize</i> tab,  from <i>Browse Table</i> tab, or by typing the protein name into the <i>Selected genes</i> window below.")
+       HTML("Load a Dataset first, and then selected the variables and quantiteis below.")
        ),
      hr(style = "border-top: 1px solid #000000;"),
     #TODO:  change these to render prper HTML
 
-    fluidRow(
-        htmlOutput( ns( "ui_curr_database" ))
-      ),
-    fluidRow(
-      uiOutput( ns( "ui_DIV_warn" ))
-      ),
-    fluidRow(
-      htmlOutput( ns( "ui_db_type" ))
-      ), #fluidRow 1a
+
+      htmlOutput( ns( "ui_curr_database" )),
+
+      uiOutput( ns( "ui_DIV_warn" )),
+
+      htmlOutput( ns( "ui_db_type" )),
+
+    # fluidRow(
+    #     htmlOutput( ns( "ui_curr_database" ))
+    #   ),
+    # fluidRow(
+    #   uiOutput( ns( "ui_DIV_warn" ))
+    #   ),
+    # fluidRow(
+    #   htmlOutput( ns( "ui_db_type" ))
+    #   ), #fluidRow 1a
 
     fluidRow(
-
+      hr(style = "border-top: 1px solid #000000;"),
       column(
         width=10,
         offset=0,
