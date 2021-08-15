@@ -1,0 +1,580 @@
+#######################################################################
+#######################################################################
+##
+##  Microglia scRNAseq Transcriptomics
+##  - from Vilas:
+#         Here’s a link to our single-cell microglia data set as a
+#         Seurat object, with counts tables, normalized counts tables,
+#         UMAP coordinates, and cell metadata in the table. The UMAP
+#         coordinates and clusters were generated with a previous v
+#         ersion of Seurat, with obsolete normalization and clustering
+#         routines. However, for visualization and to kick the tires,
+#         I hope this is a good starting data set. This is also what
+#         Chris Sifuentes has been playing with in cellxgene, so down
+#         the road it could also be a good data set if we want to explore
+#         cross-connectivity between visualization and cellxgene options.
+##
+#######################################################################
+#######################################################################
+#  formely `vilas_B` which was derived from a Seurat file
+#
+#
+# Golem options (Inactive) ---------------------------
+# Set options here
+# options(golem.app.prod = FALSE) # TRUE = production mode, FALSE = development mode
+# # Detach all loaded packages and clean your environment
+# golem::detach_all_attached()
+# # rm(list=ls(all.names = TRUE))
+# # Document and reload your package
+# golem::document_and_reload()
+
+
+# ------------------------------------------
+# 0. preamble/setup -------------------------
+# ------------------------------------------
+require("Seurat")
+# if (!requireNamespace("remotes", quietly = TRUE)) {
+#   install.packages("remotes")
+# }
+# remotes::install_github("mojaveazure/seurat-disk")
+# devtools::install_github('satijalab/seurat-data')
+require(SeuratData)
+require(SeuratDisk)
+
+require(reticulate)
+reticulate::use_condaenv(required = TRUE, condaenv = 'sc39')
+require(anndata)
+
+# create the folder to contain the raw data
+DB_NAME = "vilas_microglia_seu"
+DB_DIR = file.path("data-raw",DB_NAME)
+if (!dir.exists(DB_DIR)) {
+  dir.create(DB_DIR)
+}
+
+
+# ------------------------------------------
+# 1. documentation / provenance ------------
+# ------------------------------------------
+
+# TODO:  markdown file or html with some copy about the database
+#  - lab, paper link/name
+#  summarize results / data origin whatever
+
+
+organism <- ""
+lab <- "Menon"
+annotation_database <- "NA"
+
+
+# ------------------------------------------
+# 2. helper functions ----------------------
+# ------------------------------------------
+
+
+
+# ------------------------------------------
+# 3. load data -----------------------------
+# ------------------------------------------
+RAW_DIR <- "ingest/Vilas_B"
+# Seurat Data object
+data_file <- "microglia_data_with_counts_RNA_SCT.rda"
+load(file.path(RAW_DIR,data_file) ) # microglia_data
+
+# 3a. update seurat object -----------------------------
+microglia_data_updated <- UpdateSeuratObject(object = microglia_data)
+#> OUTPUT:
+#   Validating object structure
+#   Updating object slots
+#   Ensuring keys are in the proper strucutre
+#   Ensuring feature names don't have underscores or pipes
+#   Object representation is consistent with the most current Seurat version
+
+saveRDS(microglia_data_updated,
+        file = file.path(RAW_DIR, "microglia_data_seu_new.rds"))
+
+
+# loadRDS(file = file.path(RAW_DIR, "microglia_data_seu_new.rds"))
+
+# 3b. save seurat object to H5 -----------------------------
+
+#microglia_data_updated <- readRDS(file.path(RAW_DIR, "microglia_data_seu_new.rds"))
+
+
+SaveH5Seurat(microglia_data_updated,
+             filename = file.path(RAW_DIR, "microglia_data_seu_new.h5Seurat"),
+             overwrite = TRUE)
+# #> OUTPUT:
+#         Creating h5Seurat file for version 3.1.5.9900
+#         Adding counts for RNA
+#         Adding data for RNA
+#         No variable features found for RNA
+#         No feature-level metadata found for RNA
+#         Adding counts for SCT
+#         Adding data for SCT
+#         Adding scale.data for SCT
+#         Adding variable features for SCT
+#         Adding feature-level metadata for SCT
+#         Adding counts for counts
+#         Adding data for counts
+#         No variable features found for counts
+#         No feature-level metadata found for counts
+#         Adding cell embeddings for pca
+#         Adding loadings for pca
+#         No projected loadings for pca
+#         Adding standard deviations for pca
+#         No JackStraw data for pca
+#         Adding cell embeddings for tsne
+#         No loadings for tsne
+#         No projected loadings for tsne
+#         No standard deviations for tsne
+#         No JackStraw data for tsne
+
+Convert(file.path(RAW_DIR, "microglia_data_seu_new.h5Seurat"),
+        dest = "h5ad",
+        overwrite = TRUE)
+######     from https://mojaveazure.github.io/seurat-disk/reference/Convert.html
+######---- Assay data
+######
+###### X will be filled with scale.data if scale.data is present; otherwise,
+######        it will be filled with data
+###### var will be filled with meta.features only for the features present
+######        in X; for example, if X is filled with scale.data, then var
+######        will contain only features that have been scaled
+###### raw.X will be filled with data if X is filled with scale.data;
+######        otherwise, it will be filled with counts. If counts is not
+######        present, then raw will not be filled
+###### raw.var will be filled with meta.features with the features present
+######        in raw.X; if raw.X is not filled, then raw.var will not be filled
+######
+######
+
+
+# #>OUTPUT:
+#     Validating h5Seurat file
+#     Adding scale.data from SCT as X  <-----
+#     Transferring meta.features to var
+#     Adding data from SCT as raw
+#     Transfering meta.features to raw/var
+#     Transfering meta.data to obs
+#     Adding dimensional reduction information for pca
+#     Adding feature loadings for pca
+#     Adding dimensional reduction information for tsne
+# #
+
+
+ad <- read_h5ad(file.path(RAW_DIR, "microglia_data_seu_new.h5ad"))
+# NOTE:  raw counts are NOT contained in the anndata file...
+#        they could be added back with layers from the seurat file *if* needed
+
+
+# ------------------------------------------
+# 4. pack into anndata   (redundant?)      --
+# ------------------------------------------0
+
+# make a copy of the data in the raw-data directory
+ad$write_h5ad(filename=file.path(DB_DIR,"core_data.h5ad"))
+
+
+var_ <- ad$var
+obs <- ad$obs
+X <- ad$X
+ad_raw <- ad$raw
+obsm <- ad$obsm
+varm <- ad$varm
+
+db_prefix = "core_data"
+saveRDS(X, file = paste0(DB_DIR, "/", db_prefix, "_X.rds"))
+saveRDS(obs, file = paste0(DB_DIR, "/", db_prefix, "_obs.rds"))
+saveRDS(var_, file = paste0(DB_DIR, "/", db_prefix, "_var.rds"))
+
+
+ad_ <- AnnData(
+  X = X,
+  obs = obs,
+  var = var_,
+  raw = ad_raw,
+  obsm = obsm,
+  varm=varm
+)
+
+ad_
+
+ad_$write_h5ad(filename=file.path(DB_DIR,"recast.h5ad"))
+
+
+
+ad$write_h5ad(filename=file.path(DB_DIR,"core_data.h5ad"))
+
+# ------------------------------------------
+# 5. post processing                      --
+# ------------------------------------------
+require(anndata)
+require(reticulate)
+DB_NAME = "vilas_microglia_seu"
+DB_DIR = file.path("data-raw",DB_NAME)
+RAW_DIR <- "ingest/Vilas_B"
+
+db_prefix = "core_data"
+X = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_X.rds"))
+obs = readRDS(  file = paste0(DB_DIR, "/", db_prefix, "_obs.rds"))
+var_ = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_var.rds"))
+
+
+ad <- read_h5ad(file.path(DB_DIR,"core_data.h5ad"))
+ad
+
+
+sc <- import("scanpy")
+
+test_types <- c('wilcoxon','t-test_overestim_var')
+
+diff_exp <- data.frame()
+#log_adata <- sc$pp$log1p(ad,copy=TRUE)
+condition_key = 'cell_type'
+comp_type <- "allVrest"
+test_type <- test_types[1]
+key <- paste0(test_type,"_", comp_type)
+sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
+de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
+de_table$condition <- comp_type
+de_table$test_type <- test_type
+diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
+
+
+test_type <- test_types[2]
+key <- paste0(test_type,"_", comp_type)
+sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
+de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
+de_table$condition <- comp_type
+de_table$test_type <- test_type
+diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
+
+
+
+
+# put the logvals in layers of ad
+# copy the whole thing and replace X to copy the uns to ad
+
+
+
+ad$write_h5ad(filename=file.path(DB_DIR,"core_data_plus_de.h5ad"))
+
+
+
+# also need to pack the diff_exp1 and diff_exp2 into easy to deal wiht tables for volcanos...
+
+
+db_prefix = "de"
+saveRDS(diff_exp, file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
+
+
+# ------------------------------------------
+# 6. create config and default files                   --
+# ------------------------------------------
+
+
+###
+
+# OBSERVABLES
+#
+observables <- list(obs = c("nCount_SCT","nFeature_SCT"),
+                    var = names(ad$var),
+                    layers = NA,
+                    raw = c("X"),
+                    obsm = NA,
+                    rawvar = names(ad$raw$var))
+
+
+# COMPARABLES
+comparables <- list(varm = NA,
+                    obsm = NA)
+# Dimred
+dimreds <- list(obsm = c('X_pca', 'X_tsne'),
+                    varm = c('PCs'))
+
+
+####################################
+####################################
+##
+##   read from .h5ad
+##
+####################################
+####################################
+
+helper_function<-('data-raw/make_ingest_file_primitives.R')
+
+source(helper_function)
+
+
+DATA_DIR <- "ingest"
+DB_NAME <- "Vilas_B"
+
+
+file_name <- file.path(DB_NAME, "new_microglia_data.h5ad")
+file_path <- file.path(DATA_DIR, file_name)
+
+# ui_conf = create_config(file_path,
+#   meta_to_include = NA, legend_cols = 4,
+#   max_levels = 50
+# )
+# inp_obj = file_path
+#
+# db_prefix = "Vilas_B_"
+# db_dir = "data-raw"
+# gene.mapping = FALSE
+# default_omics1 = NA
+# default_omics2 = NA
+# default_multi = NA
+# default_dimred = NA
+# chunk_size = 500
+# #gex.assay = "X" # X.raw" # X is filled with scale.data / data instead of counts... counts are in raw.X
+# #gex.slot = "scale.data"  # only for Seurat.
+#
+# vilasb_conf = make_ingest_files_h5ad(inp_obj, ui_conf,
+#   db_prefix = "Vilas_B_", db_dir = "data-raw",
+#   gene.mapping = FALSE,
+#   default_omics1 = NA, default_omics2 = NA, default_multi = NA,
+#   default_dimred = NA, chunk_size = 500
+# )
+
+# extract_primitives_from_ad <- function(ad){
+#   X <- ad$X
+#   obs <- ad$obs
+#   obsm <- ad$obsm
+#   var_names <- ad$var_names
+#
+#   var_ <- ad$var
+#   varm <- ad$varm
+#   var_keys <- ad$var_keys()
+#   uns <- ad$uns
+#   layers <- ad$obs
+#   rawX <- ad$raw$X
+#   rawvar <- ad$raw$var
+# }
+#
+# X <- ad$X
+# obs <- ad$obs
+# varm <- ad$obs
+
+## TODO:  check if
+## varm & obsm are backwards...
+##
+ad <- read_h5ad(file_path)
+
+X <- ad$X
+obs <- ad$obs
+obsm <- ad$obsm
+var_names <- ad$var_names
+
+var_ <- ad$var
+varm <- ad$varm
+var_keys <- ad$var_keys()
+uns <- ad$uns
+#layers <- ad$layers
+layers <- NULL
+rawX <- ad$raw$X
+rawvar <- ad$raw$var
+
+# raw$X <- rawX
+# raw$var <- rawvar
+
+db_dir = "data-raw"
+db_prefix <- "Vilas_B_"
+make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
+                            observables, comparables, dimreds,
+                            default_omic = NA, default_dimred = NA, meta_to_include = NA,
+                            gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = db_dir,
+                            chunk_size = 500,  legend_cols = 4,
+                            max_levels_ui = 50)
+#
+# make_ingest_file_primitives(X,obs,var_,obsm=obsm, varm=varm,
+#                              uns=uns, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
+#                              gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
+#                                         default_omics1 = NA, default_omics2 = NA, default_multi = NA,
+#                                         default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
+#                                         max_levels_ui = 50)
+#
+#vilas_B_conf = readRDS(file.path(db_dir,"test1conf.rds"))
+vilas_B_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
+
+# defaults:  list of meta1, meta2, omics1, omics2, omics (list of 10). dimred, grp1, grp2
+vilas_B_def = readRDS( paste0(db_dir,"/",db_prefix,"def.rds") )
+
+# list of vars )e/g/ 3000 genes with counts?
+vilas_B_omics = readRDS( paste0(db_dir,"/",db_prefix,"omics.rds") )
+# use this sorted one to resort everything before packing into anndata
+
+vilas_B_meta = readRDS( paste0(db_dir,"/",db_prefix,"meta.rds") )
+vilas_B_X = readRDS( paste0(db_dir,"/",db_prefix,"X.rds") )
+vilas_B_obs = readRDS( paste0(db_dir,"/",db_prefix,"obs.rds") )
+vilas_B_obsm = readRDS( paste0(db_dir,"/",db_prefix,"obsm.rds") )
+vilas_B_var = readRDS( paste0(db_dir,"/",db_prefix,"var.rds") )
+vilas_B_varm = readRDS( paste0(db_dir,"/",db_prefix,"varm.rds") )
+vilas_B_uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
+vilas_B_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
+
+
+
+# usethis::use_data(vilas_B_X,vilas_B_var,vilas_B_obs, overwrite = TRUE)
+# usethis::use_data(vilas_B_obsm,vilas_B_varm,vilas_B_layers,vilas_B_uns, overwrite = TRUE)
+usethis::use_data(vilas_B_conf, vilas_B_def, vilas_B_omics, vilas_B_meta, overwrite = TRUE)
+
+#######################################################################
+#######################################################################
+##
+##  Create some "differential tables" of type:
+##  1. aggregated over "observations"
+##  2. aggregated over "features"
+##  3. aggretated over features and observations.
+##
+#######################################################################
+#######################################################################
+
+#######################################################################
+#######################################################################
+##
+##  ANNDATA example
+##
+#######################################################################
+#######################################################################
+
+library(anndata)
+
+
+# X <- omicser::vilas_B_X
+# obs <- omicser::vilas_B_obs
+# var_ <- omicser::vilas_B_var
+# obsm <- omicser::vilas_B_obsm
+# varm <- omicser::vilas_B_varm
+# uns <- omicser::vilas_B_varm
+# layers <- omicser::vilas_B_layers
+X <- vilas_B_X
+obs <- vilas_B_obs
+var_ <- vilas_B_var
+obsm <- vilas_B_obsm
+varm <- vilas_B_varm
+uns <- vilas_B_uns
+layers <- vilas_B_layers
+
+# ad <- AnnData(
+#   X = X,
+#   obs = obs,
+#   var = var_,
+#   layers = layers,
+#   raw = raw,
+#   obsm = obsm,
+#   varm = varm,
+#   uns = uns,
+# )
+
+ad_new <- AnnData(
+  X = X,
+  obs = obs,
+  var = var_,
+  uns = uns,
+  obsm = obsm,
+  varm = varm,
+)
+
+
+ad_new
+
+ad_raw <- Raw(ad_new, X = rawX, var = rawvar, varm = NULL)
+
+ad_new <- AnnData(
+  X = X,
+  obs = obs,
+  var = var_,
+  uns = uns,
+  obsm = obsm,
+  varm = varm,
+  raw = ad_raw
+)
+
+
+#write_h5ad(anndata = ad, filename = file.path(db_dir,"data-raw/Vilas_A.h5ad"))
+# anndata R wrapper is broken.. .invoke python
+#
+ad_new$write_h5ad(filename="data-raw/vilas_B.h5ad")
+
+# does not have the "RAW" counts included  395MB
+ad <- read_h5ad(filename="data-raw/vilas_B.h5ad")
+
+
+file_name <- file.path(DB_NAME, "new_microglia_data.h5ad")
+file_path <- file.path(DATA_DIR, file_name)
+ad_og <- read_h5ad(file_path)
+
+ad_og
+
+ad_og$write_h5ad(filename="data-raw/vilas_Bog.h5ad")
+
+# HAS the "RAW" counts included  580MB
+# source("data-raw/domenico_A.R",echo = FALSE)
+ad_og <- read_h5ad(filename="data-raw/vilas_Bog.h5ad")
+
+ad
+#
+#
+# ####################################
+# ####################################
+# ##
+# ## read from .h5ad directly... (depricated)
+# ##
+# ####################################
+# ####################################
+# library("Seurat")
+#
+#
+# DATA_DIR <- "ingest"
+# DB_NAME <- "Vilas_B"
+# library(SeuratData)
+# library(SeuratDisk)
+#
+# out_file_name <- "new_microglia_data.h5Seurat"
+# out_file_path <- file.path(DATA_DIR, DB_NAME, out_file_name)
+#
+# new_microglia_data <- readRDS(file.path(DATA_DIR, DB_NAME, "new_microglia_data.rds"))
+#
+#
+#
+#
+#
+# ui_conf2 = create_config(new_microglia_data,
+#                         meta_to_include = NA, legend_cols = 4,
+#                         max_levels = 50
+# )
+#
+# db_prefix = "Vilas_B2_"
+# db_dir = "data-raw"
+# gene.mapping = FALSE
+# default_omics1 = NA
+# default_omics2 = NA
+# default_multi = NA
+# default_dimred = NA
+# chunk_size = 500
+# gex.assay = "SCT"  # this makes the data match the anndata version ,
+# gex.slot = "scale.data" #  scale.data only includes 3000 genes instead of 18913 in counts/data
+#
+# vilasb_conf = make_ingest_files_etc(new_microglia_data, ui_conf2,
+#                                      db_prefix = "Vilas_B2_", db_dir = "data-raw", gex.assay = gex.assay, gex.slot = gex.slot,
+#                                      gene.mapping = FALSE,
+#                                      default_omics1 = NA, default_omics2 = NA, default_multi = NA,
+#                                      default_dimred = NA, chunk_size = 500
+#                                     )
+#
+#
+# vilas_B2_conf = readRDS(file.path(db_dir,"vilas_B2_conf.rds"))
+# vilas_B2_def = readRDS(file.path(db_dir,"vilas_B2_def.rds"))
+# vilas_B2_omics = readRDS(file.path(db_dir,"vilas_B2_omics.rds"))
+# vilas_B2_meta = readRDS(file.path(db_dir,"vilas_B2_meta.rds"))
+#
+# file.copy(from=file.path(db_dir,"Vilas_B2_gexpr.h5"), to=file.path("data","Vilas_B2_gexpr.h5"),
+#           overwrite = TRUE, recursive = FALSE,
+#           copy.mode = TRUE)
+#
+#
+# usethis::use_data(vilas_B2_conf, vilas_B2_def, vilas_B2_omics, vilas_B2_meta, overwrite = TRUE)
+#

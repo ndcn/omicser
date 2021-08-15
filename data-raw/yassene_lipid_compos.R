@@ -2,12 +2,12 @@
 #######################################################################
 #######################################################################
 ##
-##  "WHAT IS THE CONTEXT?" lipidomics
+##  "WHAT IS THE CONTEXT?" lipidomics composition data
 ##  - data from yassenne / ricoo
 ##
 #######################################################################
 #######################################################################
-#  formely `yassene_A`
+#  formely `yassene_A` (conc and compos)
 #
 #
 # Golem options (Inactive) ---------------------------
@@ -33,7 +33,7 @@ require(readxl)
 
 
 # create the folder to contain the raw data
-DB_NAME = "yassene_exaple"
+DB_NAME = "yassene_A_compos"
 DB_DIR = file.path("data-raw",DB_NAME)
 if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
@@ -83,17 +83,17 @@ comp_group[comp_group==""] <- "CONTROL"  #i'm not sure this is true
 obs_meta <- lipid_composition[meta_cols]
 
 
-rownames(obs) <- lipid_composition$Name
+rownames(obs_meta) <- lipid_composition$Name
 
 # # convert to matrix
 # comp_mat <- as.matrix( lipid_composition[ , !(names(lipid_composition) %in% meta_cols)])
 
 comp_data <- lipid_composition %>% dplyr::select(!matches(meta_cols))
-rownames(comp_data) <- obs$Name
+rownames(comp_data) <- obs_meta$Name
 
 
 comp_mat <- as.matrix(comp_data)
-rownames(comp_mat) <- obs$Name
+rownames(comp_mat) <- obs_meta$Name
 
 class(comp_mat) <- "numeric"  # converts to numbers / NAs
 #ZSCALE the matrix
@@ -112,50 +112,6 @@ mu_comp <- colMeans(comp_mat)
 var_comp <- apply(comp_mat,2,var)
 
 
-# 2. load concentration data --------------------
-csv_name <- "example_species_conc.csv"
-file_name <- file.path(RAW_DIR,csv_name)
-lipid_concentration <- read.csv(file=file_name, header=TRUE, as.is = TRUE)
-conc_group <- lipid_concentration$Group
-conc_group[conc_group==""] <- "CONTROL"  #i'm not sure this is true
-
-# make sure meta is aligned between concentration and composition
-all(conc_group == comp_group)
-all(lipid_concentration$Name == lipid_composition$Name)
-
-
-conc_data <- lipid_concentration %>% dplyr::select(!matches(meta_cols))
-rownames(conc_data) <- obs$Name
-
-
-conc_mat <- as.matrix( conc_data)
-rownames(conc_mat) <- obs$Name
-
-class(conc_mat) <- "numeric"
-#ZSCALE the matrix
-zconc_raw <- scale(conc_mat) #including zeros
-
-# zero out NA: is this tricky because its sparse?
-conc_mat[which(is.na(conc_mat), arr.ind = TRUE)] <- 0
-
-excess_zero_conc <- ( colSums(conc_mat==0) > 2/3*dim(conc_mat)[1] )
-#poor_conc <- which(colSums(conc_mat==0) > 2/3*dim(conc_mat)[1])
-
-# ZSCALE the matrix
-zconc <- scale(conc_mat)
-
-mu_conc <- colMeans(conc_mat)
-var_conc <- apply(conc_mat,2,var)
-
-# # remove_zeros
-# comp_scl_no0 <- comp[, -ind_rem]
-# conc_scl_no0 <- conc[, -ind_rem]
-all(excess_zero_conc==excess_zero_comp)
-
-
-obs$var_conc <- apply(conc_mat,1,var)
-obs$mean_conc <-apply(conc_mat,1,mean)
-
 
 # experiment with the scaled (including)
 regr_group <- obs$Group
@@ -163,15 +119,13 @@ g <- unique(regr_group)
 # g
 #
 test_comp <- zcomp
-test_conc <- zconc
-regr_group <- as.numeric(factor(obs$Group))
+regr_group <- as.numeric(factor(obs_meta$Group))
 
 ind_rem_group <- which(regr_group == which(table(regr_group) < 3))
 
 # remove groups with less than 3 observations..
 if (length(ind_rem_group) > 0) {
   test_comp <- test_comp[-ind_rem_group, ]
-  test_conc <- test_conc[-ind_rem_group, ]
   regr_group <- regr_group[-ind_rem_group]
 }
 
@@ -180,11 +134,10 @@ dim(test_comp)
 lipids=colnames(test_comp)
 var_ <- as.data.frame(lipids)
 
-var_$mean_conc <- mu_conc
-var_$var_conc <- var_conc
+
+# TODO: make these generic so its the same for -compos and -conc databases
 var_$mean_comp <- mu_comp
 var_$var_comp <- var_comp
-var_$excess_zero_conc <- excess_zero_conc
 var_$excess_zero_comp <- excess_zero_comp
 
 # choose the "significant" columns via lasso regression (glmnet)
@@ -201,18 +154,6 @@ uns <- list(comp_lasso_coef=coef)
 var_$comp_sig_lasso_coef <- (colnames(test_comp) %in% coef_names)
 
 
-set.seed(100)
-cvfit <- cv.glmnet(test_conc, regr_group, nlambda = 100, alpha = .8, family = "multinomial", type.multinomial = "grouped")
-coef <- coef(cvfit, s = "lambda.min")
-tmp <- as.matrix(coef$"1")
-tmp1 <- tmp[which(tmp != 0)]
-coef_names <- rownames(tmp)[which(tmp != 0)][-1]
-ind_coef <- which(colnames(test_conc) %in% coef_names)
-
-uns$conc_lasso_coef <- coef
-
-var_$conc_sig_lasso_coef <- (colnames(test_conc) %in% coef_names)
-
 rownames(var_) <- var_$lipids
 
 
@@ -223,8 +164,8 @@ rownames(var_) <- var_$lipids
 
 #
 
-X <- t(data)
-
+X <- comp_mat
+obs <- obs_meta
 
 db_prefix = "core_data"
 saveRDS(X, file = paste0(DB_DIR, "/", db_prefix, "_X.rds"))
@@ -249,10 +190,93 @@ ad$write_h5ad(filename=file.path(DB_DIR,"core_data.h5ad"))
 
 
 
+# ------------------------------------------
+# 5. post processing                      --
+# ------------------------------------------
+# use scanpy to compute:
+#     - differential measures (volcano)
+#     - marginal stats
+#     - dimension reductions (PCA,UMAP, tSNE)
 
 
-raw <- conc_mat
-X <- zconc
+#> AnnData object with n_obs × n_vars = 2 × 3
+#>     obs: 'group'
+
+require(anndata)
+require(reticulate)
+DB_NAME = "yassene_A_compos"
+DB_DIR = file.path("data-raw",DB_NAME)
+RAW_DIR <- "ingest/Yassene_A"
+
+db_prefix = "core_data"
+X = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_X.rds"))
+obs = readRDS(  file = paste0(DB_DIR, "/", db_prefix, "_obs.rds"))
+var_ = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_var.rds"))
+
+
+
+
+ad <- read_h5ad(file.path(DB_DIR,"core_data.h5ad"))
+ad
+
+
+
+sc <- import("scanpy")
+
+
+test_types <- c('wilcoxon','t-test_overestim_var')
+
+norm_adata <- sc$pp$normalize_total(ad,copy=TRUE)
+#normpc_adata <- sc$pp$normalize_per_cell(ad,copy=TRUE)
+z_adata <- sc$pp$scale(ad,copy=TRUE)
+
+
+
+test_types <- c('wilcoxon','t-test_overestim_var')
+
+diff_exp <- data.frame()
+#log_adata <- sc$pp$log1p(ad,copy=TRUE)
+condition_key = 'Group'
+comp_type <- "allVrest"
+test_type <- test_types[1]
+key <- paste0(test_type,"_", comp_type)
+sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
+de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
+de_table$condition <- comp_type
+de_table$test_type <- test_type
+diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
+
+
+test_type <- test_types[2]
+key <- paste0(test_type,"_", comp_type)
+sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
+de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
+de_table$condition <- comp_type
+de_table$test_type <- test_type
+diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
+
+# not sure how to add layers...
+
+# TODO:  add de_table into uns
+#new_adata$uns$de_table <- diff_exp
+ad$write_h5ad(filename=file.path(DB_DIR,"core_data_plus_de.h5ad"))
+
+db_prefix = "de"
+saveRDS(diff_exp, file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
+
+
+# ------------------------------------------
+# 6. create config and default files                   --
+# ------------------------------------------
+
+
+
+
+
+
+
+raw <- comp_mat
+X <- zcomp
 
 layers <- list(comp = comp_mat)
 layers$zcomp <- zcomp

@@ -43,8 +43,8 @@ mod_omic_selector_ui <- function(id){
 #' omic_selector Server Functions
 #'
 #' @noRd
-mod_omic_selector_server <- function(id, omics_in){
-  moduleServer( id, function(input, output, session){
+mod_omic_selector_server <- function(id, all_omics) {
+  moduleServer( id, function(input, output, session) {
     ns <- session$ns
 
 
@@ -87,8 +87,8 @@ mod_omic_selector_server <- function(id, omics_in){
       } else {
         #omics_choice_list <- rv_in$var[[rv_in$omics_feature]]
         #assert that the choices are updated...
-        l_omics_in <- omics_in()
-        omics_choice_list <- isolate(l_omics_in)
+        l_all_omics <- all_omics()
+        omics_choice_list <- isolate(l_all_omics)
         if ( is.null(omics_choice_list)  ) {
           omics_choice_list <- "" #rownames(rv_in$var)
         } else {
@@ -146,7 +146,7 @@ mod_omic_selector_server <- function(id, omics_in){
     # observeEvent(input$AB_omics_reset, {
     #   reset_omics$reset <- TRUE
     # })
-    # observeEvent(omics_in, {
+    # observeEvent(all_omics, {
     #   reset_omics$reset <- TRUE
     # })
     # #    observeEvent(reset_omics$reset, {
@@ -154,7 +154,6 @@ mod_omic_selector_server <- function(id, omics_in){
     # omics_list$value <- character(0)
     # # get rid of error message when resetting selection
     # output$ui_text_warn <- renderUI({ })
-  })
 
 
   return(omics_list)

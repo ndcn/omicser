@@ -235,11 +235,11 @@ mod_side_selector_server <- function(id, rv_in){
     )
 
 
-    # omics_for_selector <- reactive(rv_in$omics_feature)
+    # omics_for_selector <- reactive(rv_in$omics)
     # omics_list <- mod_omic_selector_server("omic_selector_ui_1", omics_for_selector)
-    omics_out <- reactive( rv_in$omics_feature )
+    all_omics <- reactive( rv_in$omics )
 
-    omics_list <- mod_omic_selector_server("omic_selector_ui_1", omics_out )
+    omics_list <- mod_omic_selector_server("omic_selector_ui_1", all_omics )
 
 
     output$ui_curr_database <- renderUI({
@@ -299,7 +299,7 @@ mod_side_selector_server <- function(id, rv_in){
         shinyjs::enable("SI_obs_comp")
 
         # update omics_out
-        omics_out <- rv_in$omics_feature
+        all_omics <- rv_in$omics
 
 
 
@@ -342,9 +342,14 @@ mod_side_selector_server <- function(id, rv_in){
         return()
       }
       cfg <- isolate(rv_in$config$meta)
+
       subs <- strsplit(cfg[UI == input$SI_subset]$fID, "\\|")[[1]]
-      subs <- sort(subs)
+      subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
+      names(subs2) <- seq_along(subs2)
+      subs[as.numeric(names(sort(subs2)))]
+
       subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
+
 
       checkboxGroupInput( ns("CB_sub_inner1"),
                          label = subs_label,
@@ -360,8 +365,13 @@ mod_side_selector_server <- function(id, rv_in){
       cfg <- isolate(rv_in$config$meta)
 
       subs <- strsplit(cfg[UI == input$SI_subset]$fID, "\\|")[[1]]
-      subs <- sort(subs)
+      subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
+      names(subs2) <- seq_along(subs2)
+      subs[as.numeric(names(sort(subs2)))]
+
       subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
+
+
 
       freezeReactiveValue(input, "CB_sub_inner1")
       updateCheckboxGroupInput(session,
@@ -380,7 +390,10 @@ mod_side_selector_server <- function(id, rv_in){
 
       curr_sel <- isolate(input$CB_sub_inner1)
       subs <- strsplit(cfg[UI == input$SI_subset]$fID, "\\|")[[1]]
-      subs <- sort(subs)
+      subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
+      names(subs2) <- seq_along(subs2)
+      subs[as.numeric(names(sort(subs2)))]
+
       subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
 
       freezeReactiveValue(input, "CB_sub_inner1")

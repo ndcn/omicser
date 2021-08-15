@@ -1,4 +1,7 @@
 # hardwire for now
+require(reticulate)
+reticulate::use_condaenv(required = TRUE, condaenv = 'sc39')
+require(anndata)
 
 # TODO: pack this into a .rda .rds to load for dynamic updates
 dataset_names <- c(
@@ -44,7 +47,7 @@ mod_ingestor_ui <- function(id) {
         selectizeInput(
           ns("SI_dataset"), "Dataset",
           choices = dataset_names,
-          select = "VilasB"  # should i have a default??
+          select = NULL #"VilasB"  # should i have a default??
           )
         )
       ),
@@ -106,7 +109,7 @@ mod_ingestor_server <- function(id) {
       ad = NULL,
 
       # omics key feature i.e. genes, proteins, lipids
-      omics_feature = NULL, #the omics columnname...
+      omics = NULL, #the omics columnname...
 
       config = NULL,
       default = NULL,
@@ -134,7 +137,7 @@ mod_ingestor_server <- function(id) {
             to_return$database_name <- ds_label
             to_return$omics_type <- "transcript"
             to_return$ad <- ad
-            to_return$omics_feature <- omics
+            to_return$omics <- omics
             to_return$meta <- omicmeta  # this might be too redundant
 
             omicconf$meta <- as.data.table(omicconf$meta)
@@ -156,7 +159,7 @@ mod_ingestor_server <- function(id) {
 
             to_return$ad <- ad
             # set a default to avoid funny business in side_select
-            to_return$omics_feature <- omics
+            to_return$omics <- omics
             to_return$meta <- omicmeta  # this might be too redundant
 
             to_return$config <- omicconf
@@ -176,7 +179,7 @@ mod_ingestor_server <- function(id) {
             to_return$omics_type <- "lipid"
 
             to_return$ad <- ad
-            to_return$omics_feature <- omics
+            to_return$omics <- omics
             to_return$meta <- omicmeta  # this might be too redundant
 
             to_return$config <- omicconf
@@ -194,7 +197,7 @@ mod_ingestor_server <- function(id) {
             to_return$omics_type <- "prote"
 
             to_return$ad <- ad
-            to_return$omics_feature <- omics
+            to_return$omics <- omics
             to_return$meta <- omicmeta  # this might be too redundant
 
 
@@ -214,7 +217,7 @@ mod_ingestor_server <- function(id) {
             to_return$omics_type <- "transcript"
 
             to_return$ad <- ad
-            to_return$omics_feature <- omics
+            to_return$omics <- omics
             to_return$meta <- omicmeta  # this might be too redundant
 
 
@@ -261,10 +264,10 @@ mod_ingestor_server <- function(id) {
     })
 
     output$ui_omics <- renderPrint({
-      if (is.null(to_return$omics_feature)) {
+      if (is.null(to_return$omics)) {
         print("no datbase loaded")
       } else {
-        omics <- isolate(to_return$omics_feature)
+        omics <- isolate(to_return$omics)
         print(paste0("Current database omics: ", paste( names(omics)[1:10], collapse = ",")) )
       }
     })
@@ -275,7 +278,6 @@ mod_ingestor_server <- function(id) {
     # # Should this just be done in     observeEvent(input$SI_dataset,?
     observe({
       #to_return$database_name <- input$SI_dataset
-
       to_return$database_name  <- names(which(dataset_names==input$SI_dataset))
 
     })
