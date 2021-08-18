@@ -43,23 +43,34 @@ mod_omic_selector_ui <- function(id){
 #' omic_selector Server Functions
 #'
 #' @noRd
-mod_omic_selector_server <- function(id, all_omics) {
+mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
   moduleServer( id, function(input, output, session) {
     ns <- session$ns
 
 
-    # keep track of which proteins have been selected
-    omics_list <- reactiveValues(value=character(0), viz_now=FALSE)
-    # TODO:  make some resonable defaults when each database loads
-    # start_omic_vals <-strsplit(start_omics, ",| |;|, ")[[1]]
-    # omics_list <- reactiveValues(value=start_omic_vals, viz_now=FALSE)
-    #
-    # Error handling: check if too many omics selected
-    # NOT within_limit  --> print error statement
-    # within_limit --> Update the omics selection
-    # THIS GETS RUN ON EVERY CLICK!!
-    max_omic_feats <- 100
 
+    observeEvent(
+      (new_db_trig()>0),  # new database loaded
+      {
+        req(all_omics,
+            def_omics)  # set when database is chosen
+        omics_list$viz_now = FALSE
+        omics_list$value <- isolate(def_omics())
+        # get rid of error message when resetting selection
+        output$ui_text_warn <- renderUI({ })
+
+      },
+      ignoreNULL = TRUE,
+      ignoreInit = TRUE
+    ) #observe
+
+
+
+    # keep track of which proteins have been selected start with default for
+    # TODO:  check if we need to "isolate"
+    omics_list <- reactiveValues(value=isolate(def_omics()), viz_now=FALSE)
+
+    max_omic_feats <- 100
 
 
     observe({
@@ -86,14 +97,15 @@ mod_omic_selector_server <- function(id, all_omics) {
 
       } else {
         #omics_choice_list <- rv_in$var[[rv_in$omics_feature]]
-        #assert that the choices are updated...
+         #assert that the choices are updated...
         l_all_omics <- all_omics()
         omics_choice_list <- isolate(l_all_omics)
         if ( is.null(omics_choice_list)  ) {
           omics_choice_list <- "" #rownames(rv_in$var)
         } else {
+          if (!is.null(names(omics_choice_list))) {
           omics_choice_list <- names(omics_choice_list)
-        }
+        }}
 
         omics_choices <- isolate(omics_list$value)
 

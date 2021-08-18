@@ -1,3 +1,8 @@
+# hardwire for now
+require(reticulate)
+reticulate::use_condaenv(required = TRUE, condaenv = 'sc39')
+
+
 #' The application server-side
 #'
 #' @param input,output,session Internal parameters for {shiny}.
@@ -43,12 +48,19 @@ app_server <- function(input, output, session) {
     p_vis <- mod_side_selector_server("side_selector_ui_1", rv_in = rv)
     # CHECK sidebar - get params:
     # vis_params <- mod_sideselect_server("sideselect_ui_1", rv)
+        # omics_list = NULL,
+        # # aggregate obs
+        # feat_grp = NULL,
+        # feat_subsel = NULL,
+        # observ_grp = NULL,
+        # observ_subsel = NULL,
+        # observ_x = NULL,
+        # observ_y_raw = NULL,
+        # measure_type = NULL, #"raw" or "comp"
+        # raw_plot_type = NULL,
+        # comp_plot_type = NULL,
+        # obs_type = NULL
 
-    # side-selector chooses the visualization parameters
-    # vis_params[["fact0"]] - which case to plot
-    # vis_params[["fact1"]] - which "second" case to plot (might not be active)
-    # vis_params[["genes"]] - chosen genes to plot
-    # vis_params[["plot_type"]] <-  what type of visualization?
   }
 
   ############################ +

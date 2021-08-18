@@ -37,9 +37,9 @@ mod_pg_vis_comp_ui <- function(id){
         #        content = c("Select cell info / gene to plot on Y-axis",
         #                    "- Can be continuous cell information (e.g. nUMIs / scores)",
         #                    "- Can also be gene expression")),
-        radioButtons(ns("RB_plot_type"), "Plot type:",
-                     choices = c("volcano", "other(TBD"),
-                     selected = "volcano", inline = TRUE),
+        # radioButtons(ns("RB_plot_type"), "Plot type:",
+        #              choices = c("volcano", "other(TBD"),
+        #              selected = "volcano", inline = TRUE),
         #checkboxInput(ns("CB_show_data_points"), "Show data points", value = FALSE),
 
          # actionButton("Van_c1togL", "Toggle to subset cells"),
@@ -54,26 +54,22 @@ mod_pg_vis_comp_ui <- function(id){
         #   actionButton("Van_c1sub1non", "Deselect all groups", class = "btn btn-primary")
         # ), br(),
         br(),
-        radioButtons(inputId = ns("select_test"),
-                     label = "Test:",
-                     choices = c("t-test" = "ttest",
-                                 "Mann-Whitney U test" = "mwtest"),
-                     selected = "ttest"),
-        radioButtons(inputId = ns("select_test_normalization"),
-                     label = "Normalization:",
-                     choices = c("Raw data" = "raw",
-                                 "Total area normalization" = "tot_area"),
-                     selected = "tot_area"),
-        radioButtons(inputId = ns("select_test_transformation"),
-                     label = "Transformation:",
-                     choices = c("No transformation" = "none",
-                                 "Log10 transformation" = "log10"),
-                     selected = "none"),
-        checkboxInput(inputId = ns("test_cor_pvalue"),
-                      label = "Show corrected p-value",
-                      value = FALSE),
+
+        # radioButtons(inputId = ns("select_test_normalization"),
+        #              label = "Normalization:",
+        #              choices = c("Raw data" = "raw",
+        #                          "Total area normalization" = "tot_area"),
+        #              selected = "tot_area"),
+        # radioButtons(inputId = ns("select_test_transformation"),
+        #              label = "Transformation:",
+        #              choices = c("No transformation" = "none",
+        #                          "Log10 transformation" = "log10"),
+        #              selected = "none"),
+        # checkboxInput(inputId = ns("test_cor_pvalue"),
+        #               label = "Show corrected p-value",
+        #               value = FALSE),
         # this dynamicall makes all of our test/group selectors
-        uiOutput(outputId = ns("test_group_selection"))
+        uiOutput(outputId = ns("UI_comp_group_selection"))
         # actionButton("Van_c1tog", "Toggle graphics controls"),
         # conditionalPanel(
         #   condition = "input.Van_c1tog % 2 == 1",
@@ -126,14 +122,33 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
 
 
     #### compare samples
+    #### TODO: change name to diff_exp_filter or something since we are no longer testing here
     test_result <- reactive({
-      req(rv_in$config,
-          rv_in$ad,
-          input$test_group1,
-          input$test_group2,
-          input$select_test,
-          input$select_test_normalization,
-          input$select_test_transformation)
+      req(
+          rv_in$de,
+          input$SI_comp_type,
+          input$SI_comp_fact,
+          input$RB_select_test)
+
+
+      diff_exp <- isolate(rv_in$de)
+
+      # filter according to current "cases"
+      de <- diff_exp %>%
+        dplyr::filter(test_type == input$RB_select_test &
+                        group == input$SI_comp_fact &
+                        comp_type == input$SI_comp_type &
+                        obs_name == input$SI_comp_name) %>%
+
+        dplyr::mutate(f=1,
+                      significant = pvals_adj < 0.01,
+                      point_color =  dplyr::recode(as.character(.data$significant), "TRUE" = "#FF7F00", "FALSE" = "#1F78B4"))
+
+      return(de)
+    })
+
+
+
 
 
 
@@ -184,115 +199,157 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
         #       "ttest" = do_ttest(lipid_data = prep_test_data),
         #       "mwtest" = do_mwtest(lipid_data = prep_test_data))
 
-      colorby_group <- input$colorby_select_group
+      # colorby_group <- input$SI_comp_type
 
-      #browser()
-
-      results_test <- do_stat_test(in_meta = isolate(rv_in$meta),
-                                   in_data = isolate(rv_in$ad$X),
-                                   group = input$test_select_group,
-                                   group1_name = input$test_group1,
-                                   group2_name = input$test_group2,
-                                   colorby_group = colorby_group,
-                                   normalization = input$select_test_normalization,
-                                   transformation = input$select_test_transformation,
-                                   test = input$select_test)
-
-      return(results_test)
-    })
+      # browser()
+      #
+      # pg_volc_ly <- function(in_data, pvalue_adjust = FALSE, title = "")
+      #
+      #
+      # # results_test <- do_stat_test(in_meta = isolate(rv_in$meta),
+      # #                              in_data = isolate(rv_in$ad$X),
+      # #                              group = input$test_select_group,
+      # #                              group1_name = input$SI_comp_type,
+      # #                              group2_name = input$test_group2,
+      # #                              colorby_group = colorby_group,
+      # #                              normalization = input$select_test_normalization,
+      # #                              transformation = input$select_test_transformation,
+      # #                              test = input$select_test)
+      #
+      # return(results_test)
 
 
     # create some ui output
-    output$test_group_selection <- renderUI({
+    output$UI_comp_group_selection <- renderUI({
       req(rv_in$config,
-          rv_in$default)
+          rv_in$default,
+          rv_in$de)
+
+
+      cfg <- isolate(rv_in$config)
+      test_choices <- levels(factor(isolate(rv_in$de$test_type)))
+   # subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
+      #
+
+      # checkboxGroupInput( ns("CB_sub_inner1"),
+      #                     label = subs_label,
+      #                     inline = TRUE,
+      #                     choices = subs,
+      #                     selected = subs)
+
 
       to_return <-  tagList(
-          selectInput(inputId = ns("test_select_group"),
-                      label = "Compare:",
-                      choices = rv_in$config$meta[grp == TRUE]$UI,
-                      selected = rv_in$default$grp2),
-          uiOutput(outputId = ns("test_vs_groups")),
-          selectInput(inputId = ns("colorby_select_group"),
-                      label = "Color by:",
-                      choices = rv_in$config$meta[grp == TRUE]$UI,
-                      selected = rv_in$default$grp2),
-        )
+        radioButtons(inputId = ns("RB_select_test"),
+                     label = "sig test:",
+                     choices = test_choices,
+                     selected = rv_in$default$test[1]),
+        selectInput(inputId = ns("SI_comp_name"),
+                    label = "Comp type",
+                    choices =  strsplit(cfg[ID=="diff_exp_obs_name"]$fID, "\\|")[[1]],
+                    selected = rv_in$default$comp_name),
+        selectInput(inputId = ns("SI_comp_type"),
+                    label = "Comp type",
+                    choices =  strsplit(cfg[ID=="diff_exp_comp_type"]$fID, "\\|")[[1]],
+                    selected = rv_in$default$comp_type),
+        # uiOutput(outputId = ns("test_vs_groups")),
+        selectInput(inputId = ns("SI_comp_fact"),
+                    label = "Comp fact",
+                    choices =  strsplit(cfg[ID=="diff_exp_groups"]$fID, "\\|")[[1]],
+                    selected = rv_in$default$comp_fact),
+        selectInput(inputId = ns("SI_color_grp"),
+                    label = "Color by:",
+                    choices = rv_in$config[grp == TRUE]$UI,
+                    selected = rv_in$default$color_grp)
+      )
 
       return(to_return)
     })
 
-    output$test_vs_groups <- renderUI({
-      tagList(
-        selectInput(inputId = ns("test_group1"),
-                    label = "group 1:",
-                    choices = "none"),
-        HTML("<center><b>vs.</b></center>"),
-        selectInput(inputId = ns("test_group2"),
-                    label = "group 2:",
-                    choices = "none")
-      )
-    })
+    # output$test_vs_groups <- renderUI({
+    #   tagList(
+    #     selectInput(inputId = ns("test_group1"),
+    #                 label = "group 1:",
+    #                 choices = "none"),
+    #     HTML("<center><b>vs.</b></center>"),
+    #     selectInput(inputId = ns("test_group2"),
+    #                 label = "group 2:",
+    #                 choices = "none")
+    #   )
+    # })
 
 
 
-    observeEvent(input$test_select_group, {
+    observeEvent(input$SI_comp_type, {
       req(rv_in$config,
-          input$test_select_group)
-      if(input$test_select_group != "none") {
-        # get the groups
-        cfg <- isolate(rv_in$config$meta)
-        subs <- strsplit(cfg[UI == input$test_select_group]$fID, "\\|")[[1]]
-        subs <- sort(subs)
-        #subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
+          rv_in$default)
 
-        updateSelectInput(inputId = "test_group1",
-                          label = "Group 1:",
-                          choices = subs,
-                          selected = subs[1])
+      # get the groups
+      cfg <- isolate(rv_in$config)
+      subs <- strsplit(cfg[UI == "diff_exp_groups"]$fID, "\\|")[[1]]
+      subs <- sort(subs)
 
-        updateSelectInput(inputId = "test_group2",
-                          label = "Group 2:",
-                          choices = subs,
-                          selected = subs[2])
+      subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
+      if (all(!is.na(subs2))){
+        names(subs2) <- seq_along(subs2)
+        subs <- subs[as.numeric(names(sort(subs2)))]
       }
+
+      #subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
+
+      updateSelectInput(inputId = "SI_comp_fact",
+                        label = "compare :",
+                        choices = subs,
+                        selected = rv_in$default$comp_fact[1])
+
+      # updateSelectInput(inputId = "test_group2",
+      #                   label = "Group 2:",
+      #                   choices = subs,
+      #                   selected = subs[2])
+
     })
 
 
     output$volcano_plot <- renderPlotly({
-      req(test_result)
+      req(test_result,
+          input$SI_comp_type,
+          input$SI_comp_fact)
 
-      if(!is.null(test_result())) {
-        pg_volcano_ly(in_data = test_result(),
-                     pvalue_adjust = input$test_cor_pvalue,
-                     title = paste0(input$test_group1, " vs ", input$test_group2))
+      colorby_group <- input$SI_comp_type
+      de_local <- test_result()
+
+      if( dim(de_local)[1]>0 ) {
+        # pg_volcano_ly(in_data = test_result(),
+        #              pvalue_adjust = input$test_cor_pvalue,
+        #              title = paste0(input$SI_comp_type, " vs ", input$test_group2))
+        pg_volc_ly(de=de_local , title = paste0(input$SI_comp_type, " || ", input$SI_comp_fact) )
       }
     })
 
-    output$test_boxplot <- renderPlotly({
-      req(test_result)
 
-      if(!is.null(test_result())) {
-        # capture the click event
-        # this contains a column with the shortlipidname (column name: customdata)
-        my_data <- event_data(event = "plotly_click",
-                              source = "volcano_plot_click")
-
-        if(!is.null(my_data)) {
-          # restructure data
-          plot_data <- test_result() %>%
-            filter(.data$ShortLipidName %in% my_data$customdata) %>%
-            select(.data$test_data) %>%
-            unnest(.data$test_data)
-
-          # show the boxplot
-          box_plot(lipid_data = plot_data,
-                   title = paste0("Lipid: ", my_data$customdata))
-        }
-      }
-
-
-    })
+    # output$test_boxplot <- renderPlotly({
+    #   req(test_result)
+    #
+    #   if(!is.null(test_result())) {
+    #     # capture the click event
+    #     # this contains a column with the shortlipidname (column name: customdata)
+    #     my_data <- event_data(event = "plotly_click",
+    #                           source = "volcano_plot_click")
+    #
+    #     if(!is.null(my_data)) {
+    #       # restructure data
+    #       plot_data <- test_result() %>%
+    #         filter(.data$ShortLipidName %in% my_data$customdata) %>%
+    #         select(.data$test_data) %>%
+    #         unnest(.data$test_data)
+    #
+    #       # show the boxplot
+    #       box_plot(lipid_data = plot_data,
+    #                title = paste0("Lipid: ", my_data$customdata))
+    #     }
+    #   }
+    #
+    #
+    # })
 
 
 #     #output$plot_volcano_out <- renderPlot({

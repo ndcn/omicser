@@ -30,6 +30,7 @@ require(anndata)
 
 require(glmnet)
 require(readxl)
+require(matrixStats)
 
 
 # create the folder to contain the raw data
@@ -78,10 +79,10 @@ file_name <- file.path(RAW_DIR,csv_name)
 lipid_composition <- read.csv(file=file_name, header=TRUE, as.is = TRUE)
 
 meta_cols <- c("Name","Group")
+obs_meta <- lipid_composition[meta_cols]
 comp_group <- lipid_composition$Group
 comp_group[comp_group==""] <- "CONTROL"  #i'm not sure this is true
-obs_meta <- lipid_composition[meta_cols]
-
+obs_meta$Group <- comp_group
 
 rownames(obs_meta) <- lipid_composition$Name
 
@@ -109,9 +110,13 @@ excess_zero_comp <- ( colSums(comp_mat==0) > 2/3*dim(comp_mat)[1] )
 zcomp <- scale(comp_mat)
 
 mu_comp <- colMeans(comp_mat)
-var_comp <- apply(comp_mat,2,var)
+var_comp <- colVars(comp_mat)
 
+# obs_meta$mean <- rowMeans(comp_mat)
+# obs_meta$var <- apply(comp_mat,1,var)
 
+obs_meta$var_comp <- rowVars(comp_mat)
+obs_meta$mean_comp <-rowMeans(comp_mat)
 
 # experiment with the scaled (including)
 regr_group <- obs$Group
@@ -171,12 +176,14 @@ db_prefix = "core_data"
 saveRDS(X, file = paste0(DB_DIR, "/", db_prefix, "_X.rds"))
 saveRDS(obs, file = paste0(DB_DIR, "/", db_prefix, "_obs.rds"))
 saveRDS(var_, file = paste0(DB_DIR, "/", db_prefix, "_var.rds"))
+saveRDS(uns, file = paste0(DB_DIR, "/", db_prefix, "_uns.rds"))
 
 
 ad <- AnnData(
   X = X,
   obs = obs,
   var = var_,
+  uns = uns
 )
 
 ad
@@ -224,36 +231,41 @@ ad
 sc <- import("scanpy")
 
 
+# norm_adata <- sc$pp$normalize_total(ad,copy=TRUE)
+# #normpc_adata <- sc$pp$normalize_per_cell(ad,copy=TRUE)
+# z_adata <- sc$pp$scale(ad,copy=TRUE) #this does the same colmean as above
+# log1p_adata <- sc$pp$log1p(ad,copy=TRUE)
+
+
+
+
+
 test_types <- c('wilcoxon','t-test_overestim_var')
-
-norm_adata <- sc$pp$normalize_total(ad,copy=TRUE)
-#normpc_adata <- sc$pp$normalize_per_cell(ad,copy=TRUE)
-z_adata <- sc$pp$scale(ad,copy=TRUE)
+comp_types <- c("grpVrest")
 
 
+helper_function<-('data-raw/compute_de_table.R')
+source(helper_function)
 
-test_types <- c('wilcoxon','t-test_overestim_var')
+diff_exp <- compute_de_table(ad,comp_types, test_types, obs_names = 'Group')
 
-diff_exp <- data.frame()
-#log_adata <- sc$pp$log1p(ad,copy=TRUE)
-condition_key = 'Group'
-comp_type <- "allVrest"
-test_type <- test_types[1]
-key <- paste0(test_type,"_", comp_type)
-sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
-de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
-de_table$condition <- comp_type
-de_table$test_type <- test_type
-diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
-
-
-test_type <- test_types[2]
-key <- paste0(test_type,"_", comp_type)
-sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
-de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
-de_table$condition <- comp_type
-de_table$test_type <- test_type
-diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
+#
+# test_type <- test_types[1]
+# key <- paste0(test_type,"_", comp_type)
+# sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
+# de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
+# de_table$condition <- comp_type
+# de_table$test_type <- test_type
+# diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
+#
+#
+# test_type <- test_types[2]
+# key <- paste0(test_type,"_", comp_type)
+# sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
+# de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
+# de_table$condition <- comp_type
+# de_table$test_type <- test_type
+# diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
 
 # not sure how to add layers...
 
@@ -265,9 +277,97 @@ db_prefix = "de"
 saveRDS(diff_exp, file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
 
 
+
 # ------------------------------------------
-# 6. create config and default files                   --
+# 6. dimension reduction - PCA / umap    --
 # ------------------------------------------
+require(anndata)
+require(reticulate)
+
+DB_NAME = "yassene_A_compos"
+DB_DIR = file.path("data-raw",DB_NAME)
+#RAW_DIR <- "ingest/Vilas_B"
+
+ad <- read_h5ad(file.path(DB_DIR,"core_data_plus_de.h5ad"))
+
+
+
+
+# ------------------------------------------
+# 7 . create config and default files                   --
+# ------------------------------------------
+require(anndata)
+require(reticulate)
+
+DB_NAME = "yassene_A_compos"
+DB_DIR = file.path("data-raw",DB_NAME)
+#RAW_DIR <- "ingest/Vilas_B"
+
+ad <- read_h5ad(file.path(DB_DIR,"core_data_plus_de.h5ad"))
+db_prefix = "de"
+diff_exp = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
+
+
+
+
+###
+
+# measures
+#  This ordering is the "default"
+measures <- list(obs = ad$obs_keys()[3:4],
+                 var = ad$var_keys()[2:3])
+
+# differentials  #if we care we need to explicitly state. defaults will be the order...
+diffs <- list(diff_exp_groups =  levels(factor(diff_exp$group)),
+              diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
+              diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
+              diff_exp_tests =  levels(factor(diff_exp$test_type)))
+
+# Dimred
+dimreds <- list(obsm = NA,
+                varm = NA)
+
+# what ad$obs do we want to make default values for...
+# # should just pack according to UI?
+default_factors <- c("Group")
+
+
+
+
+helper_function<-('data-raw/create_config_table.R')
+
+source(helper_function)
+
+db_prefix = "omxr"
+conf_and_def <- create_config_table(ad,
+                                    measures,
+                                    diffs,
+                                    dimreds,
+                                    default_factors,
+                                    db_prefix= db_prefix,
+                                    db_dir = DB_DIR)
+
+
+yassene_A_compos_conf = readRDS( paste0(DB_DIR,"/",db_prefix,"_conf.rds") )
+yassene_A_compos_def = readRDS( paste0(DB_DIR,"/",db_prefix,"_def.rds") )
+yassene_A_compos_omics = readRDS( paste0(DB_DIR,"/",db_prefix,"_omics.rds") )
+yassene_A_compos_meta = readRDS( paste0(DB_DIR,"/",db_prefix,"_meta.rds") )
+
+
+usethis::use_data(yassene_A_compos_conf, yassene_A_compos_def, yassene_A_compos_omics, yassene_A_compos_meta, overwrite = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

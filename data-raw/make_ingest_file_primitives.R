@@ -1,5 +1,5 @@
 
-# require(reticulate)
+require(reticulate)
 # require(hdf5r)
 require("data.table")
 require("RColorBrewer")

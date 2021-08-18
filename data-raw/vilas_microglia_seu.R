@@ -204,7 +204,7 @@ ad_$write_h5ad(filename=file.path(DB_DIR,"recast.h5ad"))
 
 
 
-ad$write_h5ad(filename=file.path(DB_DIR,"core_data.h5ad"))
+#ad$write_h5ad(filename=file.path(DB_DIR,"core_data.h5ad"))
 
 # ------------------------------------------
 # 5. post processing                      --
@@ -227,40 +227,21 @@ ad
 
 sc <- import("scanpy")
 
+
 test_types <- c('wilcoxon','t-test_overestim_var')
-
-diff_exp <- data.frame()
-#log_adata <- sc$pp$log1p(ad,copy=TRUE)
-condition_key = 'cell_type'
-comp_type <- "allVrest"
-test_type <- test_types[1]
-key <- paste0(test_type,"_", comp_type)
-sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
-de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
-de_table$condition <- comp_type
-de_table$test_type <- test_type
-diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
+comp_types <- c("allVrest")
 
 
-test_type <- test_types[2]
-key <- paste0(test_type,"_", comp_type)
-sc$tl$rank_genes_groups(ad, condition_key, method=test_type, key_added = key)
-de_table <- sc$get$rank_genes_groups_df(ad, NULL, key=key)
-de_table$condition <- comp_type
-de_table$test_type <- test_type
-diff_exp <- dplyr::bind_rows(diff_exp, de_table)# for this dataset its straightforward to do all comparisons...
+helper_function<-('data-raw/compute_de_table.R')
+source(helper_function)
 
-
+diff_exp <- compute_de_table(ad,comp_types, test_types)
 
 
 # put the logvals in layers of ad
 # copy the whole thing and replace X to copy the uns to ad
 
-
-
 ad$write_h5ad(filename=file.path(DB_DIR,"core_data_plus_de.h5ad"))
-
-
 
 # also need to pack the diff_exp1 and diff_exp2 into easy to deal wiht tables for volcanos...
 
@@ -270,311 +251,83 @@ saveRDS(diff_exp, file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
 
 
 # ------------------------------------------
-# 6. create config and default files                   --
+# 6. dimension reduction - PCA / umap    --
 # ------------------------------------------
+require(anndata)
+require(reticulate)
+
+DB_NAME = "vilas_microglia_seu"
+DB_DIR = file.path("data-raw",DB_NAME)
+#RAW_DIR <- "ingest/Vilas_B"
+
+ad <- read_h5ad(file.path(DB_DIR,"core_data_plus_de.h5ad"))
+
+
+
+
+# ------------------------------------------
+# 7 . create config and default files                   --
+# ------------------------------------------
+require(anndata)
+require(reticulate)
+
+DB_NAME = "vilas_microglia_seu"
+DB_DIR = file.path("data-raw",DB_NAME)
+#RAW_DIR <- "ingest/Vilas_B"
+
+ad <- read_h5ad(file.path(DB_DIR,"core_data_plus_de.h5ad"))
+db_prefix = "de"
+diff_exp = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
+
+
 
 
 ###
 
-# OBSERVABLES
-#
-observables <- list(obs = c("nCount_SCT","nFeature_SCT"),
-                    var = names(ad$var),
-                    layers = NA,
-                    raw = c("X"),
-                    obsm = NA,
-                    rawvar = names(ad$raw$var))
+# measures
+#  This ordering is the "default"
+measures <- list(obs = c("nCount_SCT","nFeature_SCT","nCount_RNA","nFeature_RNA"),
+                 var = ad$var_keys())
+# [1] "sct.detection_rate"    "sct.gmean"             "sct.variance"
+# [4] "sct.residual_mean"     "sct.residual_variance" "sct.variable"
 
+# differentials  #if we care we need to explicitly state. defaults will be the order...
+diffs <- list(diff_exp_groups =  levels(factor(diff_exp$group)),
+              diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
+              diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
+              diff_exp_tests =  levels(factor(diff_exp$test_type)))
 
-# COMPARABLES
-comparables <- list(varm = NA,
-                    obsm = NA)
 # Dimred
 dimreds <- list(obsm = c('X_pca', 'X_tsne'),
                     varm = c('PCs'))
 
+# what ad$obs do we want to make default values for...
+# # should just pack according to UI?
+default_factors <- c("tissue","disease","cell_type")
 
-####################################
-####################################
-##
-##   read from .h5ad
-##
-####################################
-####################################
 
-helper_function<-('data-raw/make_ingest_file_primitives.R')
+
+
+helper_function<-('data-raw/create_config_table.R')
 
 source(helper_function)
 
-
-DATA_DIR <- "ingest"
-DB_NAME <- "Vilas_B"
-
-
-file_name <- file.path(DB_NAME, "new_microglia_data.h5ad")
-file_path <- file.path(DATA_DIR, file_name)
-
-# ui_conf = create_config(file_path,
-#   meta_to_include = NA, legend_cols = 4,
-#   max_levels = 50
-# )
-# inp_obj = file_path
-#
-# db_prefix = "Vilas_B_"
-# db_dir = "data-raw"
-# gene.mapping = FALSE
-# default_omics1 = NA
-# default_omics2 = NA
-# default_multi = NA
-# default_dimred = NA
-# chunk_size = 500
-# #gex.assay = "X" # X.raw" # X is filled with scale.data / data instead of counts... counts are in raw.X
-# #gex.slot = "scale.data"  # only for Seurat.
-#
-# vilasb_conf = make_ingest_files_h5ad(inp_obj, ui_conf,
-#   db_prefix = "Vilas_B_", db_dir = "data-raw",
-#   gene.mapping = FALSE,
-#   default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-#   default_dimred = NA, chunk_size = 500
-# )
-
-# extract_primitives_from_ad <- function(ad){
-#   X <- ad$X
-#   obs <- ad$obs
-#   obsm <- ad$obsm
-#   var_names <- ad$var_names
-#
-#   var_ <- ad$var
-#   varm <- ad$varm
-#   var_keys <- ad$var_keys()
-#   uns <- ad$uns
-#   layers <- ad$obs
-#   rawX <- ad$raw$X
-#   rawvar <- ad$raw$var
-# }
-#
-# X <- ad$X
-# obs <- ad$obs
-# varm <- ad$obs
-
-## TODO:  check if
-## varm & obsm are backwards...
-##
-ad <- read_h5ad(file_path)
-
-X <- ad$X
-obs <- ad$obs
-obsm <- ad$obsm
-var_names <- ad$var_names
-
-var_ <- ad$var
-varm <- ad$varm
-var_keys <- ad$var_keys()
-uns <- ad$uns
-#layers <- ad$layers
-layers <- NULL
-rawX <- ad$raw$X
-rawvar <- ad$raw$var
-
-# raw$X <- rawX
-# raw$var <- rawvar
-
-db_dir = "data-raw"
-db_prefix <- "Vilas_B_"
-make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
-                            observables, comparables, dimreds,
-                            default_omic = NA, default_dimred = NA, meta_to_include = NA,
-                            gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = db_dir,
-                            chunk_size = 500,  legend_cols = 4,
-                            max_levels_ui = 50)
-#
-# make_ingest_file_primitives(X,obs,var_,obsm=obsm, varm=varm,
-#                              uns=uns, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-#                              gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
-#                                         default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-#                                         default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
-#                                         max_levels_ui = 50)
-#
-#vilas_B_conf = readRDS(file.path(db_dir,"test1conf.rds"))
-vilas_B_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
-
-# defaults:  list of meta1, meta2, omics1, omics2, omics (list of 10). dimred, grp1, grp2
-vilas_B_def = readRDS( paste0(db_dir,"/",db_prefix,"def.rds") )
-
-# list of vars )e/g/ 3000 genes with counts?
-vilas_B_omics = readRDS( paste0(db_dir,"/",db_prefix,"omics.rds") )
-# use this sorted one to resort everything before packing into anndata
-
-vilas_B_meta = readRDS( paste0(db_dir,"/",db_prefix,"meta.rds") )
-vilas_B_X = readRDS( paste0(db_dir,"/",db_prefix,"X.rds") )
-vilas_B_obs = readRDS( paste0(db_dir,"/",db_prefix,"obs.rds") )
-vilas_B_obsm = readRDS( paste0(db_dir,"/",db_prefix,"obsm.rds") )
-vilas_B_var = readRDS( paste0(db_dir,"/",db_prefix,"var.rds") )
-vilas_B_varm = readRDS( paste0(db_dir,"/",db_prefix,"varm.rds") )
-vilas_B_uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
-vilas_B_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
+db_prefix = "omxr"
+conf_and_def <- create_config_table(ad,
+                                measures,
+                                diffs,
+                                dimreds,
+                                default_factors,
+                                db_prefix= db_prefix,
+                                db_dir = DB_DIR)
 
 
-
-# usethis::use_data(vilas_B_X,vilas_B_var,vilas_B_obs, overwrite = TRUE)
-# usethis::use_data(vilas_B_obsm,vilas_B_varm,vilas_B_layers,vilas_B_uns, overwrite = TRUE)
-usethis::use_data(vilas_B_conf, vilas_B_def, vilas_B_omics, vilas_B_meta, overwrite = TRUE)
-
-#######################################################################
-#######################################################################
-##
-##  Create some "differential tables" of type:
-##  1. aggregated over "observations"
-##  2. aggregated over "features"
-##  3. aggretated over features and observations.
-##
-#######################################################################
-#######################################################################
-
-#######################################################################
-#######################################################################
-##
-##  ANNDATA example
-##
-#######################################################################
-#######################################################################
-
-library(anndata)
+vilas_microglia_seu_conf = readRDS( paste0(DB_DIR,"/",db_prefix,"_conf.rds") )
+vilas_microglia_seu_def = readRDS( paste0(DB_DIR,"/",db_prefix,"_def.rds") )
+vilas_microglia_seu_omics = readRDS( paste0(DB_DIR,"/",db_prefix,"_omics.rds") )
+vilas_microglia_seu_meta = readRDS( paste0(DB_DIR,"/",db_prefix,"_meta.rds") )
 
 
-# X <- omicser::vilas_B_X
-# obs <- omicser::vilas_B_obs
-# var_ <- omicser::vilas_B_var
-# obsm <- omicser::vilas_B_obsm
-# varm <- omicser::vilas_B_varm
-# uns <- omicser::vilas_B_varm
-# layers <- omicser::vilas_B_layers
-X <- vilas_B_X
-obs <- vilas_B_obs
-var_ <- vilas_B_var
-obsm <- vilas_B_obsm
-varm <- vilas_B_varm
-uns <- vilas_B_uns
-layers <- vilas_B_layers
-
-# ad <- AnnData(
-#   X = X,
-#   obs = obs,
-#   var = var_,
-#   layers = layers,
-#   raw = raw,
-#   obsm = obsm,
-#   varm = varm,
-#   uns = uns,
-# )
-
-ad_new <- AnnData(
-  X = X,
-  obs = obs,
-  var = var_,
-  uns = uns,
-  obsm = obsm,
-  varm = varm,
-)
+usethis::use_data(vilas_microglia_seu_conf, vilas_microglia_seu_def, vilas_microglia_seu_omics, vilas_microglia_seu_meta, overwrite = TRUE)
 
 
-ad_new
-
-ad_raw <- Raw(ad_new, X = rawX, var = rawvar, varm = NULL)
-
-ad_new <- AnnData(
-  X = X,
-  obs = obs,
-  var = var_,
-  uns = uns,
-  obsm = obsm,
-  varm = varm,
-  raw = ad_raw
-)
-
-
-#write_h5ad(anndata = ad, filename = file.path(db_dir,"data-raw/Vilas_A.h5ad"))
-# anndata R wrapper is broken.. .invoke python
-#
-ad_new$write_h5ad(filename="data-raw/vilas_B.h5ad")
-
-# does not have the "RAW" counts included  395MB
-ad <- read_h5ad(filename="data-raw/vilas_B.h5ad")
-
-
-file_name <- file.path(DB_NAME, "new_microglia_data.h5ad")
-file_path <- file.path(DATA_DIR, file_name)
-ad_og <- read_h5ad(file_path)
-
-ad_og
-
-ad_og$write_h5ad(filename="data-raw/vilas_Bog.h5ad")
-
-# HAS the "RAW" counts included  580MB
-# source("data-raw/domenico_A.R",echo = FALSE)
-ad_og <- read_h5ad(filename="data-raw/vilas_Bog.h5ad")
-
-ad
-#
-#
-# ####################################
-# ####################################
-# ##
-# ## read from .h5ad directly... (depricated)
-# ##
-# ####################################
-# ####################################
-# library("Seurat")
-#
-#
-# DATA_DIR <- "ingest"
-# DB_NAME <- "Vilas_B"
-# library(SeuratData)
-# library(SeuratDisk)
-#
-# out_file_name <- "new_microglia_data.h5Seurat"
-# out_file_path <- file.path(DATA_DIR, DB_NAME, out_file_name)
-#
-# new_microglia_data <- readRDS(file.path(DATA_DIR, DB_NAME, "new_microglia_data.rds"))
-#
-#
-#
-#
-#
-# ui_conf2 = create_config(new_microglia_data,
-#                         meta_to_include = NA, legend_cols = 4,
-#                         max_levels = 50
-# )
-#
-# db_prefix = "Vilas_B2_"
-# db_dir = "data-raw"
-# gene.mapping = FALSE
-# default_omics1 = NA
-# default_omics2 = NA
-# default_multi = NA
-# default_dimred = NA
-# chunk_size = 500
-# gex.assay = "SCT"  # this makes the data match the anndata version ,
-# gex.slot = "scale.data" #  scale.data only includes 3000 genes instead of 18913 in counts/data
-#
-# vilasb_conf = make_ingest_files_etc(new_microglia_data, ui_conf2,
-#                                      db_prefix = "Vilas_B2_", db_dir = "data-raw", gex.assay = gex.assay, gex.slot = gex.slot,
-#                                      gene.mapping = FALSE,
-#                                      default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-#                                      default_dimred = NA, chunk_size = 500
-#                                     )
-#
-#
-# vilas_B2_conf = readRDS(file.path(db_dir,"vilas_B2_conf.rds"))
-# vilas_B2_def = readRDS(file.path(db_dir,"vilas_B2_def.rds"))
-# vilas_B2_omics = readRDS(file.path(db_dir,"vilas_B2_omics.rds"))
-# vilas_B2_meta = readRDS(file.path(db_dir,"vilas_B2_meta.rds"))
-#
-# file.copy(from=file.path(db_dir,"Vilas_B2_gexpr.h5"), to=file.path("data","Vilas_B2_gexpr.h5"),
-#           overwrite = TRUE, recursive = FALSE,
-#           copy.mode = TRUE)
-#
-#
-# usethis::use_data(vilas_B2_conf, vilas_B2_def, vilas_B2_omics, vilas_B2_meta, overwrite = TRUE)
-#

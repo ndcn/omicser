@@ -26,7 +26,7 @@ require(tidyverse)
 require(reticulate)
 reticulate::use_condaenv(required = TRUE, condaenv = 'sc39')
 require(anndata)
-
+require(matrixStats)
 # create the folder to contain the raw data
 DB_NAME = "domenico_stem_cell"
 DB_DIR = file.path("data-raw",DB_NAME)
@@ -173,6 +173,14 @@ del_vars <- which(!(features %in% feat_annots$UniProtIds))
 data <- raw_data[feat_annots$UniProtIds,conditions_table$File.Name]
 var_names <- row.names(data)
 
+# transpose so its in X format
+data <- t(data)
+log_data <- log(data)
+
+tmp_mat <- data
+tmp_mat[is.na(tmp_mat)] <- 0
+# tmp_mat <- data
+# tmp_mat[which(is.na(tmp_mat), arr.ind = TRUE)] <- 0
 
 ## i think that DIFF_DATA in the wide form is the optimal pattern...
 
@@ -205,10 +213,20 @@ comp_data <- comp_data[feat_annots$UniProtIds,]
 # 4. pack into anndata                    --
 # ------------------------------------------
 
-
 var_ <- comp_data
+var_$geomean <- colMeans(log_data,na.rm = TRUE) #exp minus 1?
+var_$mean <- colMeans(data,na.rm = TRUE)
+
+
+var_$var  <- colVars(data,na.rm = TRUE)
+var_$frac <- colMeans(tmp_mat>0)
+
 obs <- conditions_table
-X <- t(data)
+obs$var_conc <- rowVars(data,na.rm=TRUE)
+obs$mean_conc <- rowMeans(data,na.rm=TRUE)
+obs$frac <- rowMeans(tmp_mat>0)
+
+X <- data
 
 
 db_prefix = "core_data"
@@ -260,250 +278,141 @@ var_ = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_var.rds"))
 ad <- read_h5ad(file.path(DB_DIR,"core_data.h5ad"))
 ad
 
-
+raw_ad <- ad$copy()
 
 sc <- import("scanpy")
 
 
+
+# the scanpy tools for differential expression calculations expect log transformed data...
+#  and the values are MUCH too big and cause overflow since they are only 32bit values if not
+sc$pp$log1p(ad)
+
+
+
+
 test_types <- c('wilcoxon','t-test_overestim_var')
+comp_types <- c("grpVrest", "oVy","gVy","gVo")
 
 
-log_adata <- sc$pp$log1p(ad,copy=TRUE)
-diff_exp <- data.frame()
-for (test_type in test_types) {
-  comp_type <- "allVrest"
-  key <- paste0(test_type,"_", comp_type)
-  sc$tl$rank_genes_groups(log_adata, 'Condition', method='t-test_overestim_var', key_added = key)
-  #diff_exp <- list()
-  de_table <- sc$get$rank_genes_groups_df(log_adata, NULL, key=key)
-  de_table$condition <- comp_type
-  de_table$test_type <- test_type
-  diff_exp <- dplyr::bind_rows(diff_exp, de_table)
-  # for this dataset its straightforward to do all comparisons...
+helper_function<-('data-raw/compute_de_table.R')
+source(helper_function)
 
-  comp_type <- "oVy"
-  key <- paste0(test_type,"_", comp_type)
-  sc$tl$rank_genes_groups(log_adata, 'Condition',group = 'o', reference='y', method='t-test_overestim_var', key_added = key)
-  de_type <- sc$get$rank_genes_groups_df(log_adata, group = c('o'), key=key)
-  de_table$condition <- comp_type
-  de_table$test_type <- test_type
-  diff_exp <- dplyr::bind_rows(diff_exp, de_table)
+diff_exp <- compute_de_table(ad,comp_types, test_types, obs_names = "Condition")
 
-  comp_type <- "gVy"
-  key <- paste0(test_type,"_", comp_type)
-  sc$tl$rank_genes_groups(log_adata, 'Condition',group = 'g', reference='y', method='t-test_overestim_var', key_added = key)
-  de_type <- sc$get$rank_genes_groups_df(log_adata, group = c('g'), key=key)
-  de_table$condition <- comp_type
-  de_table$test_type <- test_type
-  diff_exp <- dplyr::bind_rows(diff_exp, de_table)
+#  "log1p" layer and
+#  "raw" layer for easy access / clarity
+#
 
-  comp_type <- "gVo"
-  key <- paste0(test_type,"_", comp_type)
-  sc$tl$rank_genes_groups(log_adata, 'Condition',group = 'g', reference='o', method='t-test_overestim_var', key_added = key)
-  de_type <- sc$get$rank_genes_groups_df(log_adata, group = c('g'), key=key)
-  de_table$condition <- comp_type
-  de_table$test_type <- test_type
-  diff_exp <- dplyr::bind_rows(diff_exp, de_table)
 
-}
 
-new_adata <- log_adata$copy()
+norm_adata <- sc$pp$normalize_total(ad,copy=TRUE)
+normpc_adata <- sc$pp$normalize_per_cell(ad,copy=TRUE)
+z_adata <- sc$pp$scale(ad,copy=TRUE)
 
-new_adata$layers  <- list(log1p = log_adata$X)
 
-new_adata$X <- ad$X
+rawX <- AnnData(
+  X = raw_ad$X,
+  var = raw_ad$var)
+
+add_layers = list(
+  log1p = ad$X,
+  raw = raw_ad$X
+)
+
+ad$layers <- add_layers
+ad$raw <- rawX
+ad$X <- raw_ad$X  # set back to "raw"
+
+
+
+
 
 # TODO:  add de_table into uns
 #new_adata$uns$de_table <- diff_exp
-new_adata$write_h5ad(filename=file.path(DB_DIR,"core_data_plus_de.h5ad"))
+ad$write_h5ad(filename=file.path(DB_DIR,"core_data_plus_de.h5ad"))
 
 db_prefix = "de"
 saveRDS(diff_exp, file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
 
 
-# also need to pack the diff_exp1 and diff_exp2 into easy to deal wiht tables for volcanos...
+
+# ------------------------------------------
+# 6. dimension reduction - PCA / umap    --
+# ------------------------------------------
+require(anndata)
+require(reticulate)
+
+DB_NAME = "domenico_stem_cell"
+DB_DIR = file.path("data-raw",DB_NAME)
+#RAW_DIR <- "ingest/Vilas_B"
+
+ad <- read_h5ad(file.path(DB_DIR,"core_data_plus_de.h5ad"))
+
 
 
 
 # ------------------------------------------
-# 5. post processing                      --
+# 7 . create config and default files                   --
 # ------------------------------------------
+require(anndata)
+require(reticulate)
+
+DB_NAME = "domenico_stem_cell"
+DB_DIR = file.path("data-raw",DB_NAME)
+#RAW_DIR <- "ingest/Vilas_B"
+
+ad <- read_h5ad(file.path(DB_DIR,"core_data_plus_de.h5ad"))
+db_prefix = "de"
+diff_exp = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
 
 
 
-# ------------------------------------------
-# 6. create "meta" config + defaults      --
-# ------------------------------------------
+# measures
+#  This ordering is the "default"
+measures <- list(obs = ad$obs_keys()[11:13],
+                 var = ad$var_keys()[32:35])
+# [1] "sct.detection_rate"    "sct.gmean"             "sct.variance"
+# [4] "sct.residual_mean"     "sct.residual_variance" "sct.variable"
 
-
-# OBSERVABLES
-observables <- list(obs = c("var_conc","mean_conc"),
-                    var = c("geomean","mean","var"),
-                    layers = NA,
-                    raw = c("X"),
-                    obsm = NA)
-
-# COMPARABLES
-comparables <- list(varm = names(varm),
-                    obsm = NA)
+# differentials  #if we care we need to explicitly state. defaults will be the order...
+diffs <- list(diff_exp_groups =  levels(factor(diff_exp$group)),
+              diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
+              diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
+              diff_exp_tests =  levels(factor(diff_exp$test_type)))
 
 # Dimred
 dimreds <- list(varm = NA,
                 obsm = NA)
 
-# usethis::use_data(Domenico_A_obsm,Domenico_A_varm,Domenico_A_uns,Domenico_A_layers,overwrite = TRUE)
-#
-#
-# usethis::use_data_table()
-#require("data.table")
-## TODO:  check
-##      - do we need default_1, 2 and multi?
-##
 
-#helper_functions<-('data-raw/data_prep_functions.R')
-helper_function<-('data-raw/make_ingest_file_primitives.R')
+# what ad$obs do we want to make default values for...
+# # should just pack according to UI?
+default_factors <- c("Condition","Color","Replicate")
+
+
+
+
+helper_function<-('data-raw/create_config_table.R')
 
 source(helper_function)
 
-db_dir = "data-raw"
-# ui_config <- make_ingest_file_primitives(X,obs,var_,obsm=NA,varm=NA,uns=NA,
-#                                           gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-#                                           gene_mapping = FALSE, db_prefix = "", db_dir = db_dir,
-#                                           default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-#                                           default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
-#                                           max_levels_ui = 50)
-
-db_prefix <- "Domenico_A_"
-make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
-                            observables, comparables, dimreds,
-                            default_omic = NA, default_dimred = NA, meta_to_include = NA,
-                            gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = db_dir,
-                            chunk_size = 500,  legend_cols = 4,
-                            max_levels_ui = 50)
-#
-#vilas_A_conf = readRDS(file.path(db_dir,"test1conf.rds"))
-domenico_A_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
-
-# defaults:  list of meta1, meta2, omics1, omics2, omics (list of 10). dimred, grp1, grp2
-domenico_A_def = readRDS( paste0(db_dir,"/",db_prefix,"def.rds") )
-
-# list of vars )e/g/ 3000 genes with counts?
-domenico_A_omics = readRDS( paste0(db_dir,"/",db_prefix,"omics.rds") )
-# use this sorted one to resort everything before packing into anndata
-
-domenico_A_meta = readRDS( paste0(db_dir,"/",db_prefix,"meta.rds") )
-domenico_A_X = readRDS( paste0(db_dir,"/",db_prefix,"X.rds") )
-domenico_A_obs = readRDS( paste0(db_dir,"/",db_prefix,"obs.rds") )
-domenico_A_obsm = readRDS( paste0(db_dir,"/",db_prefix,"obsm.rds") )
-domenico_A_var = readRDS( paste0(db_dir,"/",db_prefix,"var.rds") )
-domenico_A_varm = readRDS( paste0(db_dir,"/",db_prefix,"varm.rds") )
-domenico_A_uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
-domenico_A_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
+db_prefix = "omxr"
+conf_and_def <- create_config_table(ad,
+                                    measures,
+                                    diffs,
+                                    dimreds,
+                                    default_factors,
+                                    db_prefix= db_prefix,
+                                    db_dir = DB_DIR)
 
 
-#
-# usethis::use_data(domenico_A_X,domenico_A_var,domenico_A_obs, overwrite = TRUE)
-# usethis::use_data(domenico_A_obsm,domenico_A_varm,domenico_A_layers,domenico_A_uns, overwrite = TRUE)
+domenico_stem_cell_conf = readRDS( paste0(DB_DIR,"/",db_prefix,"_conf.rds") )
+domenico_stem_cell_def = readRDS( paste0(DB_DIR,"/",db_prefix,"_def.rds") )
+domenico_stem_cell_omics = readRDS( paste0(DB_DIR,"/",db_prefix,"_omics.rds") )
+domenico_stem_cell_meta = readRDS( paste0(DB_DIR,"/",db_prefix,"_meta.rds") )
 
 
-usethis::use_data(domenico_A_conf, domenico_A_def, domenico_A_omics, domenico_A_meta, overwrite = TRUE)
+usethis::use_data(domenico_stem_cell_conf, domenico_stem_cell_def, domenico_stem_cell_omics, domenico_stem_cell_meta, overwrite = TRUE)
 
-#######################################################################
-#######################################################################
-##
-##  Create some "differential tables" of type:
-##  1. aggregated over "observations"
-##  2. aggregated over "features"
-##  3. aggretated over features and observations.
-##
-#######################################################################
-#######################################################################
-
-#######################################################################
-#######################################################################
-##
-##  ANNDATA example
-##
-#######################################################################
-#######################################################################
-
-require(anndata)
-
-X <-  domenico_A_X
-obs <-  domenico_A_obs
-var_ <-  domenico_A_var
-obsm <-  domenico_A_obsm
-varm <-  domenico_A_varm
-uns <-  domenico_A_uns
-layers <-  domenico_A_layers
-
-
-
-ad <- AnnData(
-  X = X,
-  obs = obs,
-  var = var_,
-  layers = layers,
-  obsm = obsm,
-  varm = varm,
-  uns = uns
-)
-
-ad
-
-#write_h5ad(anndata = ad, filename = file.path(db_dir,"data-raw/domenico_A.h5ad"))
-# anndata R wrapper is broken.. .invoke python
-#
-ad$write_h5ad(filename="data-raw/domenico_A.h5ad")
-#> AnnData object with n_obs × n_vars = 2 × 3
-#>     obs: 'group'
-
-#source("data-raw/yassene_example.R",echo = FALSE)
-
-#######################################################################
-#######################################################################
-##
-##  ANNDATA example
-##
-#######################################################################
-#######################################################################
-#
-# library(anndata)
-#
-#
-# X <- omicser::Domenico_A_X
-# obs <- omicser::Domenico_A_obs
-# var_ <- omicser::Domenico_A_var
-# obsm <- omicser::Domenico_A_obsm
-# varm <- omicser::Domenico_A_varm
-# uns <- omicser::Domenico_A_uns
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-# ad <- AnnData(
-#   X = X,
-#   obs = obs,
-#   var = var_,
-#   layers = list(),
-#   obsm =  list(),
-#   varm =  list(),
-#   uns = uns
-# )
-#
-# ad
-# #> AnnData object with n_obs × n_vars = 2 × 3
-#>     obs: 'group'
-#>     var: 'type'
-#>     uns: 'a', 'b', 'c'
-#>     obsm: 'ones', 'rand', 'zeros'
-#>     varm: 'ones', 'rand', 'zeros'
-#>     layers: 'spliced', 'unspliced'
 

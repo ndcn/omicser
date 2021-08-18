@@ -12,9 +12,8 @@ mod_pg_vis_raw_ui <- function(id){
   ns <- NS(id)
   tagList(
     HTML("Violinplot / Boxplot"),
-    h4("Cell information / gene expression violin plot / box plot"),
-    "In this tab, users can visualise the gene expression or continuous cell information ",
-    "(e.g. Number of UMIs / module score) across groups of cells (e.g. libary / clusters).",
+    h4("Cell information / omic expression violin plot / box plot"),
+    "Here we visualise the expression or continuous cell information ",
     br(),br(),
     fluidRow(
       column(
@@ -78,9 +77,9 @@ mod_pg_vis_raw_ui <- function(id){
 
    HTML("Bubbleplot / Heatmap"),
    h4("Gene expression bubbleplot / heatmap"),
-   "In this tab, users can visualise the gene expression patterns of ",
-   "multiple genes grouped by categorical cell information (e.g. library / cluster).", br(),
-   "The normalised expression are averaged, log-transformed and then plotted.",
+   "In this tab, users can visualise the expression patterns of ",
+   "multiple omics grouped by categorical cell information (e.g. library / cluster).", br(),
+   "The normalised expression values are group averaged and scaled/thresholded (?)).",
    br(),br(),
    fluidRow(
      column(
@@ -159,96 +158,58 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    # p
-    # omics_list = NULL,
-    # raw_plot_type = NULL,
-    # comp_plot_type = NULL,
-    # observ_grp = NULL,
-    # observ_subsel = NULL,
+    # # omics_list
+    #   feat_grp
+    #   feat_subsel
+    #   observ_grpA
+    #   observ_subselA
+    #   observ_grpB
+    #   observ_subselB
+    #   observ_x
+    #   observ_y
+    #   measure_type
+    #   raw_plot_type
+    #   comp_plot_type
+    #   obs_type
+    # #
 
     data_point_sz = .65
     plot_size = "Small"
     font_size = "Small"
     color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
     color_scheme = color_schemes[2]
-    # observe({
-    #   req(p$observ_grp,
-    #       p$observ_subsel,
-    #       rv_in$observ_y_raw)
-    #   browser()
-    #
-    #   in_conf <- rv_in$config$meta
-    #   in_meta <- rv_in$meta
-    #
-    #
-    #   in_fact <- p$observ_grp
-    #   # in_fact <- rv_in$config$meta[[p$observ_grp]]
-    #   #
-    #   # in_fact <- in_meta[[p$observ_grp]]
-    #
-    #   #rv_in$ad$obs[[p$observ_grp]] %in% p$observ_subsel
-    #
-    #   if (!is.null(rv_in$observ_y_raw)){
-    #     # could also extract from the name instead of lookkup
-    #     #       subs <- strsplit(rv_in$observ_y_raw, "\\|")[[1]]
-    #     # rv_in$ad[[subs[1]]][[subs[2]]]
-    #     dat_source = rv_in$config$mat[fIDloc == rv_in$observ_y_raw]$ID
-    #     dat_key = rv_in$config$mat[fIDloc == rv_in$observ_y_raw]$fID
-    #     #dd <- isolate(rv_in$ad[[rv_in$config$mat[fID == rv_in$observ_y_raw]$ID]][[rv_in$observ_y_raw]])
-    #     if (dat_source == "obs") {
-    #       in_data <- isolate(rv_in$ad$obs[[dat_key]])
-    #     } else if (dat_source == "var") {
-    #       in_data <- isolate(rv_in$ad$var[[dat_key]])
-    #     } else {
-    #       in_data <- NULL
-    #     }
-    #     in_quant <- dat_key #(maybe) just observ_y_raw
-    #   }
-    #
-    # })
-
 
     output$plot_box_out <- renderPlot({
       #req(rv_in$ad)
       req(p$omics_list,
-          p$observ_grp,
-          p$observ_subsel,
-          p$observ_y_raw)
+          p$observ_grpA,
+          p$observ_x,
+          p$observ_subselA,
+          p$observ_y)
 
-      # observ_y_raw = NULL,
-      # observ_y_comp = NULL,
-      in_conf <- rv_in$config$meta
+      in_conf <- rv_in$config
       in_meta <- rv_in$meta
 
+      in_fact <- p$observ_grpA
+      dat_key= p$observ_y
+      dat_source = rv_in$config[UI == p$observ_y]$field
 
-      in_fact <- p$observ_grp
-      # in_fact <- rv_in$config$meta[[p$observ_grp]]
-      #
-      # in_fact <- in_meta[[p$observ_grp]]
-
-      #rv_in$ad$obs[[p$observ_grp]] %in% p$observ_subsel
-
-        # could also extract from the name instead of lookkup
-        #       subs <- strsplit(rv_in$observ_y_raw, "\\|")[[1]]
-        # rv_in$ad[[subs[1]]][[subs[2]]]
-        dat_source = rv_in$config$mat[fIDloc == p$observ_y_raw]$ID
-        dat_key = rv_in$config$mat[fIDloc == p$observ_y_raw]$fID
-        #dd <- isolate(rv_in$ad[[rv_in$config$mat[fID == rv_in$observ_y_raw]$ID]][[rv_in$observ_y_raw]])
-        if (dat_source == "obs") {
-          in_data <- isolate(rv_in$ad$obs[[dat_key]])
-        } else if (dat_source == "var") {
-          in_data <- isolate(rv_in$ad$var[[dat_key]])
-          names(in_data) <- ad$var_names
-        } else {
-          in_data <- NULL
-          print('boxplots only for obs and var ?@!?')
-          #TODO:  spawn warning box
-          return(NULL)
-        }
-        in_quant <- dat_key #(maybe) just observ_y_raw
-
+      in_data <- isolate(rv_in$ad[[dat_source]][[dat_key]])
+      if (dat_source == "obs") {
+        in_data <- isolate(rv_in$ad$obs[[dat_key]])
+        names(in_data) <- rv_in$ad$obs_names
+      } else if (dat_source == "var") {
+        in_data <- isolate(rv_in$ad$var[[dat_key]])
+        names(in_data) <- rv_in$ad$var_names
+      } else {
+        in_data <- NULL
+        print('boxplots only for obs and var ?@!?')
+        #TODO:  spawn warning box
+        return(NULL)
+      }
+      in_quant <- dat_key #(maybe) just observ_y
       pg_violin_box(in_conf, in_meta, in_fact, in_quant,
-                    p$observ_grp, p$observ_subsel,
+                    p$observ_grpA, p$observ_subselA,
                     in_data, p$omics_list$value, input$RB_plot_type, input$CB_show_data_points,
                     data_point_sz, font_size)
 
@@ -342,50 +303,27 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
       }
     })
 
+
+    # plot_heatmap_out renderPlot---------------------------------
     output$plot_heatmap_out <- renderPlot({
-
-      print("renderPlot heatmap")
       req(p$omics_list,
-          p$observ_grp,
-          p$observ_subsel,
-          p$observ_y_raw)
+          p$observ_grpA,
+          p$observ_subselA,
+          p$observ_y)
 
-      # observ_y_raw = NULL,
-      # observ_y_comp = NULL,
-
-      in_conf <- rv_in$config$meta
+      in_conf <- rv_in$config
       in_meta <- rv_in$meta
 
+      in_fact <- p$observ_grpA
 
-      in_fact <- p$observ_grp
-
-
-
-      dat_source = rv_in$config$mat[fIDloc == p$observ_y_raw]$ID
-      dat_key = rv_in$config$mat[fIDloc == p$observ_y_raw]$fID
-      #  probably add a "matrix" column to config...
+         #  probably add a "matrix" column to config...
       # maybe use the data_source to indicate if we want raw or layers... short circuit for now
       in_data <- isolate(rv_in$ad$X)  # do we need to isolate it??
 
-      # if (dat_source == "obs") {
-      #   in_data <- isolate(rv_in$ad$obs[[dat_key]])
-      # } else if (dat_source == "var") {
-      #   in_data <- isolate(rv_in$ad$var[[dat_key]])
-      #   names(in_data) <- rv_in$ad$var_names
-      # } else {
-      #   in_data <- NULL
-      #   print('boxplots only for obs and var ?@!?')
-      #   #TODO:  spawn warning box
-      #   return(NULL)
-      # }
-
-      in_quant <- "X" #dat_key #(maybe) just observ_y_raw
+      in_quant <- "X" #dat_key #(maybe) just observ_y
 
       # these are the "groups" to show on the x axis
       in_group <- in_fact
-      #in_subset1 <- p$observ_subsel
-      in_subset1 <- p$observ_grp
-      in_subset2 <- p$observ_subsel
 
       # these are the groups to show on thye y axis
       all_omics <- rv_in$ad$var_names
@@ -394,13 +332,9 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
       all_obs <- rv_in$ad$obs_names
       names(all_obs) <- all_obs
 
-      #
-      # in_group  input$Van_d1grp
-      # in_subset1  p$observ_grp, input$Van_d1sub1 (cell)
-      # in_subset2 p$observ_subsel, input$Van_d1sub2 (cell)
-      #
+
       pg_bubble_heatmap(in_conf, in_meta, p$omics_list$value, in_group, input$RB_heat_plot_type,
-                 p$observ_grp, p$observ_subsel, in_data, all_omics,
+                 p$observ_grpA, p$observ_subselA, in_data, all_omics,
                  input$CB_scale, input$CB_cluster_rows, input$CB_cluster_cols,
                  color_scheme, plot_size)
     })
