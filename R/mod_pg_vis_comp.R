@@ -256,10 +256,11 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
                     label = "Comp fact",
                     choices =  strsplit(cfg[ID=="diff_exp_groups"]$fID, "\\|")[[1]],
                     selected = rv_in$default$comp_fact),
-        selectInput(inputId = ns("SI_color_grp"),
+        shinyjs::disabled(selectInput(inputId = ns("SI_color_grp"),
                     label = "Color by:",
                     choices = rv_in$config[grp == TRUE]$UI,
                     selected = rv_in$default$color_grp)
+        )
       )
 
       return(to_return)
@@ -314,7 +315,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
           input$SI_comp_type,
           input$SI_comp_fact)
 
-      colorby_group <- input$SI_comp_type
+      colorby_group <- input$SI_color_grp
       de_local <- test_result()
 
       if( dim(de_local)[1]>0 ) {

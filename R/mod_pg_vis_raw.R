@@ -179,6 +179,9 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
     color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
     color_scheme = color_schemes[2]
 
+    #go_signal <- reactive( p$omics_list$viz )
+
+
     output$plot_box_out <- renderPlot({
       #req(rv_in$ad)
       req(p$omics_list,
@@ -216,7 +219,9 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
     })
 
     output$UI_viz_output <- renderUI({
-      plotOutput(ns("plot_box_out"), height = pList2[plot_size])
+      #if (p$omics_list$viz_now) {
+        plotOutput(ns("plot_box_out"), height = pList2[plot_size])
+      #}
     })
 
     ### Plots for tab c1
@@ -338,10 +343,13 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
                  input$CB_scale, input$CB_cluster_rows, input$CB_cluster_cols,
                  color_scheme, plot_size)
     })
-    output$UI_heatmap <- renderUI({
-      print("renderUI UI heatmap")
 
-      plotOutput(ns("plot_heatmap_out"), height = pList3[plot_size])
+    output$UI_heatmap <- renderUI({
+      #if (p$omics_list$viz_now) {
+        print("renderUI UI heatmap")
+
+        plotOutput(ns("plot_heatmap_out"), height = pList3[plot_size])
+
     })
 
     # output$Van_d1oup.pdf <- downloadHandler(

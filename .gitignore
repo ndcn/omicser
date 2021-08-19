@@ -3,6 +3,11 @@
 .Rdata
 .httr-oauth
 .DS_Store
+.h5ad
+.h5
+.h5Seurat
+.rds
+.rda
 inst/doc
 /doc/
 /Meta/

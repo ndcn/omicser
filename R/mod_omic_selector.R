@@ -22,13 +22,17 @@ mod_omic_selector_ui <- function(id){
     ), #fluidRow 2
 
     fluidRow(
-      column(width = 4 ,offset = 0,
+      column(width = 3 ,offset = 1,
              style='padding-left:0px; padding-right:1px',
              actionButton(ns("AB_omics_submit"),"Submit",class="hidableSubmit")
       ),
-      column(width = 4, offset = 1,
+      column(width = 3, offset = 0,
              style='padding-left:0px; padding-right:1px',
              actionButton(ns("AB_omics_reset"), "Clear",class="hidableClear")
+      ),
+      column(width = 3, offset = 0,
+             style='padding-left:0px; padding-right:1px',
+             actionButton(ns("AB_omics_def"), "Default",class="hidableClear")
       )
     ),
     fluidRow(
@@ -50,15 +54,17 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
 
 
     observeEvent(
-      (new_db_trig()>0),  # new database loaded
+      new_db_trig,  # new database loaded
       {
-        req(all_omics,
-            def_omics)  # set when database is chosen
-        omics_list$viz_now = FALSE
-        omics_list$value <- isolate(def_omics())
-        # get rid of error message when resetting selection
-        output$ui_text_warn <- renderUI({ })
+        if (new_db_trig>0) {
 
+          req(all_omics,
+              def_omics)  # set when database is chosen
+          omics_list$viz_now = FALSE
+          omics_list$value <- isolate(def_omics())
+          # get rid of error message when resetting selection
+          output$ui_text_warn <- renderUI({ })
+        }
       },
       ignoreNULL = TRUE,
       ignoreInit = TRUE
@@ -74,6 +80,9 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
 
 
     observe({
+      #toggle the vis_now flag if we are changing features
+      omics_list$viz_now = FALSE
+
       if ( length(unique(omics_list$value ) ) >= max_omic_feats ) {
         # will this work?  or is the "observing" affecting a reactive with this render?
         output$ui_text_warn <- renderUI({
@@ -146,10 +155,23 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
       output$ui_text_warn <- renderUI({ })
     })
 
+    # TODO:  force the list to reset when the database is re-loaded...
+    observeEvent(input$AB_omics_def, {
+      omics_list$viz_now = FALSE
+      omics_list$value <- omics_list$value <- isolate(def_omics())
+      # get rid of error message when resetting selection
+      output$ui_text_warn <- renderUI({ })
+    })
+
     observeEvent(input$AB_omics_submit, {
       if(length(unique(omics_list$value)) < max_omic_feats ) { #defensive
         omics_list$value <- input$SI_omics_select #include direct selection from protein-box when pressing submit
         omics_list$viz_now = TRUE
+
+        output$ui_text_warn <- renderUI({
+         p("updated plot")
+        })
+
       } # else ?? print warning??
     })
 

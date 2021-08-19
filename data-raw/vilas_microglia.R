@@ -155,7 +155,7 @@ comp_types <- c("allVrest")
 helper_function<-('data-raw/compute_de_table.R')
 source(helper_function)
 
-diff_exp <- compute_de_table(ad,comp_types, test_types)
+diff_exp <- compute_de_table(ad,comp_types, test_types, obs_name = c('cluster_name'))
 
 
 # put the logvals in layers of ad

@@ -40,13 +40,9 @@ if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
 }
 
-
-
-
 # ------------------------------------------
 # 1. documentation / provenance ------------
 # ------------------------------------------
-
 
 # TODO:  markdown file or html with some copy about the database
 #  - lab, paper link/name
@@ -279,6 +275,7 @@ diff_exp = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
 #  This ordering is the "default"
 measures <- list(obs = ad$obs_keys()[3:4],
                  var = ad$var_keys()[2:3])
+
 # differentials  #if we care we need to explicitly state. defaults will be the order...
 diffs <- list(diff_exp_groups =  levels(factor(diff_exp$group)),
               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),

@@ -4,14 +4,7 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
-```
+
 
 # omicser
 
@@ -36,17 +29,12 @@ devtools::install_github("omicser")
 
 This is a basic example which shows you how to solve a common problem:
 
-```{r example}
+
+```r
 library(omicser)
 ## basic example code
 ```
 
 
-```{r}
 
-devtools::build_readme()
-
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>.
 
