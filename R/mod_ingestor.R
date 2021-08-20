@@ -6,6 +6,7 @@ dataset_names <- c(
   "Domenico DIA" = "domenico_stem_cell",
   "Vilas Microglia" = "vilas_microglia",
   "Vilas Microglia (seu)" = "vilas_microglia_seu",
+  "Vilas Microglia (sceasy)" = "vilas_microglia_sceasy",
   "Yassene Lipid Concentrations" ="yassene_A_conc",
   "Yassene Lipid Compositions" ="yassene_A_compos",
   "Oscar Microglia" ="oscar_microglia"
@@ -126,17 +127,15 @@ mod_ingestor_server <- function(id) {
         ds_name <- (input$SI_dataset)
         ds_label <- names(which(dataset_names==ds_name))
           if (ds_name == "vilas_microglia") { # Vilas transc
-            ad <- anndata::read_h5ad(filename="data-raw/vilas_microglia/core_data_plus_de.h5ad")
-            #ad <- anndata::read_h5ad(filename="data-raw/vilas_microglia/core_data.h5ad")
-            diff_exp = readRDS(file ="data-raw/vilas_microglia/de_table.rds")
+
+            ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/core_data_plus_de.h5ad"))
+            omicconf <- readRDS(file = paste0("data-raw/",ds_name,"omxr_conf.rds"))
+            omicdef <- readRDS(file = paste0("data-raw/",ds_name,"omxr_def.rds") )
+            omics <- readRDS(file = paste0("data-raw/",ds_name,"omxr_omics.rds") )
+            omicmeta <- readRDS(file = paste0("data-raw/",ds_name,"omxr_meta.rds"))
+            diff_exp = readRDS(file = paste0("data-raw/",ds_name,"de_table.rds"))
+
             to_return$de <- diff_exp
-
-            omicconf <- omicser::vilas_microglia_conf
-            omicdef <- omicser::vilas_microglia_def
-            omics <- omicser::vilas_microglia_omics
-            omicmeta <- omicser::vilas_microglia_meta
-
-
 
             to_return$database_name <- ds_label
             to_return$omics_type <- "transcript"
@@ -149,15 +148,39 @@ mod_ingestor_server <- function(id) {
             to_return$default <- omicdef
 
           } else if (ds_name == "vilas_microglia_seu") { # Vilas microglia
-            ad <- anndata::read_h5ad(filename="data-raw/vilas_microglia_seu/core_data_plus_de.h5ad")
-            #ad <- anndata::read_h5ad(filename="data-raw/vilas_microglia_seu/core_data.h5ad")
-            diff_exp = readRDS(file ="data-raw/vilas_microglia_seu/de_table.rds")
+
+            ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/core_data_plus_de.h5ad"))
+            omicconf <- readRDS(file = paste0("data-raw/",ds_name,"omxr_conf.rds"))
+            omicdef <- readRDS(file = paste0("data-raw/",ds_name,"omxr_def.rds") )
+            omics <- readRDS(file = paste0("data-raw/",ds_name,"omxr_omics.rds") )
+            omicmeta <- readRDS(file = paste0("data-raw/",ds_name,"omxr_meta.rds"))
+            diff_exp = readRDS(file = paste0("data-raw/",ds_name,"de_table.rds"))
+
             to_return$de <- diff_exp
 
-            omicconf <- omicser::vilas_microglia_seu_conf
-            omicdef <- omicser::vilas_microglia_seu_def
-            omics <- omicser::vilas_microglia_seu_omics
-            omicmeta <- omicser::vilas_microglia_seu_meta
+
+            to_return$database_name <- ds_label
+            to_return$omics_type <- "transcript"
+
+            to_return$ad <- ad
+            # set a default to avoid funny business in side_select
+            to_return$omics <- omics
+            to_return$meta <- omicmeta  # this might be too redundant
+
+            to_return$config <- omicconf
+            to_return$default <- omicdef
+
+          } else if (ds_name == "vilas_microglia_sceasy") { # Vilas microglia
+
+            ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/core_data_plus_de.h5ad"))
+            omicconf <- readRDS(file = paste0("data-raw/",ds_name,"omxr_conf.rds"))
+            omicdef <- readRDS(file = paste0("data-raw/",ds_name,"omxr_def.rds") )
+            omics <- readRDS(file = paste0("data-raw/",ds_name,"omxr_omics.rds") )
+            omicmeta <- readRDS(file = paste0("data-raw/",ds_name,"omxr_meta.rds"))
+            diff_exp = readRDS(file = paste0("data-raw/",ds_name,"de_table.rds"))
+
+            to_return$de <- diff_exp
+
 
             to_return$database_name <- ds_label
             to_return$omics_type <- "transcript"
@@ -171,14 +194,14 @@ mod_ingestor_server <- function(id) {
             to_return$default <- omicdef
 
           } else if (ds_name == "yassene_A_conc") { # Vilas transc
-            ad <- anndata::read_h5ad(filename="data-raw/yassene_A_conc/core_data_plus_de.h5ad")
-            diff_exp = readRDS(file ="data-raw/yassene_A_conc/de_table.rds")
-            to_return$de <- diff_exp
+            ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/core_data_plus_de.h5ad"))
+            omicconf <- readRDS(file = paste0("data-raw/",ds_name,"omxr_conf.rds"))
+            omicdef <- readRDS(file = paste0("data-raw/",ds_name,"omxr_def.rds") )
+            omics <- readRDS(file = paste0("data-raw/",ds_name,"omxr_omics.rds") )
+            omicmeta <- readRDS(file = paste0("data-raw/",ds_name,"omxr_meta.rds"))
+            diff_exp = readRDS(file = paste0("data-raw/",ds_name,"de_table.rds"))
 
-            omicconf <- omicser::yassene_A_conc_conf
-            omicdef <- omicser::yassene_A_conc_def
-            omics <- omicser::yassene_A_conc_omics
-            omicmeta <- omicser::yassene_A_conc_meta
+            to_return$de <- diff_exp
 
             to_return$database_name <- ds_label
             to_return$omics_type <- "lipid"
@@ -192,16 +215,14 @@ mod_ingestor_server <- function(id) {
 
           } else if (ds_name == "yassene_A_compos") { # Vilas transc
 
-            ad <- anndata::read_h5ad(filename="data-raw/yassene_A_compos/core_data_plus_de.h5ad")
-            #ad <- anndata::read_h5ad(filename="data-raw/yassene_A_compos/core_data.h5ad")
-            diff_exp = readRDS(file ="data-raw/yassene_A_compos/de_table.rds")
+            ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/core_data_plus_de.h5ad"))
+            omicconf <- readRDS(file = paste0("data-raw/",ds_name,"omxr_conf.rds"))
+            omicdef <- readRDS(file = paste0("data-raw/",ds_name,"omxr_def.rds") )
+            omics <- readRDS(file = paste0("data-raw/",ds_name,"omxr_omics.rds") )
+            omicmeta <- readRDS(file = paste0("data-raw/",ds_name,"omxr_meta.rds"))
+            diff_exp = readRDS(file = paste0("data-raw/",ds_name,"de_table.rds"))
+
             to_return$de <- diff_exp
-
-
-            omicconf <- omicser::yassene_A_compos_conf
-            omicdef <- omicser::yassene_A_compos_def
-            omics <- omicser::yassene_A_compos_omics
-            omicmeta <- omicser::yassene_A_compos_meta
 
             to_return$database_name <- ds_label
             to_return$omics_type <- "lipid"
@@ -214,15 +235,14 @@ mod_ingestor_server <- function(id) {
             to_return$default <- omicdef
           } else if (ds_name == "domenico_stem_cell") { # "Domenico Tsc Long"
 
-            ad <- anndata::read_h5ad(filename="data-raw/domenico_stem_cell/core_data_plus_de.h5ad")
-            #ad <- anndata::read_h5ad(filename="data-raw/domenico_stem_cell/core_data.h5ad")
-            diff_exp = readRDS(file ="data-raw/domenico_stem_cell/de_table.rds")
-            to_return$de <- diff_exp
+            ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/core_data_plus_de.h5ad"))
+            omicconf <- readRDS(file = paste0("data-raw/",ds_name,"omxr_conf.rds"))
+            omicdef <- readRDS(file = paste0("data-raw/",ds_name,"omxr_def.rds") )
+            omics <- readRDS(file = paste0("data-raw/",ds_name,"omxr_omics.rds") )
+            omicmeta <- readRDS(file = paste0("data-raw/",ds_name,"omxr_meta.rds"))
+            diff_exp = readRDS(file = paste0("data-raw/",ds_name,"de_table.rds"))
 
-            omicconf <- omicser::domenico_stem_cell_conf
-            omicdef <- omicser::domenico_stem_cell_def
-            omics <- omicser::domenico_stem_cell_omics
-            omicmeta <- omicser::domenico_stem_cell_meta
+            to_return$de <- diff_exp
 
             to_return$database_name <- ds_label
             to_return$omics_type <- "prote"
@@ -237,16 +257,14 @@ mod_ingestor_server <- function(id) {
 
           } else if (ds_name == "oscar_microglia") { # "Oscar Microglia"
 
+            ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/core_data_plus_de.h5ad"))
+            omicconf <- readRDS(file = paste0("data-raw/",ds_name,"omxr_conf.rds"))
+            omicdef <- readRDS(file = paste0("data-raw/",ds_name,"omxr_def.rds") )
+            omics <- readRDS(file = paste0("data-raw/",ds_name,"omxr_omics.rds") )
+            omicmeta <- readRDS(file = paste0("data-raw/",ds_name,"omxr_meta.rds"))
+            diff_exp = readRDS(file = paste0("data-raw/",ds_name,"de_table.rds"))
 
-            ad <- anndata::read_h5ad(filename="data-raw/oscar_microglia/core_data_plus_de.h5ad")
-            #ad <- anndata::read_h5ad(filename="data-raw/oscar_microglia/core_data.h5ad")
-            diff_exp = readRDS(file ="data-raw/oscar_microglia/de_table.rds")
             to_return$de <- diff_exp
-
-            omicconf <- omicser::oscar_microglia_conf
-            omicdef <- omicser::oscar_microglia_def
-            omics <- omicser::oscar_microglia_omics
-            omicmeta <- omicser::oscar_microglia_meta
 
             to_return$database_name <- ds_label
             to_return$omics_type <- "transcript"
@@ -267,7 +285,8 @@ mod_ingestor_server <- function(id) {
         #   to_return$obs <- NULL
         #   print("NO DATA LOADED")
         #   to_return$omics_type <- "NA"
-        #   # leave everythin NULL
+
+        #
         } else { # TODO: code the ingests
           print("NO DATA LOADED")
           to_return$database_name <- NULL
