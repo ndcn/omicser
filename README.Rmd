@@ -28,25 +28,26 @@ Data exploration playground for general -omics sharing.  Developed as part of th
 
 You can install the current version of omicser from giuthub with:
 
-``` r
-devtools::install_github("omicser")
+`devtools::install_github("omicser")`
+
+```{r example}
+x <- 1
+
 ```
 
 ## Example
 
 This is a basic example which shows you how to solve a common problem:
 
-```{r example}
+```{r example2}
 library(omicser)
 ## basic example code
 ```
-
+ `devtools::build_readme()` 
 
 ```{r}
 
 
-
-devtools::build_readme()
 
 ```
 

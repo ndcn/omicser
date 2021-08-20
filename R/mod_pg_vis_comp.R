@@ -236,7 +236,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
       #                     inline = TRUE,
       #                     choices = subs,
       #                     selected = subs)
-
+browser()
 
       to_return <-  tagList(
         radioButtons(inputId = ns("RB_select_test"),

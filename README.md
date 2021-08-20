@@ -9,15 +9,18 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of omicser is to …
+NDCN -Omics Browser (omicser TBC) CZI, NDCN -Omics Browser Data
+exploration playground for general -omics sharing. Developed as part of
+the NDCN Open Science initiative Data Science Pilot March-Sept 202.
 
 ## Installation
 
-You can install the released version of omicser from
-[CRAN](https://CRAN.R-project.org) with:
+You can install the current version of omicser from giuthub with:
+
+`devtools::install_github("omicser")`
 
 ``` r
-install.packages("omicser")
+x <- 1
 ```
 
 ## Example
@@ -29,18 +32,10 @@ library(omicser)
 ## basic example code
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+`devtools::build_readme()`
 
 You’ll still need to render `README.Rmd` regularly, to keep `README.md`
 up-to-date. `devtools::build_readme()` is handy for this. You could also
 use GitHub Actions to re-render `README.Rmd` every time you push. An
 example workflow can be found here:
 <https://github.com/r-lib/actions/tree/master/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.

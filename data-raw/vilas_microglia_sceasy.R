@@ -201,7 +201,7 @@ comp_types <- c("allVrest")
 helper_function<-('data-raw/compute_de_table.R')
 source(helper_function)
 
-diff_exp <- compute_de_table(ad,comp_types, test_types)
+diff_exp <- compute_de_table(ad,comp_types, test_types, obs_name = c('disease','cell_type'))
 
 
 # put the logvals in layers of ad
@@ -210,6 +210,7 @@ diff_exp <- compute_de_table(ad,comp_types, test_types)
 ad$write_h5ad(filename=file.path(DB_DIR,"core_data_plus_de.h5ad"))
 
 # also need to pack the diff_exp1 and diff_exp2 into easy to deal wiht tables for volcanos...
+table(ad$obs$disease)
 
 
 db_prefix = "de"
@@ -253,7 +254,7 @@ diff_exp = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
 # measures
 #  This ordering is the "default"
 measures <- list(obs = c("nCount_SCT","nFeature_SCT","nCount_RNA","nFeature_RNA"),
-                 var = ad$var_keys())
+                 var = NA)
 # [1] "sct.detection_rate"    "sct.gmean"             "sct.variance"
 # [4] "sct.residual_mean"     "sct.residual_variance" "sct.variable"
 
@@ -288,12 +289,12 @@ conf_and_def <- create_config_table(ad,
                                 db_dir = DB_DIR)
 
 
-vilas_microglia_seu_conf = readRDS( paste0(DB_DIR,"/",db_prefix,"_conf.rds") )
-vilas_microglia_seu_def = readRDS( paste0(DB_DIR,"/",db_prefix,"_def.rds") )
-vilas_microglia_seu_omics = readRDS( paste0(DB_DIR,"/",db_prefix,"_omics.rds") )
-vilas_microglia_seu_meta = readRDS( paste0(DB_DIR,"/",db_prefix,"_meta.rds") )
+vilas_microglia_sceasy_conf = readRDS( paste0(DB_DIR,"/",db_prefix,"_conf.rds") )
+vilas_microglia_sceasy_def = readRDS( paste0(DB_DIR,"/",db_prefix,"_def.rds") )
+vilas_microglia_sceasy_omics = readRDS( paste0(DB_DIR,"/",db_prefix,"_omics.rds") )
+vilas_microglia_sceasy_meta = readRDS( paste0(DB_DIR,"/",db_prefix,"_meta.rds") )
 
 
-usethis::use_data(vilas_microglia_seu_conf, vilas_microglia_seu_def, vilas_microglia_seu_omics, vilas_microglia_seu_meta, overwrite = TRUE)
+#usethis::use_data(vilas_microglia_sceasy_conf, vilas_microglia_sceasy_def, vilas_microglia_sceasy_omics, vilas_microglia_sceasy_meta, overwrite = TRUE)
 
 
