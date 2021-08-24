@@ -18,21 +18,11 @@
 #######################################################################
 #  formely `vilas_B` which was derived from a Seurat file
 #
-#
-# Golem options (Inactive) ---------------------------
-# Set options here
-# options(golem.app.prod = FALSE) # TRUE = production mode, FALSE = development mode
-# # Detach all loaded packages and clean your environment
-# golem::detach_all_attached()
-# # rm(list=ls(all.names = TRUE))
-# # Document and reload your package
-# golem::document_and_reload()
-
-
 # ------------------------------------------
 # 0. preamble/setup -------------------------
 # ------------------------------------------
 require("Seurat")
+
 # if (!requireNamespace("remotes", quietly = TRUE)) {
 #   install.packages("remotes")
 # }
@@ -42,7 +32,7 @@ require(SeuratData)
 require(SeuratDisk)
 
 require(reticulate)
-reticulate::use_condaenv(required = TRUE, condaenv = 'sc39')
+reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
 require(anndata)
 
 # create the folder to contain the raw data
@@ -131,8 +121,15 @@ SaveH5Seurat(microglia_data_updated,
 #         No JackStraw data for tsne
 
 Convert(file.path(RAW_DIR, "microglia_data_seu_new.h5Seurat"),
-        dest = "h5ad",
+        dest = file.path(RAW_DIR, "microglia_data_seu_SCT.h5ad"),
+        assay = 'SCT',
         overwrite = TRUE)
+
+Convert(file.path(RAW_DIR, "microglia_data_seu_new.h5Seurat"),
+        dest = file.path(RAW_DIR, "microglia_data_seu_RNA.h5ad"),
+        assay = 'RNA',
+        overwrite = TRUE)
+
 ######     from https://mojaveazure.github.io/seurat-disk/reference/Convert.html
 ######---- Assay data
 ######
@@ -164,6 +161,10 @@ Convert(file.path(RAW_DIR, "microglia_data_seu_new.h5Seurat"),
 
 
 ad <- read_h5ad(file.path(RAW_DIR, "microglia_data_seu_new.h5ad"))
+
+ad_RNA <- read_h5ad(file.path(RAW_DIR, "microglia_data_seu_RNA.h5ad"))
+ad_SCT <- read_h5ad(file.path(RAW_DIR, "microglia_data_seu_SCT.h5ad"))
+
 # NOTE:  raw counts are NOT contained in the anndata file...
 #        they could be added back with layers from the seurat file *if* needed
 

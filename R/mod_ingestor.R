@@ -1,7 +1,8 @@
 require(anndata)
 
 
-# TODO: pack this into a .rda .rds to load for dynamic updates
+# TODO: pack this into a .yml for easy updates
+#
 dataset_names <- c(
   "Domenico DIA" = "domenico_stem_cell",
   "Vilas Microglia" = "vilas_microglia",
@@ -47,7 +48,7 @@ mod_ingestor_ui <- function(id) {
         selectizeInput(
           ns("SI_dataset"), "Dataset",
           choices = dataset_names,
-          select = NULL #"VilasB"  # should i have a default??
+          select = "vilas_microglia_sceasy" #"VilasB"  # should i have a default??
           )
         )
       ),
@@ -104,6 +105,18 @@ mod_ingestor_server <- function(id) {
       # these values hold the database contents (only reactive because we can choose)
       database_name = NULL,
       omics_type = NULL, # Transcript-omics, Prote-omics, Lipid-omics, Metabol-omics, misc-
+      measure = NULL, #normalized count, concentration, composotion, etc.
+
+      # should this be packed into ad$uns?  written into .yml
+      # provides context and  plot labeling choices...
+      # TODO: makefunctions like ShinyProt "protein_conversions.R"
+      db_meta = list( name = NULL,
+                      omics_type = NULL,
+                      measurment = NULL,
+                      organism = NULL,
+                      publication = NULL,
+                      etc = NULL
+                      ),
 
       #  Everything is packed into an anndata object
       ad = NULL,
@@ -126,7 +139,7 @@ mod_ingestor_server <- function(id) {
       if (!is.null(input$SI_dataset)) { # unnesscasary defensive?
         ds_name <- (input$SI_dataset)
         ds_label <- names(dataset_names[match(ds_name,dataset_names)])
-browser()
+
         if (is.na(ds_label)) {
 
           print("NO DATA LOADED")
@@ -135,23 +148,34 @@ browser()
         } else {
 
           ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/core_data_plus_de.h5ad"))
-          omicconf <- readRDS(file = paste0("data-raw/",ds_name,"/omxr_conf.rds"))
-          omicdef <- readRDS(file = paste0("data-raw/",ds_name,"/omxr_def.rds") )
-          omics <- readRDS(file = paste0("data-raw/",ds_name,"/omxr_omics.rds") )
-          omicmeta <- readRDS(file = paste0("data-raw/",ds_name,"/omxr_meta.rds"))
           diff_exp = readRDS(file = paste0("data-raw/",ds_name,"/de_table.rds"))
+
+          conf_def <- gen_config_table(ad, ds_name)
+
+
+          omics <- ad$var_names
+          names(omics) <- omics
+          # omicmeta <- ad$obs
+          #omics_sorted <- conf_def$omics
+
 
           to_return$de <- diff_exp
 
           to_return$database_name <- ds_label
-          to_return$omics_type <- "transcript"
+          to_return$omics_type <- to_return$db_meta$omics_type
           to_return$ad <- ad
           to_return$omics <- omics
-          to_return$meta <- omicmeta  # this might be too redundant
+          # to_return$meta <- omicmeta  # this might be too redundant
 
-          to_return$config <- omicconf
-          to_return$default <- omicdef
+          to_return$config <- conf_def$conf
+          to_return$default <- conf_def$def
 
+          to_return$db_meta$name<-ds_name
+          to_return$db_meta$omics_type<-conf_def$def$db_meta$omic_type
+          to_return$db_meta$measurment<-conf_def$def$db_meta$measurement
+          to_return$db_meta$organism<-conf_def$def$db_meta$organizm
+          to_return$db_meta$publication<-conf_def$def$db_meta$pub
+          to_return$db_meta$etc<-conf_def$def$db_meta$annotation_database
         }
 
       }

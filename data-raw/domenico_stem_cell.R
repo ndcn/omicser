@@ -24,7 +24,7 @@
 # ------------------------------------------
 require(tidyverse)
 require(reticulate)
-reticulate::use_condaenv(required = TRUE, condaenv = 'sc39')
+reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
 require(anndata)
 require(matrixStats)
 # create the folder to contain the raw data

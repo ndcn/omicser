@@ -236,7 +236,6 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
       #                     inline = TRUE,
       #                     choices = subs,
       #                     selected = subs)
-browser()
 
       to_return <-  tagList(
         radioButtons(inputId = ns("RB_select_test"),
@@ -317,7 +316,7 @@ browser()
 
       colorby_group <- input$SI_color_grp
       de_local <- test_result()
-
+browser()
       if( dim(de_local)[1]>0 ) {
         # pg_volcano_ly(in_data = test_result(),
         #              pvalue_adjust = input$test_cor_pvalue,

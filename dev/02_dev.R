@@ -64,12 +64,14 @@ golem::add_module( name = "omic_selector") # Name of the module
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
-# golem::add_fct( "helpers" ) # sever
-# golem::add_utils( "helpers" ) #ui
+# golem::add_fct( "module" ) # sever
+# golem::add_utils( "module" ) #ui
 #   e.g.  boxplot, heatmap, functions
 golem::add_fct( "pg_vis_raw" ) # sever
 #  e.g. volcano plot functions..
 golem::add_fct( "pg_vis_comp" ) # sever
+
+golem::add_fct( "ingestor" ) # sever
 
 
 # ## External resources

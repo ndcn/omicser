@@ -220,14 +220,16 @@ pg_violin_box <- function(in_conf, in_meta, in_fact, in_quant,
 
   if(is.null(in_grp)){in_grp = in_conf$UI[1]}
   # Prepare gg_data
-  gg_data = in_meta[, c(in_conf[UI == in_fact]$ID, in_conf[UI == in_grp]$ID),
-                    with = FALSE]
+  #
+
+  gg_data <- in_meta[, c(in_conf[UI == in_fact]$ID, in_conf[UI == in_grp]$ID)]
+                   # with = FALSE]
   colnames(gg_data) = c("X", "sub")
 
   # gg_data is three column subset (X,sub,val)
   # Load in either cell meta or gene expr
-  if(in_quant %in% in_conf$UI){ #i.e. its in "obs"
-    gg_data$val = in_meta[[in_conf[UI == in_quant]$ID]]
+  if (in_quant %in% in_conf$UI) { #i.e. its in "obs"
+    gg_data$val <- in_meta[[in_conf[UI == in_quant]$ID]]
   } else {
     # need to unpack from other ad components.
     print("no _val_ in gg_data")
@@ -245,7 +247,7 @@ pg_violin_box <- function(in_conf, in_meta, in_fact, in_quant,
   #   h5file$close_all()
   # }
 
-
+# what is this doing?!?!  sub is coded as grouping variable...
   if(length(in_subsel) != 0 & length(in_subsel) != nlevels(gg_data$sub)){
     gg_data = gg_data[sub %in% in_subsel]
   }

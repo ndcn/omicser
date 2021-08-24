@@ -210,6 +210,10 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
         #TODO:  spawn warning box
         return(NULL)
       }
+
+
+      browser()
+
       in_quant <- dat_key #(maybe) just observ_y
       pg_violin_box(in_conf, in_meta, in_fact, in_quant,
                     p$observ_grpA, p$observ_subselA,

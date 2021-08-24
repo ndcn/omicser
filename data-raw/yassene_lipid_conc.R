@@ -8,24 +8,13 @@
 #######################################################################
 #######################################################################
 #  formely `yassene_A` (conc and compos)
-#
-#
-# Golem options (Inactive) ---------------------------
-# Set options here
-# options(golem.app.prod = FALSE) # TRUE = production mode, FALSE = development mode
-# # Detach all loaded packages and clean your environment
-# golem::detach_all_attached()
-# # rm(list=ls(all.names = TRUE))
-# # Document and reload your package
-# golem::document_and_reload()
-
 
 # ------------------------------------------
 # 0. preamble/setup -------------------------
 # ------------------------------------------
 require(tidyverse)
 require(reticulate)
-reticulate::use_condaenv(required = TRUE, condaenv = 'sc39')
+reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
 require(anndata)
 
 require(glmnet)
@@ -150,6 +139,43 @@ uns <- list(comp_lasso_coef=coef)
 var_$conc_sig_lasso_coef <- (colnames(test_conc) %in% coef_names)
 
 rownames(var_) <- var_$lipids
+
+
+#
+#
+#
+#
+# target_diff <- diff_data[diff_data$ProteinGroups==target & diff_data$Comparison..group1.group2.== "o / y",1:17]
+# target_raw_o <- mp_all[mp_all$PG.ProteinAccessions==target & mp_all$R.Condition == "o" ,]
+# target_raw_y <- mp_all[mp_all$PG.ProteinAccessions==target & mp_all$R.Condition == "y" ,]
+# target_raw_oy <- mp_all[mp_all$PG.ProteinAccessions==target & mp_all$R.Condition != "g" ,]
+#
+#
+# > mean(target_raw_o$PG.Quantity)
+# [1] 32375.84
+# > var(target_raw_o$PG.Quantity)
+# [1] 71914321
+#
+# > mean(target_raw_y$PG.Quantity)
+# [1] 35452.68
+# > var(target_raw_y$PG.Quantity)
+# [1] 90295921
+#
+#
+# rat_oy <- mean(target_raw_o$PG.Quantity)/mean(target_raw_y$PG.Quantity)
+# [1] 0.9132126
+#
+# x <- target_raw_oy # %>% dplyr::select(R.Condition, PG.Quantity,R.FileName)
+# x$R.Condition <- factor(x$R.Condition)
+#
+# ttestv <- broom::tidy(t.test(formula = PG.Quantity ~ R.Condition,data=x))
+# ttestv$Qval <- p.adjust(ttestv$p.value, method = "BH")
+#
+# mwv <- broom::tidy(wilcox.test(formula = PG.Quantity ~ R.Condition,data=x))
+#
+# mwv$Qval <- p.adjust(mwv$p.value,method = "BH")
+#
+# data$sample_name, .data$my_group_info, .data$value)
 
 
 
@@ -311,306 +337,4 @@ yassene_A_conc_conf = readRDS( paste0(DB_DIR,"/",db_prefix,"_conf.rds") )
 yassene_A_conc_def = readRDS( paste0(DB_DIR,"/",db_prefix,"_def.rds") )
 yassene_A_conc_omics = readRDS( paste0(DB_DIR,"/",db_prefix,"_omics.rds") )
 yassene_A_conc_meta = readRDS( paste0(DB_DIR,"/",db_prefix,"_meta.rds") )
-
-
-usethis::use_data(yassene_A_conc_conf, yassene_A_conc_def, yassene_A_conc_omics, yassene_A_conc_meta, overwrite = TRUE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-raw <- conc_mat
-X <- zconc
-
-layers <- list(comp = comp_mat)
-layers$zcomp <- zcomp
-layers$conc <- conc_mat
-layers$zconc <- zconc
-
-obsm <- NULL
-varm <- NULL
-
-## TODO:
-##    1. calculate differential expression
-##    2. calculate PCAs & UMAPS
-##    3. incorporate lipid classes ... as feature_annotations (in var_)
-
-
-###  here's some annotation
-xlsx_name <- "Lipid_classification.xlsx"
-file_name <- file.path(DATA_DIR,DB_NAME,xlsx_name)
-
-lipid_class <- read_excel(file_name)
-
-merge_data <- function(lipid_data, lipid_class = NULL, by = NULL) {
-  # make the lipid data long and add some extra columns, same as in tidy_lipids
-  lipid_data_long <- lipid_data %>%
-    mutate(sample_type = factor(tolower(str_extract(string = .data$sample_name,
-                                                    pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)")))) %>%
-    # join the meta data
-    left_join(y = meta_data,
-              by = c("sample_name" = by),
-              suffix = c("", ".y"))
-
-
-  return(lipid_data_long)
-}
-
-results_test <- do_stat_test(lipid_data = isolate(all_data$analysis_data),
-                             group = input$test_select_group,
-                             group1_name = input$test_group1,
-                             group2_name = input$test_group2,
-                             normalization = input$select_test_normalization,
-                             transformation = input$select_test_transformation,
-                             test = input$select_test)
-
-volcano_plot(lipid_data = test_result(),
-             pvalue_adjust = input$test_cor_pvalue,
-             title = paste0(input$test_group1, " vs ", input$test_group2))
-
-
-volcano_plot <- function(lipid_data, pvalue_adjust = FALSE, title = "") {
-  # create y-axis title
-  y_title <- ifelse(pvalue_adjust == FALSE,
-                    "-log10(p value)",
-                    "-log10(cor. p value)")
-
-  # create the plot
-  p <- lipid_data %>%
-    mutate(show_p = case_when(
-      pvalue_adjust == FALSE ~ .data$p_log10,
-      pvalue_adjust == TRUE ~ .data$p_log10_adj
-    )) %>%
-    plot_ly(x = ~fc_log2,
-            y = ~show_p,
-            text = ~ShortLipidName,
-            colors = rainbow(n = 100),
-            customdata = lipid_data$ShortLipidName,
-            source = "volcano_plot_click") %>%
-    add_markers(color = ~LipidClass,
-                size = 3) %>%
-    layout(xaxis = list(zeroline = FALSE,
-                        title = "log2(fold change)"),
-           yaxis = list(title = y_title),
-           shapes = list(vline(-1),
-                         vline(1),
-                         hline(-log10(0.05))),
-           legend = list(orientation = "h"),
-           title = list(text = title,
-                        x = 0)) %>%
-    event_register(event = "plotly_click")
-
-  return(p)
-}
-
-vline <- function(x = 0, color = "blue") {
-  list(
-    type = "line",
-    y0 = 0,
-    y1 = 1,
-    yref = "paper",
-    x0 = x,
-    x1 = x,
-    line = list(color = color,
-                width = 1,
-                dash = "dash")
-  )
-}
-
-hline <- function(y = 0, color = "blue") {
-  list(
-    type = "line",
-    x0 = 0,
-    x1 = 1,
-    xref = "paper",
-    y0 = y,
-    y1 = y,
-    line = list(color = color,
-                width = 1,
-                dash = "dash")
-  )
-}
-
-
-# OBSERVABLES
-#
-observables <- list(obs = c("var_conc","mean_conc"),
-                    var = c("var_conc", "var_comp","mean_conc","mean_comp"),
-                    layers = c("comp", "zcomp","conc","zconc"),
-                    raw = c("X"),
-                    obsm = NA,
-                    rawvar = NA)
-
-
-# COMPARABLES
-comparables <- list(varm = NA,
-                    obsm = NA)
-# Dimred
-dimreds <- list(varm = NA,
-                obsm = NA)
-
-
-
-#######################################################################
-#######################################################################
-##
-##  Create data tables / h5
-##  1. config (XXX_conf.rds)  : structure of the database
-##  2. defaults (XXX_def.rds) : the startup parameters
-##  3. meta_data (XXX_meta.rds)  : data about the observations (obs)
-##  4. omics  (XXX_omics.rds):  data about the  (var)
-##  3. gene_expression (xxx_gexpr.h5):  count matrix of observ X var (X)
-##
-#######################################################################
-#######################################################################
-
-# X <- omicser::yassene_A_X
-# obs <- omicser::yassene_A_obs
-# var_ <- omicser::yassene_A_var
-# obsm <- omicser::yyassene_A_obsm
-# varm <- omicser::yassene_A_varm
-# uns <-  omicser::yyassene_A_uns
-# layers <-  omicser::yassene_A_layers
-
-
-#TODO:  pack into a list or anndata structure for simplicity...
-
-require("data.table")
-## TODO:  check
-##      - do we need default_1, 2 and multi?
-##
-
-helper_functions<-('data-raw/data_prep_functions.R')
-
-source(helper_functions)
-
-db_dir = "data-raw"
-# ui_config <- make_ingest_file_primitives(X,obs,var_,obsm=NA,varm=NA,uns=NA,
-#                                           gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-#                                           gene_mapping = FALSE, db_prefix = "Vilas_A", db_dir = db_dir,
-#                                           default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-#                                           default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
-#                                           max_levels_ui = 50)
-
-# make_ingest_files_primitive(X,obs,var_,obsm=obsm, varm=varm,
-#                             uns=uns, layers = layers, gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-#                             gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
-#                             default_omics1 = NA, default_omics2 = NA, default_multi = NA,
-#                             default_dimred = NA, chunk_size = 500, meta_to_include = NA, legend_cols = 4,
-#                             max_levels_ui = 50)
-
-db_prefix <- "yassene_A_"
-
-make_ingest_file_primitives(X,obs,var_,obsm,varm,uns, layers,
-                            observables, comparables, dimreds,
-                            default_omic = NA, default_dimred = NA, meta_to_include = NA,
-                            gex.assay = NA, gex.slot = c("data", "scale.data", "counts"),
-                            gene_mapping = FALSE, db_prefix = db_prefix, db_dir = "data-raw",
-                            chunk_size = 500,  legend_cols = 4,
-                            max_levels_ui = 50)
-
-#yassene_A_conf = readRDS(file.path(db_dir,"test1conf.rds"))
-yassene_A_conf = readRDS( paste0(db_dir,"/",db_prefix,"conf.rds") )
-
-# defaults:  list of meta1, meta2, omics1, omics2, omics (list of 10). dimred, grp1, grp2
-yassene_A_def = readRDS( paste0(db_dir,"/",db_prefix,"def.rds") )
-
-# list of vars )e/g/ 3000 genes with counts?
-yassene_A_omics = readRDS( paste0(db_dir,"/",db_prefix,"omics.rds") )
-# use this sorted one to resort everything before packing into anndata
-
-yassene_A_meta = readRDS( paste0(db_dir,"/",db_prefix,"meta.rds") )
-yassene_A_X = readRDS( paste0(db_dir,"/",db_prefix,"X.rds") )
-yassene_A_obs = readRDS( paste0(db_dir,"/",db_prefix,"obs.rds") )
-yassene_A_obsm = readRDS( paste0(db_dir,"/",db_prefix,"obsm.rds") )
-yassene_A_var = readRDS( paste0(db_dir,"/",db_prefix,"var.rds") )
-yassene_A_varm = readRDS( paste0(db_dir,"/",db_prefix,"varm.rds") )
-yassene_A_uns = readRDS( paste0(db_dir,"/",db_prefix,"uns.rds") )
-yassene_A_layers = readRDS( paste0(db_dir,"/",db_prefix,"layers.rds") )
-
-
-
-# usethis::use_data(yassene_A_X,yassene_A_var,yassene_A_obs, overwrite = TRUE)
-# usethis::use_data(yassene_A_obsm,yassene_A_varm,yassene_A_layers,yassene_A_uns, overwrite = TRUE)
-usethis::use_data(yassene_A_conf, yassene_A_def, yassene_A_omics, yassene_A_meta, overwrite = TRUE)
-
-#######################################################################
-#######################################################################
-##
-##  Create some "differential tables" of type:
-##  1. aggregated over "observations"
-##  2. aggregated over "features"
-##  3. aggretated over features and observations.
-##
-#######################################################################
-#######################################################################
-
-#######################################################################
-#######################################################################
-##
-##  ANNDATA example
-##
-#######################################################################
-#######################################################################
-
-library(anndata)
-
-
-# X <- omicser::yassene_A_X
-# obs <- omicser::yassene_A_obs
-# var_ <- omicser::yassene_A_var
-# obsm <- omicser::yassene_A_obsm
-# varm <- omicser::yassene_A_varm
-# uns <- omicser::yassene_A_varm
-# layers <- omicser::yassene_A_layers
-
-X <- yassene_A_X
-obs <- yassene_A_obs
-var_ <- yassene_A_var
-obsm <- yassene_A_obsm
-varm <- yassene_A_varm
-uns <-  yassene_A_uns
-layers <-  yassene_A_layers
-
-
-ad <- AnnData(
-  X = X,
-  obs = obs,
-  var = var_,
-  layers = layers,
-  obsm = obsm,
-  varm = varm,
-  uns = uns
-)
-
-ad
-
-# skip raw for now... all loaded into layers
-# adraw <- AnnData(
-#   X = raw,
-#   var = var_
-# )
-#
-# ad$raw <- adraw
-
-
-#write_h5ad(anndata = ad, filename = file.path(db_dir,"data-raw/Vilas_A.h5ad"))
-# anndata R wrapper is broken.. .invoke python
-#
-ad$write_h5ad(filename="data-raw/yassene_A.h5ad")
-#> AnnData object with n_obs × n_vars = 2 × 3
 

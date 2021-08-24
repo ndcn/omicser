@@ -13,35 +13,40 @@ compute_de_table <- function(ad,comp_types, test_types, obs_names) {
         print(test_type)
         print(group)
         print(reference)
+        key <- paste0(test_type,"_", comp_type)
+
 
         if (reference == "rest") { #grpVrest
-          key <- paste0(test_type,"_", comp_type)
           sc$tl$rank_genes_groups(ad,
                                   obs_name,
+                                  groups = "all",
+                                  reference = reference,
                                   method=test_type,
+                                  use_raw = FALSE,
                                   key_added = key)
-          #diff_exp <- list()
           de_table <- sc$get$rank_genes_groups_df(ad,
-                                                  group=NULL,
-                                                  key=key)
+                                                   group=NULL,
+                                                   key=key)
           de_table$comp_type <- comp_type
         } else { #compare group vs reference
-          key <- paste0(test_type,"_", comp_type)
           sc$tl$rank_genes_groups(ad,
                                   obs_name,
-                                  group = group,
-                                  reference=reference,
+                                  groups = list(group),
+                                  reference = reference,
                                   method=test_type,
+                                  use_raw = FALSE,
                                   key_added = key)
           de_table <- sc$get$rank_genes_groups_df(ad,
-                                                  group = group,
-                                                  key=key)
+                                                   group=group,
+                                                   key=key)
           de_table$group <- group
           de_table$comp_type <- 'grpVref'
         }
+
         de_table$reference <- reference
         de_table$test_type <- test_type
         de_table$obs_name <- obs_name
+        de_table$versus <- paste0(de_table$group," vs. ", reference)
 
         diff_exp <- dplyr::bind_rows(diff_exp, de_table)
       }

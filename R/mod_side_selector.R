@@ -26,8 +26,22 @@ mod_side_selector_ui <- function(id){
       uiOutput( ns( "ui_DIV_warn" )),
       htmlOutput( ns( "ui_db_type" )),
 
-    fluidRow(
-      hr(style = "border-top: 1px solid #000000;"),
+      fluidRow(
+        hr(style = "border-top: 1px solid #000000;"),
+        column(
+          width=2,
+          "choose:"
+        ),
+        column(
+          width = 5,
+          offset = 0,
+          shinyjs::disabled(radioButtons( ns("RB_obs_var"), "variable type",
+                                          choices = c("obs","var","X"),
+                                          selected = "X" , inline = TRUE)
+          )
+        )
+      ),# options = list(placeholder = ""))
+      fluidRow(
       column(
         width=2,
         "Choose:",
@@ -78,20 +92,7 @@ mod_side_selector_ui <- function(id){
       )
 
       ),
-  fluidRow(
-    column(
-      width=2,
-      "choose:"
-    ),
-    column(
-      width = 5,
-      offset = 0,
-      shinyjs::disabled(radioButtons( ns("RB_obs_var"), "variable type",
-                                      choices = c("obs","var"),
-                                      selected = "obs" , inline = TRUE)
-      )
-    )
-    ),# options = list(placeholder = ""))
+
   hr(style = "border-top: 1px solid #000000;"),
   fluidRow(
     column(
@@ -115,6 +116,7 @@ mod_side_selector_ui <- function(id){
 
   ),
   hr(style = "border-top: 1px solid #000000;"),
+  ## TODO:  make this entire row a dynamic uiOutput
 
     fluidRow(
       column(
@@ -139,30 +141,30 @@ mod_side_selector_ui <- function(id){
         )
       ),
 
-
-  fluidRow(
-    column(
-      width = 4,
-     #actionButton(ns("AB_subset_tog"), "Toggle subset observations"), #TODO: change text when toggled
-     shinyjs::disabled(
-       selectizeInput(ns("SI_var_subset"),
-                      "Var | subset:",
-                      "",
-                      multiple = FALSE,
-                      options = list(placeholder = "choose dataset first"))
-      ),
-      br(),
-      shinyjs::disabled(
-        actionButton(ns("CB_var_sub_none"), "<none>", class = "btn btn-primary")
-      ),
-      shinyjs::disabled(
-        actionButton(ns("CB_var_sub_all"), "<all>", class = "btn btn-primary"))
-    ),
-    column(width = 8,
-           offset = 0,
-           uiOutput(ns("ui_var_subset"))
-    )
-  ),
+## TODO:  fix var subsetting to only load if we have "grouping"
+  # fluidRow(
+  #   column(
+  #     width = 4,
+  #    #actionButton(ns("AB_subset_tog"), "Toggle subset observations"), #TODO: change text when toggled
+  #    shinyjs::disabled(
+  #      selectizeInput(ns("SI_var_subset"),
+  #                     "Var | subset:",
+  #                     "",
+  #                     multiple = FALSE,
+  #                     options = list(placeholder = "choose dataset first"))
+  #     ),
+  #     br(),
+  #     shinyjs::disabled(
+  #       actionButton(ns("CB_var_sub_none"), "<none>", class = "btn btn-primary")
+  #     ),
+  #     shinyjs::disabled(
+  #       actionButton(ns("CB_var_sub_all"), "<all>", class = "btn btn-primary"))
+  #   ),
+  #   column(width = 8,
+  #          offset = 0,
+  #          uiOutput(ns("ui_var_subset"))
+  #   )
+  # ),
   hr(style = "border-top: 1px solid #000000;"),
 
     mod_omic_selector_ui(ns("omic_selector_ui_1")),
@@ -221,11 +223,8 @@ mod_side_selector_server <- function(id, rv_in){
 
 
     all_omics <- reactive( names(rv_in$omics) )
-
     def_omics <- reactive( rv_in$default$omics)
-
     new_db_trig <- reactive( rv_in$trigger )
-
     omics_list <- mod_omic_selector_server("omic_selector_ui_1", all_omics ,def_omics,rv_in$trigger)
 
 

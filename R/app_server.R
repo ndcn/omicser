@@ -1,6 +1,6 @@
 # hardwire for now
 require(reticulate)
-reticulate::use_condaenv(required = TRUE, condaenv = 'sc39')
+reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
 
 
 #' The application server-side

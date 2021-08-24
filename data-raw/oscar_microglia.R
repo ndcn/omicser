@@ -24,7 +24,7 @@
 # ------------------------------------------
 
 require(reticulate)
-reticulate::use_condaenv(required = TRUE, condaenv = 'sc39')
+reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
 require(Matrix)
 
 require(anndata)

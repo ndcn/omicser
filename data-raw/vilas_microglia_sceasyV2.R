@@ -20,12 +20,270 @@
 #
 #
 
-
-
-
 # ------------------------------------------
 # 0. preamble/setup -------------------------
 # ------------------------------------------
+
+require(Seurat)
+
+db_meta <- list(
+  organizm = '',
+  lab = "Menon",
+  annotation_database = NA,
+  title = "single-cell microglia data",
+  omic_type = "Transcriptomics",
+  measurment = "normalized counts",
+  pub = "TBD"
+)
+
+RAW_DIR <- "ingest/Vilas_B"
+# Seurat Data object
+raw_data_file <- "microglia_data_with_counts_RNA_SCT.rda"
+load(file.path(RAW_DIR,data_file) )
+
+# pre-pre processing
+#update seurat object -----------------------------
+microglia_data_updated <- UpdateSeuratObject(object = microglia_data)
+#> OUTPUT:
+#   Validating object structure
+#   Updating object slots
+#   Ensuring keys are in the proper strucutre
+#   Ensuring feature names don't have underscores or pipes
+#   Object representation is consistent with the most current Seurat version
+
+
+saveRDS(microglia_data_updated,
+        file = file.path(RAW_DIR, "microglia_data_seu_new.rds"))
+microglia_data_updated <- readRDS(file = file.path(RAW_DIR, "microglia_data_seu_new.rds"))
+data_list <- list(object="microglia_data_seu_new.rds")
+
+
+
+# start here 2 -------------------
+# scema
+data_list <- list(object=file.path(RAW_DIR, "microglia_data_seu_new.rds"))
+
+# # scema
+# #c("object", "data_mat","obs_meta","var_annot","omics","sample_ID","etc")
+# data_list <- list(data_mat = NA,
+#                   obs_meta = NULL,
+#                   var_annot = NULL,
+#                   omics = NULL,
+#                   sample_ID = NULL,
+#                   etc = NULL)
+
+DB_NAME = "vilas_microglia_sceasy"
+
+
+helper_function<-('R/fct_ingestor.R')
+source(helper_function)
+
+ad <- setup_database(database_name=DB_NAME, data_in=data_list, db_meta=NULL , re_pack=TRUE)
+
+
+
+
+# ------------------------------------------
+# 5. post processing                      --
+# ------------------------------------------
+require(anndata)
+require(reticulate)
+DB_NAME = "vilas_microglia_sceasy"
+
+
+ad <- read_h5ad(file.path("data-raw",DB_NAME,"core_data.h5ad"))
+ad
+
+sc <- import("scanpy")
+
+#outvals <- sc$pp$filter_cells(ad, min_genes=200, inplace=FALSE)
+
+sc$pp$filter_cells(ad, min_genes=200)
+sc$pp$filter_genes(ad, min_cells=3)
+raw <- ad$copy()
+
+
+# to conform with cellXgene scheme gene filtering is tricky.
+#
+# we need to retain the list / shape of the original genes so we must
+# replace zeros/nulls with NA
+
+# outvals <- sc$pp$filter_genes(ad, min_cells=2, inplace=FALSE)
+
+sc$pp$normalize_per_cell(ad, counts_per_cell_after=1e4)
+sc$pp$log1p(ad)  # already logg-ed?
+sc$pp$highly_variable_genes(ad, min_mean=0.0125, max_mean=3, min_disp=0.5  )
+#sc$pp$regress_out(ad_tmp, 'n_counts' )
+
+# ## Step 2: Normalize with a very vanilla recipe
+# normalized_data = sc$pp$recipe_seurat(raw, copy=TRUE)
+
+## Step 3: Do some basic preprocessing to run PCA and compute the neighbor graph
+sc$pp$pca(ad)
+sc$pp$neighbors(ad)
+
+## Step 4: Infer clusters with the Louvain algorithm
+#sc$tl$louvain(ad_tmp)
+sc$tl$leiden(ad)
+## Step 5: Compute tsne and umap embeddings
+sc$tl$umap(ad)
+
+ad$raw <- raw
+#ad_tmp$layers <- list(non_regressed=ad$X) #list('count'=layers)
+
+
+ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data.h5ad"))
+
+# ------------------------------------------
+# 6. differential expression             --
+# ------------------------------------------
+sc <- import("scanpy")
+helper_function<-('data-raw/compute_de_table.R')
+source(helper_function)
+
+
+test_types <- c('wilcoxon','t-test_overestim_var')
+
+
+comp_types <- c("grpVrest")
+obs_names <- c('disease','cell_type')
+diff_exp <- compute_de_table(ad,comp_types, test_types, obs_names)
+
+comp_types <- c("Mild_Cognitive_ImpairmentVAlzheimer_Disease","Mild_Cognitive_ImpairmentVTemporal_Lobe_Epilepsy","Alzheimer_DiseaseVTemporal_Lobe_Epilepsy")
+obs_names <- c('disease')
+diff_exp2 <- compute_de_table(ad,comp_types, test_types, obs_names)
+
+diff_exp <- dplyr::bind_rows(diff_exp, diff_exp2)
+
+
+ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data_with_de.h5ad"))
+saveRDS(diff_exp, file = file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
+
+# ------------------------------------------
+# 7. create configs                       --
+# ------------------------------------------
+
+ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data.h5ad"))
+
+ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data_with_de.h5ad"))
+diff_exp <- readRDS( file = file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
+
+
+# differentials  #if we care we need to explicitly state. defaults will be the order...
+conf_list <- list(
+  x_obs = c("tissue", "disease", "cell_type", "sex", "leiden"),
+  y_obs = c("nCount_RNA","nFeature_RNA","nCount_SCT","nFeature_SCT", "n_genes","n_counts"), #MEASURES
+  obs_groupby = c("tissue", "disease", "cell_type", "sex", "leiden"),
+  obs_subset = c("tissue", "disease", "cell_type", "sex", "leiden"),
+
+  x_var = c("highly_variable"),
+  y_var = c("sct.detection_rate", "sct.gmean", "sct.variance","sct.residual_mean","sct.residual_variance", "sct.variable",
+            "n_cells",  "means" , "dispersions", "dispersions_norm" ),
+
+  var_groupby = c("tissue", "disease", "cell_type", "sex", "leiden"),
+  var_subset = c("tissue", "disease", "cell_type", "sex", "leiden"),
+
+  diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
+                diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this
+                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
+                diff_exp_tests =  levels(factor(diff_exp$test_type))
+                ),
+
+  # Dimred
+  dimreds = list(obsm = c('X_pca', 'X_tsne'),
+                  varm = c('PCs')),
+
+  # what ad$obs do we want to make default values for...
+  # # should just pack according to UI?
+  default_factors = c("disease","cell_type","tissue"),
+  db_meta = db_meta
+
+)
+
+
+configr::write.config(config.dat = conf_list, file.path = file.path("data-raw",DB_NAME,"config.yml" ),
+                      write.type = "yaml", indent = 4)
+
+
+conf_list_out <- configr::read.config( file.path("data-raw",DB_NAME,"config.yml" ) )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  helper_function<-('data-raw/create_config_table.R')
+
+  source(helper_function)
+
+  db_prefix = "omxr"
+  conf_and_def <- create_config_table(ad,
+                                      measures,
+                                      diffs,
+                                      dimreds,
+                                      default_factors,
+                                      db_prefix= db_prefix,
+                                      db_dir = file.path("data-raw",DB_NAME))
+
+
+
+
+
+require(configr)
+
+  list.test <- list(a=c(123,456))
+
+  # Write YAML format file
+  out_fn <- sprintf("%s/test.yaml", tempdir())
+  out_fn <-  file.path("data-raw",DB_NAME,"config.yml")
+  write.config(config.dat = conf_and_def, file.path = out_fn,
+               write.type = "yaml")
+
+  yaml_list <- read.config(file = out_fn)
+
+
+  # Write YAML format file with 4 indent
+  write.config(config.dat = list.test, file.path = out_fn,
+               write.type = "yaml", indent = 4)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 require("Seurat")
 
 # if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -47,17 +305,17 @@ if (!dir.exists(DB_DIR)) {
 
 
 # ------------------------------------------
-# 1. documentation / provenance ------------
-# ------------------------------------------
-
-# TODO:  markdown file or html with some copy about the database
-#  - lab, paper link/name
-#  summarize results / data origin whatever
-
-
-organism <- ""
-lab <- "Menon"
-annotation_database <- "NA"
+# # 1. documentation / provenance ------------
+# # ------------------------------------------
+#
+# # TODO:  markdown file or html with some copy about the database
+# #  - lab, paper link/name
+# #  summarize results / data origin whatever
+#
+#
+# organism <- ""
+# lab <- "Menon"
+# annotation_database <- "NA"
 
 
 # ------------------------------------------
@@ -194,6 +452,20 @@ ad_py <- sc$AnnData(
 ad_py
 ad_py$write_h5ad(filename=file.path(DB_DIR,"recast_py.h5ad"))
 
+
+ad_py2 <- anndat$AnnData(
+  X = ad$X,
+  obs = ad$obs,
+  var = ad$var,
+  raw = ad$raw,
+  obsm = ad$obsm,
+  varm= ad$varm,
+  raw = ad$raw,
+  layers =  ad$layers
+)
+#ad$write_h5ad(filename=file
+#
+ad_py2$write_h5ad(filename=file.path(DB_DIR,"recast_py2.h5ad"))
 
 # ------------------------------------------
 # 5. post processing                      --

@@ -1,0 +1,96 @@
+x_obs:
+- tissue
+- disease
+- cell_type
+- sex
+- leiden
+y_obs:
+- nCount_RNA
+- nFeature_RNA
+- nCount_SCT
+- nFeature_SCT
+- n_genes
+- n_counts
+obs_groupby:
+- tissue
+- disease
+- cell_type
+- sex
+- leiden
+obs_subset:
+- tissue
+- disease
+- cell_type
+- sex
+- leiden
+x_var: highly_variable
+y_var:
+- sct.detection_rate
+- sct.gmean
+- sct.variance
+- sct.residual_mean
+- sct.residual_variance
+- sct.variable
+- n_cells
+- means
+- dispersions
+- dispersions_norm
+var_groupby:
+- tissue
+- disease
+- cell_type
+- sex
+- leiden
+var_subset:
+- tissue
+- disease
+- cell_type
+- sex
+- leiden
+diffs:
+    diff_exp_comps:
+    - Alzheimer_Disease vs. rest
+    - Alzheimer_Disease vs. Temporal_Lobe_Epilepsy
+    - Cluster_1 vs. rest
+    - Cluster_10 vs. rest
+    - Cluster_11 vs. rest
+    - Cluster_12 vs. rest
+    - Cluster_13 vs. rest
+    - Cluster_2 vs. rest
+    - Cluster_3 vs. rest
+    - Cluster_4 vs. rest
+    - Cluster_5 vs. rest
+    - Cluster_6 vs. rest
+    - Cluster_7 vs. rest
+    - Cluster_8 vs. rest
+    - Cluster_9 vs. rest
+    - Mild_Cognitive_Impairment vs. Alzheimer_Disease
+    - Mild_Cognitive_Impairment vs. rest
+    - Mild_Cognitive_Impairment vs. Temporal_Lobe_Epilepsy
+    - Temporal_Lobe_Epilepsy vs. rest
+    diff_exp_comp_type:
+    - grpVref
+    - grpVrest
+    diff_exp_obs_name:
+    - cell_type
+    - disease
+    diff_exp_tests:
+    - t-test_overestim_var
+    - wilcoxon
+dimreds:
+    obsm:
+    - X_pca
+    - X_tsne
+    varm: PCs
+default_factors:
+- disease
+- cell_type
+- tissue
+db_meta:
+    organizm: ''
+    lab: Menon
+    annotation_database: .na
+    title: single-cell microglia data
+    omic_type: Transcriptomics
+    measurment: normalized counts
+    pub: TBD
