@@ -126,19 +126,21 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
     test_result <- reactive({
       req(
           rv_in$de,
-          input$SI_comp_type,
+          #input$SI_comp_type,
           input$SI_comp_fact,
           input$RB_select_test)
 
 
       diff_exp <- isolate(rv_in$de)
-
+      # TODO: change to data.frame
       # filter according to current "cases"
       de <- diff_exp %>%
+        # dplyr::filter(test_type == input$RB_select_test &
+        #                 group == input$SI_comp_fact &
+        #                 comp_type == input$SI_comp_type &
+        #                 obs_name == input$SI_comp_name) %>%
         dplyr::filter(test_type == input$RB_select_test &
-                        group == input$SI_comp_fact &
-                        comp_type == input$SI_comp_type &
-                        obs_name == input$SI_comp_name) %>%
+                        versus == input$SI_comp_fact) %>%
 
         dplyr::mutate(f=1,
                       significant = pvals_adj < 0.01,
@@ -225,7 +227,6 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
           rv_in$default,
           rv_in$de)
 
-
       cfg <- isolate(rv_in$config)
       test_choices <- levels(factor(isolate(rv_in$de$test_type)))
    # subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
@@ -236,30 +237,31 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
       #                     inline = TRUE,
       #                     choices = subs,
       #                     selected = subs)
-
       to_return <-  tagList(
         radioButtons(inputId = ns("RB_select_test"),
                      label = "sig test:",
                      choices = test_choices,
                      selected = rv_in$default$test[1]),
-        selectInput(inputId = ns("SI_comp_name"),
-                    label = "Comp type",
+        shinyjs::disabled( selectInput(inputId = ns("SI_comp_name"),
+                    label = "Comp name",
                     choices =  strsplit(cfg[ID=="diff_exp_obs_name"]$fID, "\\|")[[1]],
-                    selected = rv_in$default$comp_name),
-        selectInput(inputId = ns("SI_comp_type"),
+                    selected = rv_in$default$comp_name)),
+        shinyjs::disabled( selectInput(inputId = ns("SI_comp_type"),
                     label = "Comp type",
                     choices =  strsplit(cfg[ID=="diff_exp_comp_type"]$fID, "\\|")[[1]],
-                    selected = rv_in$default$comp_type),
+                    selected = rv_in$default$comp_type)),
         # uiOutput(outputId = ns("test_vs_groups")),
         selectInput(inputId = ns("SI_comp_fact"),
-                    label = "Comp fact",
-                    choices =  strsplit(cfg[ID=="diff_exp_groups"]$fID, "\\|")[[1]],
+                    label = "compare: ",
+                    choices =  strsplit(cfg[ID=="diff_exp_comps"]$fID, "\\|")[[1]],
                     selected = rv_in$default$comp_fact),
+
         shinyjs::disabled(selectInput(inputId = ns("SI_color_grp"),
                     label = "Color by:",
                     choices = rv_in$config[grp == TRUE]$UI,
                     selected = rv_in$default$color_grp)
         )
+
       )
 
       return(to_return)
@@ -282,12 +284,12 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
     observeEvent(input$SI_comp_type, {
       req(rv_in$config,
           rv_in$default)
-
       # get the groups
       cfg <- isolate(rv_in$config)
-      subs <- strsplit(cfg[UI == "diff_exp_groups"]$fID, "\\|")[[1]]
+      subs <- strsplit(cfg[UI == "diff_exp_comps"]$fID, "\\|")[[1]]
       subs <- sort(subs)
 
+      #hack to sort the names with numbers
       subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
       if (all(!is.na(subs2))){
         names(subs2) <- seq_along(subs2)
@@ -310,19 +312,24 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
 
 
     output$volcano_plot <- renderPlotly({
-      req(test_result,
-          input$SI_comp_type,
+      req(test_result, #input$SI_comp_type,
           input$SI_comp_fact)
+
 
       colorby_group <- input$SI_color_grp
       de_local <- test_result()
-browser()
+      # title_text <- paste0(input$SI_comp_type, " || ", input$SI_comp_fact)
       if( dim(de_local)[1]>0 ) {
         # pg_volcano_ly(in_data = test_result(),
         #              pvalue_adjust = input$test_cor_pvalue,
         #              title = paste0(input$SI_comp_type, " vs ", input$test_group2))
-        pg_volc_ly(de=de_local , title = paste0(input$SI_comp_type, " || ", input$SI_comp_fact) )
+        title_text <- paste0("comp: ", input$SI_comp_fact)
+
+       volc <- pg_volc_ly(de=de_local , title = title_text)
+       return(volc)
       }
+
+
     })
 
 

@@ -12,6 +12,7 @@ pg_violin_box(
   in_fact,
   in_quant,
   in_grp,
+  in_subset,
   in_subsel,
   in_data,
   in_omic,

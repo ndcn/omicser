@@ -17,7 +17,7 @@ mod_pg_vis_raw_ui <- function(id){
     br(),br(),
     fluidRow(
       column(
-        3, style="border-right: 2px solid black",
+        3, style = "border-right: 2px solid black",
         # selectInput("Van_c1inp1", "Cell information (X-axis):",
         #             choices = Van_conf[grp == TRUE]$UI,
         #             selected = Van_def$grp1) ,
@@ -33,7 +33,7 @@ mod_pg_vis_raw_ui <- function(id){
           #        content = c("Select cell info / gene to plot on Y-axis",
           #                    "- Can be continuous cell information (e.g. nUMIs / scores)",
           #                    "- Can also be gene expression")),
-        radioButtons(ns("RB_plot_type"), "Plot type:",
+        radioButtons(ns("RB_dist_plot_type"), "Plot type:",
                      choices = c("violin", "boxplot"),
                      selected = "violin", inline = TRUE),
         checkboxInput(ns("CB_show_data_points"), "Show data points", value = FALSE),
@@ -191,34 +191,64 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
           p$observ_y)
 
       in_conf <- rv_in$config
-      in_meta <- rv_in$meta
+      #in_meta <- rv_in$meta
+      in_meta <- as.data.table(rv_in$ad$obs)
+      row.names(in_meta) <- rv_in$ad$obs_names
 
-      in_fact <- p$observ_grpA
-      dat_key= p$observ_y
-      dat_source = rv_in$config[UI == p$observ_y]$field
-
-      in_data <- isolate(rv_in$ad[[dat_source]][[dat_key]])
+      dat_source <- p$obs_type
+      #in_data <- isolate(rv_in$ad[[dat_source]][[dat_key]])
       if (dat_source == "obs") {
+        in_fact <- p$observ_x #in_fact <- p$observ_grpA
+        dat_key <- p$observ_y
         in_data <- isolate(rv_in$ad$obs[[dat_key]])
         names(in_data) <- rv_in$ad$obs_names
       } else if (dat_source == "var") {
+        in_fact <- p$feat_x #in_fact <- p$observ_grpA
+        dat_key <- p$feat_y
         in_data <- isolate(rv_in$ad$var[[dat_key]])
-        names(in_data) <- rv_in$ad$var_names
-      } else {
-        in_data <- NULL
+        names(in_data) <- isolate(rv_in$ad$var_names)
+      } else { #  (dat_source == "X")
+        in_data <- isolate(rv_in$ad$X)
+        # use the "obs" fact a
+        in_fact <- p$observ_x #in_fact <- p$observ_grpA
+        dat_key <- p$observ_y
+        # in_fact <- p$feat_x #in_fact <- p$observ_grpA
+        # dat_key <- p$feat_y
         print('boxplots only for obs and var ?@!?')
         #TODO:  spawn warning box
-        return(NULL)
+        #return(NULL)
       }
 
+      # grouping is for grouped boxes...
+      in_grp <- p$observ_grpA #  not enabled
 
-      browser()
+      in_subset <- p$observ_subsetA
+      in_subsel <- p$observ_subselA
 
+      feat_subset <- p$feat_subset
+      # For Boxplot if feat_subset "omic"
+      if (!is.null(feat_subset)) {
+        if (feat_subset == "omic") {
+          feat_subsel <- in_omic <- p$omics_list$value
+        } else {
+          feat_subsel <- in_omic <- p$feat_subsel
+        }
+      }
+
+      plot_type <- input$RB_dist_plot_type
+      show_data_points <- input$CB_show_data_points
+
+      #TODO: make these interactive? (e.g. shinycell)
+      data_point_sz = .65
+      plot_size = "Small"
+      font_size = "Small"
+      color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+      color_scheme = color_schemes[2]
       in_quant <- dat_key #(maybe) just observ_y
       pg_violin_box(in_conf, in_meta, in_fact, in_quant,
-                    p$observ_grpA, p$observ_subselA,
-                    in_data, p$omics_list$value, input$RB_plot_type, input$CB_show_data_points,
-                    data_point_sz, font_size)
+                    in_grp, in_subset, in_subsel,
+                    in_data, in_omic, plot_type,
+                    show_data_points, data_point_sz, font_size )
 
     })
 
@@ -228,73 +258,7 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
       #}
     })
 
-    ### Plots for tab c1
-    # output$Van_c1sub1.ui <- renderUI({
-    #   sub = strsplit(Van_conf[UI == input$Van_c1sub1]$fID, "\\|")[[1]]
-    #   checkboxGroupInput("Van_c1sub2", "Select which cells to show", inline = TRUE,
-    #                      choices = sub, selected = sub)
-    # })
-    # observeEvent(input$Van_c1sub1non, {
-    #   sub = strsplit(Van_conf[UI == input$Van_c1sub1]$fID, "\\|")[[1]]
-    #   updateCheckboxGroupInput(session, inputId = "Van_c1sub2", label = "Select which cells to show",
-    #                            choices = sub, selected = NULL, inline = TRUE)
-    # })
-    # observeEvent(input$Van_c1sub1all, {
-    #   sub = strsplit(Van_conf[UI == input$Van_c1sub1]$fID, "\\|")[[1]]
-    #   updateCheckboxGroupInput(session, inputId = "Van_c1sub2", label = "Select which cells to show",
-    #                            choices = sub, selected = sub, inline = TRUE)
-    # })
 
-
-    # output$Van_c1oup <- renderPlot({
-    #   pg_violin_box(in_conf, in_meta, input$Van_c1inp1, input$Van_c1inp2,
-    #                 input$Van_c1sub1, input$Van_c1sub2,
-    #                 "Van_gexpr.h5", Van_gene, input$Van_c1typ, input$Van_c1pts,
-    #                 data_point_sz, font_size)
-    # })
-    #
-    # output$Van_c1oup.ui <- renderUI({
-    #   plotOutput("Van_c1oup", height = pList2[plot_size])
-    # })
-    # output$Van_c1oup.pdf <- downloadHandler(
-    #   filename = function() { paste0("Van_",input$Van_c1typ,"_",input$Van_c1inp1,"_",
-    #                                  input$Van_c1inp2,".pdf") },
-    #   content = function(file) { ggsave(
-    #     file, device = "pdf", height = input$Van_c1oup.h, width = input$Van_c1oup.w, useDingbats = FALSE,
-    #     plot = scVioBox(Van_conf, Van_meta, input$Van_c1inp1, input$Van_c1inp2,
-    #                     input$Van_c1sub1, input$Van_c1sub2,
-    #                     "Van_gexpr.h5", Van_gene, input$Van_c1typ, input$Van_c1pts,
-    #                     input$Van_c1siz, input$Van_c1fsz) )
-    #   })
-    # output$Van_c1oup.png <- downloadHandler(
-    #   filename = function() { paste0("Van_",input$Van_c1typ,"_",input$Van_c1inp1,"_",
-    #                                  input$Van_c1inp2,".png") },
-    #   content = function(file) { ggsave(
-    #     file, device = "png", height = input$Van_c1oup.h, width = input$Van_c1oup.w,
-    #     plot = scVioBox(Van_conf, Van_meta, input$Van_c1inp1, input$Van_c1inp2,
-    #                     input$Van_c1sub1, input$Van_c1sub2,
-    #                     "Van_gexpr.h5", Van_gene, input$Van_c1typ, input$Van_c1pts,
-    #                     input$Van_c1siz, input$Van_c1fsz) )
-    #   })
-
-
-
-    ### Plots for tab d1
-    # output$Van_d1sub1.ui <- renderUI({
-    #   sub = strsplit(Van_conf[UI == input$Van_d1sub1]$fID, "\\|")[[1]]
-    #   checkboxGroupInput("Van_d1sub2", "Select which cells to show", inline = TRUE,
-    #                      choices = sub, selected = sub)
-    # })
-    # observeEvent(input$Van_d1sub1non, {
-    #   sub = strsplit(Van_conf[UI == input$Van_d1sub1]$fID, "\\|")[[1]]
-    #   updateCheckboxGroupInput(session, inputId = "Van_d1sub2", label = "Select which cells to show",
-    #                            choices = sub, selected = NULL, inline = TRUE)
-    # })
-    # observeEvent(input$Van_d1sub1all, {
-    #   sub = strsplit(Van_conf[UI == input$Van_d1sub1]$fID, "\\|")[[1]]
-    #   updateCheckboxGroupInput(session, inputId = "Van_d1sub2", label = "Select which cells to show",
-    #                            choices = sub, selected = sub, inline = TRUE)
-    # })
     output$HTML_header <- renderUI({
       print("renderUI HTML header")
 
@@ -320,19 +284,23 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
           p$observ_subselA,
           p$observ_y)
 
+
       in_conf <- rv_in$config
-      in_meta <- rv_in$meta
+      in_meta <- as.data.table(rv_in$ad$obs) #in_meta <- rv_in$meta
+      row.names(in_meta) <- rv_in$ad$obs_names
 
-      in_fact <- p$observ_grpA
-
-         #  probably add a "matrix" column to config...
-      # maybe use the data_source to indicate if we want raw or layers... short circuit for now
-      in_data <- isolate(rv_in$ad$X)  # do we need to isolate it??
+      dat_source <-p$obs_type
 
       in_quant <- "X" #dat_key #(maybe) just observ_y
 
-      # these are the "groups" to show on the x axis
-      in_group <- in_fact
+        in_data <- isolate(rv_in$ad$X)
+        # use the "obs" fact a
+        in_fact <- p$observ_x #in_fact <- p$observ_grpA
+        dat_key <- p$observ_y
+        # in_fact <- p$feat_x #in_fact <- p$observ_grpA
+        # dat_key <- p$feat_y
+
+
 
       # these are the groups to show on thye y axis
       all_omics <- rv_in$ad$var_names
@@ -341,11 +309,59 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
       all_obs <- rv_in$ad$obs_names
       names(all_obs) <- all_obs
 
+      in_omics <- p$omics_list$value
 
-      pg_bubble_heatmap(in_conf, in_meta, p$omics_list$value, in_group, input$RB_heat_plot_type,
-                 p$observ_grpA, p$observ_subselA, in_data, all_omics,
-                 input$CB_scale, input$CB_cluster_rows, input$CB_cluster_cols,
-                 color_scheme, plot_size)
+
+      # grouping is for grouped boxes...
+      in_grp <- p$observ_grpA #  not enabled
+      in_subset <- p$observ_subsetA
+      in_subsel <- p$observ_subselA
+
+      feat_subset <- p$feat_subset
+      feat_subsel <- in_omic <- p$feat_subsel
+
+      plot_type <- input$RB_heat_plot_type
+      in_do_scale <- input$CB_scale
+      in_clust_row <- input$CB_cluster_rows
+      in_clust_col <- input$CB_cluster_cols
+
+
+      #TODO: make these interactive? (e.g. shinycell)
+      plot_size = "Small"
+      color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+      color_scheme = color_schemes[2]
+      pg_bubble_heatmap(in_conf, in_meta, in_omics, in_fact, plot_type,
+                        in_grp, in_subset,in_subsel,
+                        in_data, all_omics,
+                        input$CB_scale, input$CB_cluster_rows, input$CB_cluster_cols,
+                        color_scheme, plot_size)
+
+      # in_conf <- rv_in$config
+      # in_meta <- rv_in$meta
+      #
+      # in_fact <- p$observ_grpA
+      #
+      #    #  probably add a "matrix" column to config...
+      # # maybe use the data_source to indicate if we want raw or layers... short circuit for now
+      # in_data <- isolate(rv_in$ad$X)  # do we need to isolate it??
+      #
+      # in_quant <- "X" #dat_key #(maybe) just observ_y
+      #
+      # # these are the "groups" to show on the x axis
+      # in_group <- in_fact
+      #
+      # # these are the groups to show on thye y axis
+      # all_omics <- rv_in$ad$var_names
+      # names(all_omics) <- all_omics
+      #
+      # all_obs <- rv_in$ad$obs_names
+      # names(all_obs) <- all_obs
+      #
+      #
+      # pg_bubble_heatmap(in_conf, in_meta, p$omics_list$value, in_group, input$RB_heat_plot_type,
+      #            p$observ_grpA, p$observ_subselA, in_data, all_omics,
+      #            input$CB_scale, input$CB_cluster_rows, input$CB_cluster_cols,
+      #            color_scheme, plot_size)
     })
 
     output$UI_heatmap <- renderUI({

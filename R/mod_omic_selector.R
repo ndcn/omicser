@@ -54,12 +54,11 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
 
 
     observeEvent(
-      new_db_trig,  # new database loaded
+      new_db_trig(),  # new database loaded
       {
-        if (new_db_trig>0) {
-
-          req(all_omics,
-              def_omics)  # set when database is chosen
+        req(all_omics,
+            def_omics)  # set when database is chosen
+        if (new_db_trig()>0) {
           omics_list$viz_now = FALSE
           omics_list$value <- isolate(def_omics())
           # get rid of error message when resetting selection
@@ -81,7 +80,7 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
 
     observe({
       #toggle the vis_now flag if we are changing features
-      omics_list$viz_now = FALSE
+      #omics_list$viz_now = FALSE
 
       if ( length(unique(omics_list$value ) ) >= max_omic_feats ) {
         # will this work?  or is the "observing" affecting a reactive with this render?
@@ -158,7 +157,7 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
     # TODO:  force the list to reset when the database is re-loaded...
     observeEvent(input$AB_omics_def, {
       omics_list$viz_now = FALSE
-      omics_list$value <- omics_list$value <- isolate(def_omics())
+      omics_list$value <- isolate(def_omics())
       # get rid of error message when resetting selection
       output$ui_text_warn <- renderUI({ })
     })

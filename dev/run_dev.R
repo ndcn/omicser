@@ -13,4 +13,8 @@ detach("package:omicser")
 golem::document_and_reload()
 
 # Run the application
-run_app()
+run_app(options = list(launch.browser = TRUE))
+          # ,
+          # port = "4243",
+          # host = "127.0.0.1"))
+

@@ -208,8 +208,6 @@ mod_side_selector_server <- function(id, rv_in){
       observ_subsetA = NULL,
       observ_subselA = NULL,
       observ_grpB = NULL,
-      # observ_subsetB = NULL,
-      # observ_subselB = NULL,
       observ_x = NULL,
       observ_y = NULL,
       # observ_y_comp = NULL,
@@ -225,7 +223,7 @@ mod_side_selector_server <- function(id, rv_in){
     all_omics <- reactive( names(rv_in$omics) )
     def_omics <- reactive( rv_in$default$omics)
     new_db_trig <- reactive( rv_in$trigger )
-    omics_list <- mod_omic_selector_server("omic_selector_ui_1", all_omics ,def_omics,rv_in$trigger)
+    omics_list <- mod_omic_selector_server("omic_selector_ui_1", all_omics ,def_omics,new_db_trig)
 
 
     ### Outputs =========================================================
@@ -392,7 +390,7 @@ mod_side_selector_server <- function(id, rv_in){
       if (input$RB_obs_var == "obs") {
         shinyjs::enable("SI_obs_y")
         shinyjs::enable("SI_obs_x")
-        print("disabled obs  ")
+        print("enabled obs  ")
         shinyjs::disable("SI_var_y")
         shinyjs::disable("SI_var_x")
 
@@ -408,14 +406,23 @@ mod_side_selector_server <- function(id, rv_in){
         # updateSelectizeInput(session, "SI_obs_x", server = TRUE,
         #                      choices = choices_obs_x,
         #                      selected = rv_in$default$obs_x[1])
-      } else { #(input$RB_obs_var == "obs")
+      } else if (input$RB_obs_var == "var "){
 
         shinyjs::enable("SI_var_x")
         shinyjs::enable("SI_var_y")
         print("disabled var  ")
         shinyjs::disable("SI_obs_y")
         shinyjs::disable("SI_obs_x")
+      } else { #if (input$RB_obs_var == "X "){
+        shinyjs::enable("SI_obs_x")
+        print("disabled obs + var  ")
+        shinyjs::disable("SI_var_y")
+        shinyjs::disable("SI_var_x")
+        shinyjs::disable("SI_obs_y")
 
+      }
+
+    })
         # choices_var_y = rv_in$config[measure == TRUE & field=="var"]$UI
         # choices_var_x = rv_in$config[grp == TRUE & field=="var"]$UI
         # freezeReactiveValue(input, "SI_var_y")
@@ -434,9 +441,6 @@ mod_side_selector_server <- function(id, rv_in){
         # return_value$obs_type <- "var"
 
 
-      }
-
-    })
 
     # observe({
     #   req(rv_in$config)
@@ -740,9 +744,9 @@ mod_side_selector_server <- function(id, rv_in){
         out_params$feat_subset = input$SI_var_subset
         out_params$feat_subsel = input$CB_var_subsel
 
-        # # aggregate var
-        # out_params$feat_grp <- input$SI_feat_grp
-        # out_params$feat_subsel <- input$SI_feat_subsel
+        # aggregate var
+        out_params$feat_x<- input$SI_feat_x
+        out_params$feat_y <- input$SI_feat_y
 
         out_params$observ_x <- input$SI_obs_x
         out_params$observ_y <- input$SI_obs_y
@@ -752,6 +756,7 @@ mod_side_selector_server <- function(id, rv_in){
 
         out_params[["omics_list"]] <- omics_list  # value & viz_now
 
+        omics_list$viz_now <- FALSE  # reset it here...
       }
 
     })

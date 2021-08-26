@@ -26,9 +26,12 @@
 #' @examples  TODO
 #' @noRd
 pg_bubble_heatmap <- function(in_conf, in_meta, in_omics, in_fact, plot_type,
-                              in_grp, in_subsel, in_data, all_omics, in_do_scale, in_clust_row, in_clust_col,
-                              color_scheme, plot_size,
-                              save = FALSE){
+                              in_grp, in_subset,in_subsel,
+                              in_data, all_omics,
+                              in_do_scale, in_clust_row, in_clust_col,
+                              color_scheme, plot_size, save = FALSE){
+
+
   if(is.null(in_grp)){in_grp = in_conf$UI[1]}
   # Identify genes that are in our dataset
   omic_list = get_omic_list(in_omics, all_omics)
@@ -36,30 +39,30 @@ pg_bubble_heatmap <- function(in_conf, in_meta, in_omics, in_fact, plot_type,
   shiny::validate(need(nrow(omic_list) <= 50, "More than 50 genes to plot! Please reduce the gene list!"))
   shiny::validate(need(nrow(omic_list) > 1, "Please input at least 2 genes to plot!"))
 
-  # Prepare ggData
+  # Prepare gg_data
   #h5file <- H5File$new(inpH5, mode = "r")
   #h5data <- h5file[["grp"]][["data"]]
-  ggData = data.table()
+  gg_data = data.table()
   for(gene_i in omic_list$omic){
-    tmp = in_meta[, c("sampleID", in_conf[UI == in_grp]$ID), with = FALSE]
-    colnames(tmp) = c("sampleID", "sub")
-    tmp$grpBy = in_meta[[in_conf[UI == in_fact]$ID]]
-    tmp$geneName = gene_i
+    tmp = in_meta[, c("sample_ID", in_conf[UI == in_subset]$ID), with = FALSE]
+    colnames(tmp) = c("sample_ID", "sub")
+    tmp$grp_by = in_meta[[in_conf[UI == in_fact]$ID]]
+    tmp$omic_nm = gene_i
     tmp$val = in_data[,all_omics[gene_i]] #h5data$read(args = list(all_omics[gene_i], quote(expr=)))
-    ggData = rbindlist(list(ggData, tmp))
+    gg_data = rbindlist(list(gg_data, tmp))
   }
   # h5file$close_all()
 
 
-  if(length(in_subsel) != 0 & length(in_subsel) != nlevels(ggData$sub)){
-    ggData = ggData[sub %in% in_subsel]
+  if(length(in_subsel) != 0 & length(in_subsel) != nlevels(gg_data$sub)){
+    gg_data = gg_data[sub %in% in_subsel]
   }
-  shiny::validate(need(uniqueN(ggData$grpBy) > 1, "Only 1 group present, unable to plot!"))
+  shiny::validate(need(uniqueN(gg_data$grp_by) > 1, "Only 1 group present, unable to plot!"))
 
   # Aggregate:  exp(mean) + proportion -> log(val)
   # disabling expm1 and log1p because we will be putting "NORMALIZED" quantities in...
 
-  if (max(abs(ggData$val),na.rm=TRUE) < 700.0 ){
+  if (max(abs(gg_data$val),na.rm=TRUE) < 700.0 ){
     fwd_scale <- expm1
     inv_scale <- log1p
   } else {
@@ -68,66 +71,66 @@ pg_bubble_heatmap <- function(in_conf, in_meta, in_omics, in_fact, plot_type,
   }
 
   # remove NA
-  ggData <- ggData[!is.na(val)]
-  ggData$val = fwd_scale(ggData$val)
-  ggData = ggData[, .(val = mean(val), prop = sum(val>0) / length(sampleID)),
-                  by = c("geneName", "grpBy")]
-  # ggData = ggData[, .(val = mean(val,na.rm=TRUE), prop = sum(val>0,na.rm=TRUE) / length(sampleID)),
-  #                 by = c("geneName", "grpBy")]
+  gg_data <- gg_data[!is.na(val)]
+  gg_data$val = fwd_scale(gg_data$val)
+  gg_data = gg_data[, .(val = mean(val), prop = sum(val>0) / length(sample_ID)),
+                  by = c("omic_nm", "grp_by")]
+  # gg_data = gg_data[, .(val = mean(val,na.rm=TRUE), prop = sum(val>0,na.rm=TRUE) / length(sample_ID)),
+  #                 by = c("omic_nm", "grp_by")]
 
-  ggData$val = inv_scale(ggData$val) # do we need this??? we are already normalized...
+  gg_data$val = inv_scale(gg_data$val) # do we need this??? we are already normalized...
 
   # remove zeros
 
   # Scale if required
-  colRange = range(ggData$val)
+  colRange = range(gg_data$val)
   if(in_do_scale){
-    ggData[, val:= scale(val), keyby = "geneName"]
-    colRange = c(-max(abs(range(ggData$val))), max(abs(range(ggData$val))))
+    gg_data[, val:= scale(val), keyby = "omic_nm"]
+    colRange = c(-max(abs(range(gg_data$val))), max(abs(range(gg_data$val))))
   }
 
   # hclust row/col if necessary
-  ggMat = dcast.data.table(ggData, geneName~grpBy, value.var = "val")
-  tmp = ggMat$geneName
-  ggMat = as.matrix(ggMat[, -1])
-  rownames(ggMat) = tmp
+  gg_mat = dcast.data.table(gg_data, omic_nm~grp_by, value.var = "val")
+  tmp = gg_mat$omic_nm
+  gg_mat = as.matrix(gg_mat[, -1])
+  rownames(gg_mat) = tmp
   if(in_clust_row){
     ####
     ####
-    hcRow = ggdendro::dendro_data(as.dendrogram(hclust(dist(ggMat))))
-    ggRow = ggplot2::ggplot() + ggplot2::coord_flip() +
-      ggplot2::geom_segment(data = hcRow$segments, ggplot2::aes(x=x,y=y,xend=xend,yend=yend)) +
-      ggplot2::scale_y_continuous(breaks = rep(0, uniqueN(ggData$grpBy)),
-                                  labels = unique(ggData$grpBy), expand = c(0, 0)) +
-      ggplot2::scale_x_continuous(breaks = seq_along(hcRow$labels$label),
-                                  labels = hcRow$labels$label, expand = c(0, 0.5)) +
+    hc_row = ggdendro::dendro_data(as.dendrogram(hclust(dist(gg_mat))))
+    gg_row = ggplot2::ggplot() + ggplot2::coord_flip() +
+      ggplot2::geom_segment(data = hc_row$segments, ggplot2::aes(x=x,y=y,xend=xend,yend=yend)) +
+      ggplot2::scale_y_continuous(breaks = rep(0, uniqueN(gg_data$grp_by)),
+                                  labels = unique(gg_data$grp_by), expand = c(0, 0)) +
+      ggplot2::scale_x_continuous(breaks = seq_along(hc_row$labels$label),
+                                  labels = hc_row$labels$label, expand = c(0, 0.5)) +
       sctheme(base_size = sList[plot_size]) +
       ggplot2::theme(axis.title = ggplot2::element_blank(), axis.line = ggplot2::element_blank(),
                      axis.ticks = ggplot2::element_blank(), axis.text.y = ggplot2::element_blank(),
                      axis.text.x = ggplot2::element_text(color="white", angle = 45, hjust = 1))
-    ggData$geneName = factor(ggData$geneName, levels = hcRow$labels$label)
+    gg_data$omic_nm = factor(gg_data$omic_nm, levels = hc_row$labels$label)
   } else {
-    ggData$geneName = factor(ggData$geneName, levels = rev(omic_list$omic))
+    gg_data$omic_nm = factor(gg_data$omic_nm, levels = rev(omic_list$omic))
   }
   if(in_clust_col){
-    hcCol = ggdendro::dendro_data(as.dendrogram(hclust(dist(t(ggMat)))))
-    ggCol = ggplot2::ggplot() +
-      ggplot2::geom_segment(data = hcCol$segments, ggplot2::aes(x=x,y=y,xend=xend,yend=yend)) +
-      ggplot2::scale_x_continuous(breaks = seq_along(hcCol$labels$label),
-                                  labels = hcCol$labels$label, expand = c(0.05, 0)) +
-      ggplot2::scale_y_continuous(breaks = rep(0, uniqueN(ggData$geneName)),
-                                  labels = unique(ggData$geneName), expand=c(0,0)) +
+    hc_col = ggdendro::dendro_data(as.dendrogram(hclust(dist(t(gg_mat)))))
+    gg_col = ggplot2::ggplot() +
+      ggplot2::geom_segment(data = hc_col$segments, ggplot2::aes(x=x,y=y,xend=xend,yend=yend)) +
+      ggplot2::scale_x_continuous(breaks = seq_along(hc_col$labels$label),
+                                  labels = hc_col$labels$label, expand = c(0.05, 0)) +
+      ggplot2::scale_y_continuous(breaks = rep(0, uniqueN(gg_data$omic_nm)),
+                                  labels = unique(gg_data$omic_nm), expand=c(0,0)) +
       sctheme(base_size = sList[plot_size], Xang = 45, XjusH = 1) +
       ggplot2::theme(axis.title = ggplot2::element_blank(), axis.line = ggplot2::element_blank(),
                      axis.ticks = ggplot2::element_blank(), axis.text.x = ggplot2::element_blank(),
                      axis.text.y = ggplot2::element_text(color = "white"))
-    ggData$grpBy = factor(ggData$grpBy, levels = hcCol$labels$label)
+    gg_data$grp_by = factor(gg_data$grp_by, levels = hc_col$labels$label)
   }
 
   # Actual plot according to plottype
   if(plot_type == "Bubbleplot"){
     # Bubbleplot
-    ggOut = ggplot2::ggplot(ggData, ggplot2::aes(grpBy, geneName, color = val, size = prop)) +
+    gg_out = ggplot2::ggplot(gg_data, ggplot2::aes(grp_by, omic_nm, color = val, size = prop)) +
       ggplot2::geom_point() +
       sctheme(base_size = sList[plot_size], Xang = 45, XjusH = 1) +
       ggplot2::scale_x_discrete(expand = c(0.05, 0)) +
@@ -139,7 +142,7 @@ pg_bubble_heatmap <- function(in_conf, in_meta, in_omics, in_fact, plot_type,
       ggplot2::theme(axis.title = ggplot2::element_blank(), legend.box = "vertical")
   } else {
     # Heatmap
-    ggOut = ggplot2::ggplot(ggData, ggplot2::aes(grpBy, geneName, fill = val)) +
+    gg_out = ggplot2::ggplot(gg_data, ggplot2::aes(grp_by, omic_nm, fill = val)) +
       ggplot2::geom_tile() +
       sctheme(base_size = sList[plot_size], Xang = 45, XjusH = 1) +
       ggplot2::scale_x_discrete(expand = c(0.05, 0)) +
@@ -150,38 +153,38 @@ pg_bubble_heatmap <- function(in_conf, in_meta, in_omics, in_fact, plot_type,
   }
 
   # Final tidy
-  ggLeg = g_legend(ggOut)
-  ggOut = ggOut + ggplot2::theme(legend.position = "none")
+  gg_leg = g_legend(gg_out)
+  gg_out = gg_out + ggplot2::theme(legend.position = "none")
   if(!save){
-    if(in_clust_row & in_clust_col){ggOut =
-      gridExtra::grid.arrange(ggOut, ggLeg, ggCol, ggRow, widths = c(7,1), heights = c(1,7,2),
+    if(in_clust_row & in_clust_col){gg_out =
+      gridExtra::grid.arrange(gg_out, gg_leg, gg_col, gg_row, widths = c(7,1), heights = c(1,7,2),
                               layout_matrix = rbind(c(3,NA),c(1,4),c(2,NA)))
-    } else if(in_clust_row){ggOut =
-      gridExtra::grid.arrange(ggOut, ggLeg, ggRow, widths = c(7,1), heights = c(7,2),
+    } else if(in_clust_row){gg_out =
+      gridExtra::grid.arrange(gg_out, gg_leg, gg_row, widths = c(7,1), heights = c(7,2),
                               layout_matrix = rbind(c(1,3),c(2,NA)))
-    } else if(in_clust_col){ggOut =
-      gridExtra::grid.arrange(ggOut, ggLeg, ggCol, heights = c(1,7,2),
+    } else if(in_clust_col){gg_out =
+      gridExtra::grid.arrange(gg_out, gg_leg, gg_col, heights = c(1,7,2),
                               layout_matrix = rbind(c(3),c(1),c(2)))
-    } else {ggOut =
-      gridExtra::grid.arrange(ggOut, ggLeg, heights = c(7,2),
+    } else {gg_out =
+      gridExtra::grid.arrange(gg_out, gg_leg, heights = c(7,2),
                               layout_matrix = rbind(c(1),c(2)))
     }
   } else {
-    if(in_clust_row & in_clust_col){ggOut =
-      gridExtra::arrangeGrob(ggOut, ggLeg, ggCol, ggRow, widths = c(7,1), heights = c(1,7,2),
+    if(in_clust_row & in_clust_col){gg_out =
+      gridExtra::arrangeGrob(gg_out, gg_leg, gg_col, gg_row, widths = c(7,1), heights = c(1,7,2),
                              layout_matrix = rbind(c(3,NA),c(1,4),c(2,NA)))
-    } else if(in_clust_row){ggOut =
-      gridExtra::arrangeGrob(ggOut, ggLeg, ggRow, widths = c(7,1), heights = c(7,2),
+    } else if(in_clust_row){gg_out =
+      gridExtra::arrangeGrob(gg_out, gg_leg, gg_row, widths = c(7,1), heights = c(7,2),
                              layout_matrix = rbind(c(1,3),c(2,NA)))
-    } else if(in_clust_col){ggOut =
-      gridExtra::arrangeGrob(ggOut, ggLeg, ggCol, heights = c(1,7,2),
+    } else if(in_clust_col){gg_out =
+      gridExtra::arrangeGrob(gg_out, gg_leg, gg_col, heights = c(1,7,2),
                              layout_matrix = rbind(c(3),c(1),c(2)))
-    } else {ggOut =
-      gridExtra::arrangeGrob(ggOut, ggLeg, heights = c(7,2),
+    } else {gg_out =
+      gridExtra::arrangeGrob(gg_out, gg_leg, heights = c(7,2),
                              layout_matrix = rbind(c(1),c(2)))
     }
   }
-  return(ggOut)
+  return(gg_out)
 }
 
 
@@ -212,30 +215,53 @@ pg_bubble_heatmap <- function(in_conf, in_meta, in_omics, in_fact, plot_type,
 #'
 #' @examples TBD
 pg_violin_box <- function(in_conf, in_meta, in_fact, in_quant,
-                          in_grp, in_subsel,
+                          in_grp, in_subset, in_subsel,
                           in_data, in_omic,
                           plot_type, show_data_points,
                           data_point_sz, font_size){
+  #in_meta is either obs or var... depending on which dimension we are visualizing...
 
+  if(is.null(in_subset)) {
+    in_subset = in_conf[grp==TRUE]$UI[1]
+    }
 
-  if(is.null(in_grp)){in_grp = in_conf$UI[1]}
   # Prepare gg_data
+  gg_data <- in_meta[, c(in_conf[ID == in_fact]$ID, in_conf[UI == in_subset]$ID),  with = FALSE]
+  #gg_data$X <- rownames(gg_data) #we don't have teh sample ID col anynore
   #
-
-  gg_data <- in_meta[, c(in_conf[UI == in_fact]$ID, in_conf[UI == in_grp]$ID)]
-                   # with = FALSE]
   colnames(gg_data) = c("X", "sub")
-
-  # gg_data is three column subset (X,sub,val)
-  # Load in either cell meta or gene expr
-  if (in_quant %in% in_conf$UI) { #i.e. its in "obs"
-    gg_data$val <- in_meta[[in_conf[UI == in_quant]$ID]]
+  if (is.numeric(in_data)) {  #obs or var
+    gg_data$val <- in_data # we already got our vector...
+  } else if (endsWith(class(in_data)[[1]] ,"Matrix")) { # there has to be a better way
+    # need to append matrix onto
+    gg_data$val <- as.data.frame(Matrix::rowMeans(in_data[row.names(in_meta),],na.rm=TRUE))
+    #add noise?
+      gg_data[val < 0]$val = 0
+      set.seed(42)
+      tmpNoise = rnorm(length(gg_data$val)) * diff(range(gg_data$val)) / 1000
+      gg_data$val = gg_data$val + tmpNoise
   } else {
-    # need to unpack from other ad components.
-    print("no _val_ in gg_data")
-    #subset omics
+     print("in_data seems wrong")
+   }
+# TODO: fix subsetting logic... we can only subset the same grouping for metadata...
+#  OR we need to subset the raw-matrix and THEN group...
+  if(length(in_subsel) != 0 & length(in_subsel) != nlevels(gg_data$sub)){
+      gg_data = gg_data[gg_data$sub %in% in_subsel]
+    }
 
-  }
+  # # gg_data is three column subset (X,sub,val)
+  # # Load in either cell meta or gene expr
+  # if (in_quant %in% in_conf$UI) { #i.e. its in "obs"
+  #   gg_data$val <- in_meta[[in_conf[UI == in_quant]$ID]]
+  #   #gg_data$val <- in_meta[[in_quant]]
+  #
+  #
+  #   } else {
+  #   # need to unpack from other ad components.
+  #   print("no _val_ in gg_data")
+  #   #subset omics
+  #
+  # }
   # } else {
   #   h5file <- H5File$new(inpH5, mode = "r")
   #   h5data <- h5file[["grp"]][["data"]]
@@ -248,9 +274,7 @@ pg_violin_box <- function(in_conf, in_meta, in_fact, in_quant,
   # }
 
 # what is this doing?!?!  sub is coded as grouping variable...
-  if(length(in_subsel) != 0 & length(in_subsel) != nlevels(gg_data$sub)){
-    gg_data = gg_data[sub %in% in_subsel]
-  }
+
 
   # Do factoring # IS THIS NESCESSARY?
   gg_col = strsplit(in_conf[UI == in_fact]$fCL, "\\|")[[1]]
