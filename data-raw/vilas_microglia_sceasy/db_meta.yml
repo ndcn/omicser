@@ -1,7 +1,8 @@
-organizm: ''
+organism: ''
 lab: Menon
 annotation_database: .na
 title: single-cell microglia data
 omic_type: Transcriptomics
 measurment: normalized counts
 pub: TBD
+date: Thu Aug 26 11:01:03 2021

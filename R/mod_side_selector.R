@@ -37,7 +37,7 @@ mod_side_selector_ui <- function(id){
           offset = 0,
           shinyjs::disabled(radioButtons( ns("RB_obs_var"), "variable type",
                                           choices = c("obs","var","X"),
-                                          selected = "X" , inline = TRUE)
+                                          selected = "obs" , inline = TRUE)
           )
         )
       ),# options = list(placeholder = ""))

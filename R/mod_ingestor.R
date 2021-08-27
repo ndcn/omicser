@@ -147,9 +147,9 @@ mod_ingestor_server <- function(id) {
           #to_return$omics_type <- "NA"
         } else {
 
-          ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/normalized_data_with_de.h5ad"))
+          ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/omxr_data.h5ad"))
           diff_exp = readRDS(file = paste0("data-raw/",ds_name,"/diff_expr_table.rds"))
-          browser()
+
           conf_def <- gen_config_table(ad, ds_name)
 
 

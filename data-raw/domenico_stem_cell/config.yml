@@ -1,323 +1,50 @@
-conf:
-  ID:
-  - sampleID
-  - X.
-  - Is.Reference
-  - Run.Label
-  - Condition
-  - Fraction
-  - Replicate
-  - Quantity.Correction.Factor
-  - Label
-  - Color
-  - File.Name
-  - expr_var
-  - expr_mean
-  - expr_frac
-  - sample_ID
-  - diff_exp_groups
-  - diff_exp_comp_type
-  - diff_exp_obs_name
-  - diff_exp_tests
-  - varm
-  - obsm
-  UI:
-  - sampleID
-  - X.
-  - Is.Reference
-  - Run.Label
-  - Condition
-  - Fraction
-  - Replicate
-  - Quantity.Correction.Factor
-  - Label
-  - Color
-  - File.Name
-  - expr_var
-  - expr_mean
-  - expr_frac
-  - sample_ID
-  - diff_exp_groups
-  - diff_exp_comp_type
-  - diff_exp_obs_name
-  - diff_exp_tests
-  - varm
-  - obsm
-  fID:
-  - .na.character
-  - .na.character
-  - False|True
-  - 161129_SCS_DIA_18-3_34seg_120min.raw|161129_SCS_DIA_26-6_34seg_120min.raw|161129_SCS_DIA_26-8_34seg_120min.raw|161129_SCS_DIA_3-11_34seg_120min.raw|161129_SCS_DIA_3-23_34seg_120min.raw|161129_SCS_DIA_3-9_34seg_120min.raw|161221_SCS_DIA_SCs_o_1_and_18.raw|161221_SCS_DIA_SCs_o_7_and_9.raw|161221_SCS_DIA_SCs_y_a.raw|161221_SCS_DIA_SCs_y_b.raw|161221_SCS_DIA_SCs_y_c.raw|170113_SCS_o_11-19.raw|170804_SCS_DIA_g_26-2_5-9-10.raw|170804_SCS_DIA_g_26-4_o11-o12-o20.raw|170804_SCS_DIA_g_26-5_o18-o19.raw|170804_SCS_DIA_o_18-1_4-17.raw|170804_SCS_DIA_o_18-2_6-10.raw|170804_SCS_DIA_o_18-3_8-15.raw|170804_SCS_DIA_o_18-4_12-13.raw|170804_SCS_DIA_y_3-2_4-39.raw|170804_SCS_DIA_y_3-3_10-28.raw|170804_SCS_DIA_y_3-4_21-36.raw|170804_SCS_DIA_y_3-5_33-38.raw
-  - g|o|y
-  - .na.character
-  - .na.character
-  - .na.character
-  - g|o|y
-  - '#5BEC13|#13A4EC|#EC1313'
-  - 161129_SCS_DIA_18-3_34seg_120min|161129_SCS_DIA_26-6_34seg_120min|161129_SCS_DIA_26-8_34seg_120min|161129_SCS_DIA_3-11_34seg_120min|161129_SCS_DIA_3-23_34seg_120min|161129_SCS_DIA_3-9_34seg_120min|161221_SCS_DIA_SCs_o_1_and_18|161221_SCS_DIA_SCs_o_7_and_9|161221_SCS_DIA_SCs_y_a|161221_SCS_DIA_SCs_y_b|161221_SCS_DIA_SCs_y_c|170113_SCS_o_11-19|170804_SCS_DIA_g_26-2_5-9-10|170804_SCS_DIA_g_26-4_o11-o12-o20|170804_SCS_DIA_g_26-5_o18-o19|170804_SCS_DIA_o_18-1_4-17|170804_SCS_DIA_o_18-2_6-10|170804_SCS_DIA_o_18-3_8-15|170804_SCS_DIA_o_18-4_12-13|170804_SCS_DIA_y_3-2_4-39|170804_SCS_DIA_y_3-3_10-28|170804_SCS_DIA_y_3-4_21-36|170804_SCS_DIA_y_3-5_33-38
-  - .na.character
-  - .na.character
-  - .na.character
-  - 161129_SCS_DIA_18-3_34seg_120min|161129_SCS_DIA_26-6_34seg_120min|161129_SCS_DIA_26-8_34seg_120min|161129_SCS_DIA_3-11_34seg_120min|161129_SCS_DIA_3-23_34seg_120min|161129_SCS_DIA_3-9_34seg_120min|161221_SCS_DIA_SCs_o_1_and_18|161221_SCS_DIA_SCs_o_7_and_9|161221_SCS_DIA_SCs_y_a|161221_SCS_DIA_SCs_y_b|161221_SCS_DIA_SCs_y_c|170113_SCS_o_11-19|170804_SCS_DIA_g_26-2_5-9-10|170804_SCS_DIA_g_26-4_o11-o12-o20|170804_SCS_DIA_g_26-5_o18-o19|170804_SCS_DIA_o_18-1_4-17|170804_SCS_DIA_o_18-2_6-10|170804_SCS_DIA_o_18-3_8-15|170804_SCS_DIA_o_18-4_12-13|170804_SCS_DIA_y_3-2_4-39|170804_SCS_DIA_y_3-3_10-28|170804_SCS_DIA_y_3-4_21-36|170804_SCS_DIA_y_3-5_33-38
-  - gVo|gVy|oVy
-  - grpVref
-  - Condition
-  - unknown
-  - .na.character
-  - .na.character
-  fUI:
-  - .na.character
-  - .na.character
-  - False|True
-  - 161129_SCS_DIA_18-3_34seg_120min.raw|161129_SCS_DIA_26-6_34seg_120min.raw|161129_SCS_DIA_26-8_34seg_120min.raw|161129_SCS_DIA_3-11_34seg_120min.raw|161129_SCS_DIA_3-23_34seg_120min.raw|161129_SCS_DIA_3-9_34seg_120min.raw|161221_SCS_DIA_SCs_o_1_and_18.raw|161221_SCS_DIA_SCs_o_7_and_9.raw|161221_SCS_DIA_SCs_y_a.raw|161221_SCS_DIA_SCs_y_b.raw|161221_SCS_DIA_SCs_y_c.raw|170113_SCS_o_11-19.raw|170804_SCS_DIA_g_26-2_5-9-10.raw|170804_SCS_DIA_g_26-4_o11-o12-o20.raw|170804_SCS_DIA_g_26-5_o18-o19.raw|170804_SCS_DIA_o_18-1_4-17.raw|170804_SCS_DIA_o_18-2_6-10.raw|170804_SCS_DIA_o_18-3_8-15.raw|170804_SCS_DIA_o_18-4_12-13.raw|170804_SCS_DIA_y_3-2_4-39.raw|170804_SCS_DIA_y_3-3_10-28.raw|170804_SCS_DIA_y_3-4_21-36.raw|170804_SCS_DIA_y_3-5_33-38.raw
-  - g|o|y
-  - .na.character
-  - .na.character
-  - .na.character
-  - g|o|y
-  - '#5BEC13|#13A4EC|#EC1313'
-  - 161129_SCS_DIA_18-3_34seg_120min|161129_SCS_DIA_26-6_34seg_120min|161129_SCS_DIA_26-8_34seg_120min|161129_SCS_DIA_3-11_34seg_120min|161129_SCS_DIA_3-23_34seg_120min|161129_SCS_DIA_3-9_34seg_120min|161221_SCS_DIA_SCs_o_1_and_18|161221_SCS_DIA_SCs_o_7_and_9|161221_SCS_DIA_SCs_y_a|161221_SCS_DIA_SCs_y_b|161221_SCS_DIA_SCs_y_c|170113_SCS_o_11-19|170804_SCS_DIA_g_26-2_5-9-10|170804_SCS_DIA_g_26-4_o11-o12-o20|170804_SCS_DIA_g_26-5_o18-o19|170804_SCS_DIA_o_18-1_4-17|170804_SCS_DIA_o_18-2_6-10|170804_SCS_DIA_o_18-3_8-15|170804_SCS_DIA_o_18-4_12-13|170804_SCS_DIA_y_3-2_4-39|170804_SCS_DIA_y_3-3_10-28|170804_SCS_DIA_y_3-4_21-36|170804_SCS_DIA_y_3-5_33-38
-  - .na.character
-  - .na.character
-  - .na.character
-  - 161129_SCS_DIA_18-3_34seg_120min|161129_SCS_DIA_26-6_34seg_120min|161129_SCS_DIA_26-8_34seg_120min|161129_SCS_DIA_3-11_34seg_120min|161129_SCS_DIA_3-23_34seg_120min|161129_SCS_DIA_3-9_34seg_120min|161221_SCS_DIA_SCs_o_1_and_18|161221_SCS_DIA_SCs_o_7_and_9|161221_SCS_DIA_SCs_y_a|161221_SCS_DIA_SCs_y_b|161221_SCS_DIA_SCs_y_c|170113_SCS_o_11-19|170804_SCS_DIA_g_26-2_5-9-10|170804_SCS_DIA_g_26-4_o11-o12-o20|170804_SCS_DIA_g_26-5_o18-o19|170804_SCS_DIA_o_18-1_4-17|170804_SCS_DIA_o_18-2_6-10|170804_SCS_DIA_o_18-3_8-15|170804_SCS_DIA_o_18-4_12-13|170804_SCS_DIA_y_3-2_4-39|170804_SCS_DIA_y_3-3_10-28|170804_SCS_DIA_y_3-4_21-36|170804_SCS_DIA_y_3-5_33-38
-  - gVo|gVy|oVy
-  - grpVref
-  - Condition
-  - unknown
-  - .na.character
-  - .na.character
-  fCL:
-  - .na.character
-  - .na.character
-  - '#A6CEE3|#B15928'
-  - '#A6CEE3|#62A3CB|#1F78B4|#68AB9F|#B2DF8A|#72BF5A|#33A02C|#969D62|#FB9A99|#EF595A|#E31A1C|#F06C45|#FDBF6F|#FE9E37|#FF7F00|#E4986B|#CAB2D6|#9A77B8|#6A3D9A|#B49D99|#FFFF99|#D8AC60|#B15928'
-  - '#A6CEE3|#F06C45|#B15928'
-  - .na.character
-  - .na.character
-  - .na.character
-  - '#A6CEE3|#F06C45|#B15928'
-  - '#A6CEE3|#F06C45|#B15928'
-  - '#A6CEE3|#62A3CB|#1F78B4|#68AB9F|#B2DF8A|#72BF5A|#33A02C|#969D62|#FB9A99|#EF595A|#E31A1C|#F06C45|#FDBF6F|#FE9E37|#FF7F00|#E4986B|#CAB2D6|#9A77B8|#6A3D9A|#B49D99|#FFFF99|#D8AC60|#B15928'
-  - .na.character
-  - .na.character
-  - .na.character
-  - '#A6CEE3|#62A3CB|#1F78B4|#68AB9F|#B2DF8A|#72BF5A|#33A02C|#969D62|#FB9A99|#EF595A|#E31A1C|#F06C45|#FDBF6F|#FE9E37|#FF7F00|#E4986B|#CAB2D6|#9A77B8|#6A3D9A|#B49D99|#FFFF99|#D8AC60|#B15928'
-  - '#A6CEE3|#F06C45|#B15928'
-  - black
-  - black
-  - black
-  - .na.character
-  - .na.character
-  fRow:
-  - .na.real
-  - .na.real
-  - 1.0
-  - 6.0
-  - 1.0
-  - .na.real
-  - .na.real
-  - .na.real
-  - 1.0
-  - 1.0
-  - 6.0
-  - .na.real
-  - .na.real
-  - .na.real
-  - 6.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - .na.real
-  - .na.real
-  Qobs:
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - yes
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  field:
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - obs
-  - de
-  - de
-  - de
-  - de
-  - dr
-  - dr
-  default:
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  - 1.0
-  - 0.0
-  - 3.0
-  - 0.0
-  - 0.0
-  - 2.0
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  grp:
-  - no
-  - no
-  - yes
-  - yes
-  - yes
-  - no
-  - no
-  - no
-  - yes
-  - yes
-  - yes
-  - no
-  - no
-  - no
-  - yes
-  - yes
-  - no
-  - no
-  - no
-  - no
-  - no
-  measure:
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - yes
-  - yes
-  - yes
-  - yes
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  diff_exp:
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - yes
-  - yes
-  - yes
-  - yes
-  - no
-  - no
-  dimred:
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - no
-  - yes
-  - yes
-def:
-  omics:
-  - A2ASS6
-  - P02469
-  - Q8VHX6
-  - Q60675
-  - O08638
-  - O88990
-  - Q8BTM8
-  - Q9JI91
-  - P14824
-  - Q91Z83
-  - O55103
-  - P02468
-  - P14873
-  - Q9Z2D6
-  - P19096
-  - Q69ZN7
-  - Q71LX4
-  - P97457
-  - Q3UQ44
-  - Q8VDD5
-  obs_x: Condition
-  obs_y: expr_var
-  obs_subset: Color
-  var_x: .na.character
-  var_y: .na.character
-  var_subset: .na.character
-  color_grp: Color
-  scale: .na
-  trans: .na
-  p_val: .na
-  comp_name: Condition
-  comp_type: grpVref
-  comp_fact: gVo
-  test: unknown
+x_obs:
+- Is.Reference
+- Condition
+- Replicate
+- Label
+y_obs:
+- expr_var
+- expr_mean
+- expr_frac
+- sample_ID
+- leiden
+obs_groupby:
+- Is.Reference
+- Condition
+- Replicate
+- Label
+obs_subset:
+- Is.Reference
+- Condition
+- Replicate
+- Label
+x_var: []
+y_var:
+- expr_geomean
+- expr_mean
+- expr_var
+- expr_frac
+var_groupby: []
+var_subset: []
+diffs:
+    diff_exp_comps:
+    - g vs. o
+    - g vs. y
+    - o vs. y
+    diff_exp_comp_type: grpVref
+    diff_exp_obs_name: Condition
+    diff_exp_tests: unknown
+dimreds:
+    obsm:
+    - X_pca
+    - X_umap
+    - Xsc_pca
+    - Xsc_umap
+    varm:
+    - PCs
+    - sc_PCs
+default_factors:
+- Condition
+- Color
+- Replicate

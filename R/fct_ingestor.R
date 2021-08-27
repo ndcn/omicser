@@ -10,8 +10,8 @@
 
 require("data.table")
 require("RColorBrewer")
-
 gen_config_table <- function(ad_in, ds_name) {
+  # load or generate configs..
 
   config_files <- c(file.path("data-raw",ds_name,"omxr_conf.rds" ),
                     file.path("data-raw",ds_name,"omxr_def.rds" ),

@@ -1,0 +1,8 @@
+organism: mmusculus
+lab: Ori/Ward
+annotation_database: uniprot_for_annotation.RData
+title: DIA proteomics
+omic_type: Proteomics
+measurment: normalized counts
+pub: TBD
+date: Thu Aug 26 13:30:49 2021
