@@ -12,26 +12,7 @@ mod_playground_ui <- function(id){
   tagList(
     # TODO: change these to dynamically render or not based on "selector"
     # # could be "side selector" or some radio/dropdown choices...
-    #
 
-    # shinyWidgets::verticalTabsetPanel(
-    #   id = 'tab',
-    #   shinyWidgets::verticalTabPanel(
-    #     title = "Table", value='table',
-    #     mod_pg_table_ui(id=ns("pg_table_ui_2"))
-    #   ),
-    #   # ingest tab
-    #   shinyWidgets::verticalTabPanel(
-    #     title = "Values", value = 'raw',
-    #     mod_pg_vis_raw_ui(id=ns("pg_vis_raw_ui_1"))
-    #   ),
-    #   # table tab
-    #   shinyWidgets::verticalTabPanel(
-    #     title = "Comparative",value = 'comp',
-    #     mod_pg_vis_comp_ui(id=ns("pg_vis_comp_ui_1"))
-    #
-    #   )
-    # ) #verticalTabsetPanel
     tabsetPanel(
       type = 'pills',  #'hidden' and a radio might work best
       id = 'tab',
@@ -427,84 +408,6 @@ print("in reactive: hm_data (playground)")
 
     }
   )
-
-
-
-    # # send this to the "comp" tab
-    # de_data <- reactive({
-    #   req(
-    #     rv_in$de,
-    #     #input$SI_comp_type,
-    #     input$SI_comp_fact,
-    #     input$RB_select_test)
-    #
-    #
-    #   diff_exp <- isolate(rv_in$de)
-    #   # TODO: change to data.frame
-    #   # filter according to current "cases"
-    #   de <- diff_exp %>%
-    #     # dplyr::filter(test_type == input$RB_select_test &
-    #     #                 group == input$SI_comp_fact &
-    #     #                 comp_type == input$SI_comp_type &
-    #     #                 obs_name == input$SI_comp_name) %>%
-    #     dplyr::filter(test_type == input$RB_select_test &
-    #                     versus == input$SI_comp_fact) %>%
-    #
-    #     dplyr::mutate(f=1,
-    #                   significant = pvals_adj < 0.01,
-    #                   point_color =  dplyr::recode(as.character(.data$significant), "TRUE" = "#FF7F00", "FALSE" = "#1F78B4"))
-    #
-    #   return(de)
-    # })
-    #
-
-
-
-#
-#
-#     dat_source <- p$data_source
-#     #in_data <- isolate(rv_in$ad[[dat_source]][[dat_key]])
-#     if (dat_source == "obs") {
-#       in_fact <- p$observ_x #in_fact <- p$observ_grpA
-#       dat_key <- p$observ_y
-#       in_data <- isolate(rv_in$ad$obs[[dat_key]])
-#       names(in_data) <- rv_in$ad$obs_names
-#     } else if (dat_source == "var") {
-#       in_fact <- p$feat_x #in_fact <- p$observ_grpA
-#       dat_key <- p$feat_y
-#       in_data <- isolate(rv_in$ad$var[[dat_key]])
-#       names(in_data) <- isolate(rv_in$ad$var_names)
-#     } else { #  (dat_source == "X")
-#       in_data <- isolate(rv_in$ad$X)
-#       in_fact <- p$observ_x #in_fact <- p$observ_grpA
-#       dat_key <- p$observ_y
-#
-#     }
-#
-#     # grouping is for grouped boxes...
-#     in_grp <- p$observ_grpA #  not enabled
-#
-#     in_subset <- p$observ_subsetA
-#     in_subsel <- p$observ_subselA
-#
-#     feat_subset <- p$feat_subset
-#     # For Boxplot if feat_subset "omic"
-#     if (!is.null(feat_subset)) {
-#       if (feat_subset == "omic") {
-#         feat_subsel <- in_omic <- p$omics_list$value
-#       } else {
-#         feat_subsel <- in_omic <- p$feat_subsel
-#       }
-#     }
-#
-#     in_quant <- dat_key #(maybe) just observ_y
-#     pg_violin_box(in_conf, in_meta, in_fact, in_quant,
-#                   in_grp, in_subset, in_subsel,
-#                   in_data, in_omic, plot_type,
-#                   show_data_points, data_point_sz, font_size )
-#
-#
-
 
 
 
