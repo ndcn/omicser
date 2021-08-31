@@ -1,6 +1,4 @@
-#######################################################################
-#######################################################################
-##
+# INFO ========================================================
 ##  Microglia scRNAseq Transcriptomics
 ##  - from Vilas:
 #         Here’s a link to our single-cell microglia data set as a
@@ -14,19 +12,17 @@
 #         the road it could also be a good data set if we want to explore
 #         cross-connectivity between visualization and cellxgene options.
 ##
-#######################################################################
-#######################################################################
 #  formely `vilas_B` which was derived from a Seurat file
 #
 #
 
-# ------------------------------------------
-# 0. preamble/setup -------------------------
-# ------------------------------------------
+#==== 0. preamble/setup =========================================================================
+
 
 require(Seurat)
 require(configr)
 
+#==== 1. documentation / provenance =========================================================================
 
 db_meta <- list(
   organism = '',
@@ -35,7 +31,8 @@ db_meta <- list(
   title = "single-cell microglia data",
   omic_type = "Transcriptomics",
   measurment = "normalized counts",
-  pub = "TBD"
+  pub = "TBD",
+  date = format(Sys.time(), "%a %b %d %X %Y")
 )
 
 RAW_DIR <- "ingest/Vilas_B"
@@ -46,12 +43,17 @@ write.config(config.dat = db_meta, file.path = out_fn,
              write.type = "yaml", indent = 4)
 
 
+#==== 2. helper functions =========================================================================
+# "helper" functions to prep your "raw" data go here or should be sourced here...
+
+#==== 3. load data =========================================================================
+
 # load the og. Seurat Data object
 raw_data_file <- "microglia_data_with_counts_RNA_SCT.rda"
-load(file.path(RAW_DIR,data_file) )
+load(file.path(RAW_DIR,raw_data_file) )
 
 # pre-pre processing
-#update seurat object -----------------------------
+#  update seurat object -----------------------------
 microglia_data_updated <- UpdateSeuratObject(object = microglia_data)
 #> OUTPUT:
 #   Validating object structure
@@ -63,24 +65,22 @@ microglia_data_updated <- UpdateSeuratObject(object = microglia_data)
 
 saveRDS(microglia_data_updated,
         file = file.path(RAW_DIR, "microglia_data_seu_new.rds"))
+
+
+
+#==== 4. pack into anndata =========================================================================
 microglia_data_updated <- readRDS(file = file.path(RAW_DIR, "microglia_data_seu_new.rds"))
-data_list <- list(object="microglia_data_seu_new.rds")
 
-
-
-# start here 2 -------------------
-# scema
 data_list <- list(object=file.path(RAW_DIR, "microglia_data_seu_new.rds"))
 helper_function<-('data-raw/ingest_helpers.R')
 source(helper_function)
 
-ad <- setup_database(database_name=DB_NAME, data_in=data_list, db_meta=NULL , re_pack=TRUE)
+ad <- setup_database(database_name=DB_NAME, data_in=data_list, db_meta=db_meta , re_pack=TRUE)
 ad$write_h5ad(file.path("data-raw",DB_NAME,"core_data.h5ad"))
 
 
-# ------------------------------------------
-# 5. post processing                      --
-# ------------------------------------------
+
+#==== 5. post processing =========================================================================
 require(reticulate)
 reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
 require(anndata)
@@ -110,6 +110,11 @@ sc$pp$log1p(ad)  # already logg-ed?
 sc$pp$highly_variable_genes(ad, min_mean=0.0125, max_mean=3, min_disp=0.5  )
 #sc$pp$regress_out(ad_tmp, 'n_counts' )
 
+
+ad$raw <- raw
+ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data.h5ad"))
+
+#==== 5-a. dimension reduction - PCA / umap  =========================================================================
 # ## Step 2: Normalize with a very vanilla recipe
 # normalized_data = sc$pp$recipe_seurat(raw, copy=TRUE)
 
@@ -122,20 +127,16 @@ sc$pp$neighbors(ad)
 sc$tl$leiden(ad)
 ## Step 5: Compute tsne and umap embeddings
 sc$tl$umap(ad)
-
-ad$raw <- raw
 #ad_tmp$layers <- list(non_regressed=ad$X) #list('count'=layers)
 
+ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_plus_dr.h5ad"))
 
-ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data.h5ad"))
 
-# ------------------------------------------
-# 6. differential expression             --
-# ------------------------------------------
+#==== 6. differential expression =========================================================================
+
 sc <- import("scanpy")
-helper_function<-('data-raw/ingest_helpers.R')
+helper_function<-('data-raw/compute_de_table.R')
 source(helper_function)
-
 
 test_types <- c('wilcoxon','t-test_overestim_var')
 
@@ -145,23 +146,24 @@ obs_names <- c('disease','cell_type')
 diff_exp <- compute_de_table(ad,comp_types, test_types, obs_names)
 
 
-comp_types <- c("Mild_Cognitive_ImpairmentVAlzheimer_Disease","Mild_Cognitive_ImpairmentVTemporal_Lobe_Epilepsy","Alzheimer_DiseaseVTemporal_Lobe_Epilepsy")
+comp_types <- c("Mild_Cognitive_ImpairmentVAlzheimer_Disease",
+                "Mild_Cognitive_ImpairmentVTemporal_Lobe_Epilepsy",
+                "Alzheimer_DiseaseVTemporal_Lobe_Epilepsy")
 obs_names <- c('disease')
 diff_exp2 <- compute_de_table(ad,comp_types, test_types, obs_names)
 
 diff_exp <- dplyr::bind_rows(diff_exp, diff_exp2)
 
 
-ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data_with_de.h5ad"))
+ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_with_de.h5ad"))
 saveRDS(diff_exp, file = file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
 
-# ------------------------------------------
-# 7. create configs                       --
-# ------------------------------------------
+#==== 7. create configs =========================================================================
+DB_NAME = "vilas_microglia_sceasy"
 
 ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data.h5ad"))
 
-ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data_with_de.h5ad"))
+ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_with_de.h5ad"))
 diff_exp <- readRDS( file = file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
 
 
@@ -194,69 +196,24 @@ conf_list <- list(
   default_factors = c("disease","cell_type","tissue")
 )
 
-
 configr::write.config(config.dat = conf_list, file.path = file.path("data-raw",DB_NAME,"config.yml" ),
                       write.type = "yaml", indent = 4)
 
 
+#==== 8. write data file to load  =========================================================================
+ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"omxr_data.h5ad"))
+
+
+
+
+#==== DONE- =========================================================================
+
+
+ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"omxr_data.h5ad"))
 conf_list_out <- configr::read.config( file.path("data-raw",DB_NAME,"config.yml" ) )
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  helper_function<-('data-raw/create_config_table.R')
-
-  source(helper_function)
-
-  db_prefix = "omxr"
-  conf_and_def <- create_config_table(ad,
-                                      measures,
-                                      diffs,
-                                      dimreds,
-                                      default_factors,
-                                      db_prefix= db_prefix,
-                                      db_dir = file.path("data-raw",DB_NAME))
-
-
-
-
-
-require(configr)
-
-  list.test <- list(a=c(123,456))
-
-  # Write YAML format file
-  out_fn <- sprintf("%s/test.yaml", tempdir())
-  out_fn <-  file.path("data-raw",DB_NAME,"config.yml")
-  write.config(config.dat = conf_and_def, file.path = out_fn,
-               write.type = "yaml")
-
-  yaml_list <- read.config(file = out_fn)
-
-
-  # Write YAML format file with 4 indent
-  write.config(config.dat = list.test, file.path = out_fn,
-               write.type = "yaml", indent = 4)
 
 
 

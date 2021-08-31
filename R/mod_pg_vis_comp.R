@@ -85,8 +85,8 @@ mod_pg_vis_comp_ui <- function(id){
       column(9,
              #uiOutput(ns("UI_viz_output")),
               plotlyOutput(outputId = ns("volcano_plot"),height = "800px"),
-              plotlyOutput(outputId = ns("test_boxplot"))
-
+              plotlyOutput(outputId = ns("test_boxplot")),
+              uiOutput(outputId = ns("UI_meta_box"))
 
                       # downloadButton("Van_c1oup.pdf", "Download PDF"),
                       # downloadButton("Van_c1oup.png", "Download PNG"), br(),
@@ -135,10 +135,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
       # TODO: change to data.frame
       # filter according to current "cases"
       de <- diff_exp %>%
-        # dplyr::filter(test_type == input$RB_select_test &
-        #                 group == input$SI_comp_fact &
-        #                 comp_type == input$SI_comp_type &
-        #                 obs_name == input$SI_comp_name) %>%
+
         dplyr::filter(test_type == input$RB_select_test &
                         versus == input$SI_comp_fact) %>%
 
@@ -148,77 +145,6 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
 
       return(de)
     })
-
-
-
-
-
-
-      # need to make in_data a tibble? based on rv_in$ad$X
-        # prep_test_data <- lipid_data %>%
-        # ## 1. filter out bad data
-        # filter(.data$keep == TRUE) %>%
-        #
-        # ## 2. choos the rows with the two groups being compared.
-        # rename(my_group_info = !!sym(group)) %>%
-        # filter(.data$my_group_info == group1_name |
-        #          .data$my_group_info == group2_name) %>%
-        #
-        # ## 3. keep minimal number of columns - ID, omics-name, omics-class(agg), sampel name, group info, area,
-        # select(.data$my_id, .data$ShortLipidName, .data$LipidClass, .data$sample_name, .data$my_group_info, .data$area) %>%
-        #
-        # ## 4a. Normalizaiton..
-        # # total area normalisation
-        # group_by(.data$sample_name) %>%
-        # mutate(norm_area = .data$area / sum(.data$area)) %>%
-        # ungroup() %>%
-        # # select which normalization to use
-        # mutate(value = case_when(
-        #   normalization == "raw" ~ .data$area,
-        #   normalization == "tot_area" ~ .data$norm_area
-        # )) %>%
-        #
-        # ## 4b. scaling
-        # # do transformations and select which transformation to keep
-        # mutate(value = case_when(
-        #   transformation == "none" ~ .data$value,
-        #   transformation == "log10" ~ log10(.data$value + 1) # the +1 is correct for any zero's
-        # )) %>%
-        #
-        # # 5. column clean up.
-        # # remove the 2 area columns
-        # select(-.data$area, -.data$norm_area) %>%
-        #
-        # ## 6. make nexted "test_data" column
-        # nest(test_data = c(.data$sample_name, .data$my_group_info, .data$value)) %>%
-        #
-        # ## 7. calculate fold count + log fold cont.
-        # mutate(fc = map_dbl(.x = .data$test_data,
-        #                     .f = ~ mean(.x$value[.x$my_group_info == group1_name]) / mean(.x$value[.x$my_group_info == group2_name])),
-        #        fc_log2 = log2(.data$fc))
-        # ## 8. test for difference
-        # result <- switch(test,
-        #       "ttest" = do_ttest(lipid_data = prep_test_data),
-        #       "mwtest" = do_mwtest(lipid_data = prep_test_data))
-
-      # colorby_group <- input$SI_comp_type
-
-      # browser()
-      #
-      # pg_volc_ly <- function(in_data, pvalue_adjust = FALSE, title = "")
-      #
-      #
-      # # results_test <- do_stat_test(in_meta = isolate(rv_in$meta),
-      # #                              in_data = isolate(rv_in$ad$X),
-      # #                              group = input$test_select_group,
-      # #                              group1_name = input$SI_comp_type,
-      # #                              group2_name = input$test_group2,
-      # #                              colorby_group = colorby_group,
-      # #                              normalization = input$select_test_normalization,
-      # #                              transformation = input$select_test_transformation,
-      # #                              test = input$select_test)
-      #
-      # return(results_test)
 
 
     # create some ui output
@@ -232,25 +158,11 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
    # subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
       #
 
-      # checkboxGroupInput( ns("CB_sub_inner1"),
-      #                     label = subs_label,
-      #                     inline = TRUE,
-      #                     choices = subs,
-      #                     selected = subs)
       to_return <-  tagList(
         radioButtons(inputId = ns("RB_select_test"),
                      label = "sig test:",
                      choices = test_choices,
                      selected = rv_in$default$test[1]),
-        shinyjs::disabled( selectInput(inputId = ns("SI_comp_name"),
-                    label = "Comp name",
-                    choices =  strsplit(cfg[ID=="diff_exp_obs_name"]$fID, "\\|")[[1]],
-                    selected = rv_in$default$comp_name)),
-        shinyjs::disabled( selectInput(inputId = ns("SI_comp_type"),
-                    label = "Comp type",
-                    choices =  strsplit(cfg[ID=="diff_exp_comp_type"]$fID, "\\|")[[1]],
-                    selected = rv_in$default$comp_type)),
-        # uiOutput(outputId = ns("test_vs_groups")),
         selectInput(inputId = ns("SI_comp_fact"),
                     label = "compare: ",
                     choices =  strsplit(cfg[ID=="diff_exp_comps"]$fID, "\\|")[[1]],
@@ -260,26 +172,20 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
                     label = "Color by:",
                     choices = rv_in$config[grp == TRUE]$UI,
                     selected = rv_in$default$color_grp)
-        )
+        ),
+        checkboxInput(inputId = ns("CB_drop_bottom"),
+                               label = "drop non-sigs?:",
+                               value = TRUE)
 
       )
 
       return(to_return)
     })
 
-    # output$test_vs_groups <- renderUI({
-    #   tagList(
-    #     selectInput(inputId = ns("test_group1"),
-    #                 label = "group 1:",
-    #                 choices = "none"),
-    #     HTML("<center><b>vs.</b></center>"),
-    #     selectInput(inputId = ns("test_group2"),
-    #                 label = "group 2:",
-    #                 choices = "none")
-    #   )
-    # })
 
 
+    output$UI_meta_box <- renderUI({
+    })
 
     observeEvent(input$SI_comp_type, {
       req(rv_in$config,
@@ -303,10 +209,6 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
                         choices = subs,
                         selected = rv_in$default$comp_fact[1])
 
-      # updateSelectInput(inputId = "test_group2",
-      #                   label = "Group 2:",
-      #                   choices = subs,
-      #                   selected = subs[2])
 
     })
 

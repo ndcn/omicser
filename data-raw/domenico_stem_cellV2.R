@@ -1,15 +1,12 @@
-#######################################################################
-#######################################################################
+#==== INFO ========================================================
 ##
 ##  Muscle Stem Cell Proteomics
 ##  - DIA DATASET developed from "wRapper_example" script
 ##
-#######################################################################
-#######################################################################
 #  formely `domenico_A`
 #
 #
-# Golem options (Inactive) ---------------------------
+# Golem options (Inactive) -
 # Set options here
 # options(golem.app.prod = FALSE) # TRUE = production mode, FALSE = development mode
 # # Detach all loaded packages and clean your environment
@@ -18,15 +15,17 @@
 # # Document and reload your package
 # golem::document_and_reload()
 
+#==== 0. preamble/setup ==================================================
 
-# ------------------------------------------
-# 0. preamble/setup -------------------------
-# ------------------------------------------
-require(tidyverse)
+require(magrittr)
 require(reticulate)
 reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
 require(anndata)
 require(matrixStats)
+require(configr)
+
+
+
 # create the folder to contain the raw data
 DB_NAME = "domenico_stem_cell"
 DB_DIR = file.path("data-raw",DB_NAME)
@@ -37,29 +36,30 @@ if (!dir.exists(DB_DIR)) {
 
 
 
-# ------------------------------------------
-# 1. documentation / provenance ------------
-# ------------------------------------------
-
-
+#==== 1. documentation / provenance ==============================================================
 # TODO:  markdown file or html with some copy about the database
 #  - lab, paper link/name
 #  summarize results / data origin whatever
 
+db_meta <- list(
+  organism = 'mmusculus',
+  lab = "Ori/Ward",
+  annotation_database =  "uniprot_for_annotation.RData",
+  title = "DIA proteomics",
+  omic_type = "Proteomics",
+  measurment = "normalized counts",
+  pub = "TBD",
+  date = format(Sys.time(), "%a %b %d %X %Y")
+)
 
-organism <- "mmusculus"
-lab <- "Ori/Ward"
-annotation_database <- "uniprot_for_annotation.RData"
+out_fn <-  file.path("data-raw",DB_NAME,"db_meta.yml")
+write.config(config.dat = db_meta, file.path = out_fn,
+             write.type = "yaml", indent = 4)
 
 
+#==== 2. helper functions =================================================================================
 
-
-# ------------------------------------------
-# 2. helper functions ----------------------
-# ------------------------------------------
-
-# could also source from elsewhere.
-
+# TODO:could also source from elsewhere.
 # process_sn_prot_quant_report ---------------------------
 #' here the basic data reading/munging is in this function (process_sn_prot_quant)
 #' and the "report" is wrapped in a separate function (make_sn_prot_quant_report)
@@ -108,7 +108,6 @@ process_sn_prot_quant <- function(matrix_data_path, exp_name=NULL) {
 # End process_sn_prot_quant_report ---------------------------
 
 
-
 process_DIA_annot_de <- function( annot_de_file_path ){
   # full plath
   de_annot_data <- read.delim( annot_de_file_path, as.is = TRUE)
@@ -117,7 +116,7 @@ process_DIA_annot_de <- function( annot_de_file_path ){
   # TODO:  add the "test_type" currently it is just read from teh file which i think is
   # output from proprietary software.   check with Domenico...
   #   rather... --> pass off "ownership" of DIA prep functions to Domenico.
-  diff_exp <- de_annot_data %>% transmute(group = gsub(" / ", "V", Comparison..group1.group2.),
+  diff_exp <- de_annot_data %>% dplyr::transmute(group = gsub(" / ", "V", Comparison..group1.group2.),
                                       names = Group,
                                       obs_name = "Condition",
                                       test_type = "unknown",
@@ -126,7 +125,8 @@ process_DIA_annot_de <- function( annot_de_file_path ){
                                       logfoldchange = AVG.Log2.Ratio,
                                       scores = NA,
                                       pvals = Pvalue,
-                                      pvals_adj = Qvalue )
+                                      pvals_adj = Qvalue,
+                                      versus = gsub(" / ", " vs. ", Comparison..group1.group2.) )
 
   feat_annots <- unique(de_annot_data[, c("UniProtIds",
                                       "Genes",
@@ -145,14 +145,12 @@ process_DIA_annot_de <- function( annot_de_file_path ){
 
 }
 
-
 get_DIA_conditions <- function(conditions_table_path){
   conditions_table <- read.delim( conditions_table_path, as.is = TRUE)  #contrasts <- diff_data
 }
 
 
 prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,path_root){
-
   raw_data <- process_sn_prot_quant(file.path(RAW_DIR, matrix_data_file))
   de_annot <- process_DIA_annot_de (file.path(RAW_DIR, annot_de_file ))
   conditions_table <- get_DIA_conditions( file.path(RAW_DIR,conditions_table_file) )
@@ -166,9 +164,8 @@ prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,
   # re-order to conditions_table
   raw_data <- raw_data[conditions_table$File.Name,]
 
-
   # force the data matrix to match our obs(conditions_table) and var (annots)
-  data <- raw_data[conditions_table$File.Name,feat_annots$UniProtIds]
+  data <- raw_data[conditions_table$File.Name,de_annot$annot$UniProtIds]
   var_names <- row.names(data)
 
   # add some marginal statistics
@@ -190,8 +187,8 @@ prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,
   #c("object", "data_mat","obs_meta","var_annot","omics","sample_ID","etc")
   data_list <- list(data_mat = data,
                     obs_meta = conditions_table,
-                    var_annot = feat_annots,
-                    omics = rownames(feat_annots),
+                    var_annot = de_annot$annot,
+                    omics = rownames(de_annot$annot),
                     sample_ID = rownames(data),
                     etc = NULL,
                     de = de_annot$de )
@@ -199,9 +196,7 @@ prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,
   return(data_list)
 }
 
-# ------------------------------------------
-# 2. load data -----------------------------
-# ------------------------------------------
+#==== 3. load data -========================================================================================
 
 RAW_DIR <- "ingest/Domenico_A"
 
@@ -219,30 +214,21 @@ data_list <- prep_DIA_files(matrix_data_file,annot_de_file,conditions_table_file
 
 
 diff_exp <- data_list$de
+# saveRDS(diff_exp, file = file.path(DB_DIR, "diff_expr_table.rds"))
+saveRDS(diff_exp, file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
 
-db_prefix = "de"
-saveRDS(diff_exp, file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
-
-
-
-# ------------------------------------------
-# 4. pack into anndata                    --
-# ------------------------------------------
-
+#==== 4. pack into anndata =========================================================================
 
 DB_NAME = "domenico_stem_cell"
-
-helper_function<-('R/fct_ingestor.R')
+helper_function<-('data-raw/ingest_helpers.R')
 source(helper_function)
 
 ad <- setup_database(database_name=DB_NAME, data_in=data_list, db_meta=NULL , re_pack=TRUE)
 ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"core_data.h5ad"))
 
 
+#==== 5. post processing =========================================================================               --
 
- ----------------------------
-  # 5. post processing                      --
-  # ------------------------------------------
 require(anndata)
 require(reticulate)
 DB_NAME = "domenico_stem_cell"
@@ -252,40 +238,35 @@ ad <- read_h5ad(file.path("data-raw",DB_NAME,"core_data.h5ad"))
 ad
 raw <- ad$copy()
 
+# make raw #includes NA
+#     X="zeroed_NA" (for PCA)
+#     "scaled"  (zeroed)
+#
+#
+
 sc <- import("scanpy")
 
 #outvals <- sc$pp$filter_cells(ad, min_genes=200, inplace=FALSE)
+tmpX <- ad$X
+tmpX[is.na(tmpX)]<-0
+ad$X <- tmpX
+ad<-ad$copy() # fix
 
-ad_tmp <- ad$copy()
-
-
-sc$pp$scale(ad)
-
-# ## Step 3: Do some basic preprocessing to run PCA and compute the neighbor graph
-# sc$pp$pca(ad_tmp)
-# sc$pp$neighbors(ad)
-#
-# ## Step 4: Infer clusters with the Louvain algorithm
-# #sc$tl$louvain(ad_tmp)
-# sc$tl$leiden(ad)
-# ## Step 5: Compute tsne and umap embeddings
-# sc$tl$umap(ad)
+scaled <- ad$copy() #scaled
+sc$pp$scale(scaled)
 
 ad$raw <- raw
+ad$layers <- list(scaled=scaled$X,
+                  zeroed_NA=ad$X) #list('count'=layers)
+
+
+ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data.h5ad"))
+
 #ad_tmp$layers <- list(non_regressed=ad$X) #list('count'=layers)
 
 
-ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"core_data_plus_de.h5ad"))
 
-
-
-
-
-
-
-# ------------------------------------------
-# 6. dimension reduction - PCA / umap    --
-# ------------------------------------------
+#==== 5-a. dimension reduction - PCA / umap =========================================================================
 require(anndata)
 require(reticulate)
 
@@ -294,71 +275,98 @@ DB_DIR = file.path("data-raw",DB_NAME)
 #RAW_DIR <- "ingest/Vilas_B"
 
 #ad <- read_h5ad(file.path(DB_DIR,"core_data_plus_de.h5ad"))
-ad <- read_h5ad(file.path(DB_DIR,"core_data.h5ad"))
+ad <- read_h5ad(file.path(DB_DIR,"normalized_data.h5ad"))
 
 
-# ------------------------------------------
-# 7 . create config and default files                   --
-# ------------------------------------------
+## Step 3: Do some basic preprocessing to run PCA and compute the neighbor graphs
+##
+scaled <- ad$copy()
+scaled$X <- ad$layers$get('scaled')
+sc$pp$pca(scaled)
+sc$pp$neighbors(scaled)
+## Step 4: Infer clusters with the leiden algorithm
+sc$tl$leiden(scaled)
+## Step 5: Compute tsne and umap embeddings
+sc$tl$umap(scaled)
+
+
+sc$pp$pca(ad)
+sc$pp$neighbors(ad)
+sc$tl$leiden(ad)
+sc$tl$umap(ad)
+
+ad$obsm$Xsc_pca <- ad$obsm$X_pca
+ad$obsm$Xsc_umap <- ad$obsm$X_umap
+ad$varm$sc_PCs <- ad$varm$PCs
+
+ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_plus_dr.h5ad"))
+
+
+#==== 6. differential expression  ======================================================================
+
+#already computed!!
+file.exists(file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
+
+
+#ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_with_de.h5ad"))
+diff_exp <- readRDS(file = file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
+
+
+
+
+#==== 7. create configs =========================================================================
 require(anndata)
 require(reticulate)
 
 DB_NAME = "domenico_stem_cell"
-DB_DIR = file.path("data-raw",DB_NAME)
-#RAW_DIR <- "ingest/Vilas_B"
 
-#ad <- read_h5ad(file.path(DB_DIR,"core_data_plus_de.h5ad"))
-ad <- read_h5ad(file.path(DB_DIR,"core_data.h5ad"))
-db_prefix = "de"
-diff_exp = readRDS( file = paste0(DB_DIR, "/", db_prefix, "_table.rds"))
+ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data.h5ad"))
+ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_plus_dr.h5ad"))
 
-# this all needs to go in YML files... so we cna just create the config/defaults at ingest
+#ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_with_de.h5ad"))
+diff_exp <- readRDS( file = file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
 
-# measures
-#  This ordering is the "default"
-measures <- list(obs = ad$obs_keys()[11:14],
-                 var = NA)
-# [1] "sct.detection_rate"    "sct.gmean"             "sct.variance"
-# [4] "sct.residual_mean"     "sct.residual_variance" "sct.variable"
-
-# differentials  #if we care we need to explicitly state. defaults will be the order...
-diffs <- list(diff_exp_groups =  levels(factor(diff_exp$group)),
-              diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
-              diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
-              diff_exp_tests =  levels(factor(diff_exp$test_type)))
-
-# Dimred
-dimreds <- list(varm = NA,
-                obsm = NA)
 
 # what ad$obs do we want to make default values for...
 # # should just pack according to UI?
 default_factors <- c("Condition","Color","Replicate")
 helper_function<-('data-raw/create_config_table.R')
 
-source(helper_function)
-db_prefix = "omxr"
-conf_and_def <- create_config_table(ad,
-                                    measures,
-                                    diffs,
-                                    dimreds,
-                                    default_factors,
-                                    db_prefix= db_prefix,
-                                    db_dir = DB_DIR)
+
+# differentials  #if we care we need to explicitly state. defaults will be the order...
+conf_list <- list(
+  x_obs = c("Is.Reference","Condition","Replicate", "Label"),
+  y_obs =  c("expr_var", "expr_mean", "expr_frac", "sample_ID", "leiden"), #MEASURES
+  obs_groupby = c("Is.Reference","Condition","Replicate", "Label"),
+  obs_subset = c("Is.Reference","Condition","Replicate", "Label"),
+
+  x_var = character(0),
+  y_var = c("expr_geomean", "expr_mean", "expr_var", "expr_frac" ),
+
+  var_groupby = character(0),
+  var_subset = character(0),
+
+  diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
+               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this
+               diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
+               diff_exp_tests =  levels(factor(diff_exp$test_type))
+  ),
+
+  # Dimred
+  dimreds = list(obsm = ad$obsm_keys(),
+                 varm = ad$varm_keys()),
+
+  # what ad$obs do we want to make default values for...
+  # # should just pack according to UI?
+  default_factors = c("Condition","Color","Replicate")
+
+)
+
+configr::write.config(config.dat = conf_list, file.path = file.path("data-raw",DB_NAME,"config.yml" ),
+                      write.type = "yaml", indent = 4)
 
 
 
-
-
-
-
-
-domenico_stem_cell_conf = readRDS( paste0(DB_DIR,"/",db_prefix,"_conf.rds") )
-domenico_stem_cell_def = readRDS( paste0(DB_DIR,"/",db_prefix,"_def.rds") )
-domenico_stem_cell_omics = readRDS( paste0(DB_DIR,"/",db_prefix,"_omics.rds") )
-domenico_stem_cell_meta = readRDS( paste0(DB_DIR,"/",db_prefix,"_meta.rds") )
-
-
-#usethis::use_data(domenico_stem_cell_conf, domenico_stem_cell_def, domenico_stem_cell_omics, domenico_stem_cell_meta, overwrite = TRUE)
-
+#==== 8. write data file to load  =========================================================================
+ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"omxr_data.h5ad"))
 

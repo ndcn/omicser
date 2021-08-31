@@ -91,7 +91,6 @@ do_stat_test <- function(in_meta, in_data, group, group1_name, group2_name, colo
 }
 
 # Function - Volcano Plot --------------------------------------------------
-# Generate Volcano-Plot based on muscletype and condition
 #' @title Create volcano plot
 #'
 #' @description Create volcano plot.
@@ -473,22 +472,22 @@ pg_volc_ly <- function(de, title = "") {
   # p <- in_data %>%
 
     p <- plot_ly(
-      x = de$logfoldchange,
-      y = -log10(de$pvals),
-      name = "FDR > 0.05",
-      type = "scatter",
-      showlegend = FALSE,
-      mode = "markers",
-      # Hovertext
-      text = paste(de$names,
-                   "</br></br>Beta: ",
-                   format( de$logfoldchanges, digits = 3, scientific = TRUE),
-                   " (score: ",
-                   format( de$scores, digits = 3, scientific = TRUE),
-                   "</br>Q-value: ",
-                   format(de$pvals_adj, digits = 3, scientific = TRUE)),
-      hoverinfo = "text",
-      color = ~I(de$point_color) )
+                  x = de$logfoldchange,
+                  y = -log10(de$pvals),
+                  name = "FDR > 0.05",
+                  type = "scatter",
+                  showlegend = FALSE,
+                  mode = "markers",
+                  # Hovertext
+                  text = paste(de$names,
+                               "</br></br>Beta: ",
+                               format( de$logfoldchanges, digits = 3, scientific = TRUE),
+                               " (score: ",
+                               format( de$scores, digits = 3, scientific = TRUE),
+                               "</br>Q-value: ",
+                               format(de$pvals_adj, digits = 3, scientific = TRUE)),
+                  hoverinfo = "text",
+                  color = ~I(de$point_color) )
 
     p <- p %>%
       # Adding markers for a custom legend.  Technically,
@@ -518,3 +517,74 @@ pg_volc_ly <- function(de, title = "") {
 
   return(p)
 }
+
+
+
+# Function - Heat Map DIA -------------------------------------------------
+heat_DIA <- function(..., proteins, dimension_x) {
+  # if (identical(proteins, character(0))) {
+  #     print("Empty")
+  #     return(NULL)
+  # } else {
+  #proteins <- c("Ppt1", "Cul4b", "Camsap1")
+  # filter data based on selected proteins (MsC-Data and Transcriptomics data)
+  allDat2 <- transcriptomics_long %>% filter(Genes %in% proteins)
+  allDat2 <- rename(allDat2,
+                    Comparison..group1.group2. = label,
+                    gene.name = Genes)
+  allDat2$datatype <- "transcriptome"
+  allDat <- filter_prot(proteins, "DIA") %>%
+              subset(select = c("Comparison..group1.group2.", "logFC",  "adj.P.Val", "UniProtIds", "gene.name", "ProteinDescriptions"))
+  allDat$datatype <- "proteome"
+  # # Reorder Variable-levels for visualization
+  # allDat$Comparison..group1.group2. <- as.character(allDat$Comparison..group1.group2.)
+  # allDat$Comparison..group1.group2. <- factor(allDat$Comparison..group1.group2., levels = c("o / y", "g / y", "g / o"))
+
+  mult_fact <- length(unique(allDat$gene.name))
+  rwb <- colorRampPalette(colors = c('skyblue3', 'white', 'darkorange'))
+
+  #proteins <- c("Ppt1", "Cul4b", "Camsap1")
+  plot <- allDat %>% ggplot( aes(x = Comparison..group1.group2.,
+                                 y = gene.name,
+                                 size = -log10(adj.P.Val),
+                                 colour = logFC)) +
+    geom_point(data = allDat2) +  # do not change order of the arguments geom_point and scale_x… since this would change the order of variables on x axis
+    geom_point() +
+    facet_wrap(.~datatype,
+               scales="free_x",
+               ncol = 2, dir = "h",
+               drop=TRUE, strip.position = "bottom",
+               labeller = label_wrap_gen(width = 5, multi_line = TRUE)) +
+    xlab("") + #needed for subsequent scale_x_discrete-command, as too long labels need to be split
+    scale_x_discrete("Condition",
+                     drop=TRUE, na.translate = FALSE,
+                     labels = function(x) lapply(strwrap(x, width = 10, simplify = FALSE), paste, collapse="\n")) +
+    scale_colour_gradientn(colours = rwb(100),
+                           limits=c(-1.5, 1.5),
+                           oob = scales::squish) +
+    scale_size(name = "-log10(adj.P.Val)",
+               breaks = c(1.3,2,4,6)) +
+    theme(panel.grid.major.y = element_line(colour="grey", size=0.1, inherit.blank = FALSE),
+          panel.background = element_blank(),
+          panel.spacing = unit(0, "lines"),
+          axis.ticks=element_blank(),
+          strip.text.x = element_text(size=12),
+          strip.background = element_blank(),
+          axis.text = element_text(size = 12, inherit.blank = FALSE),
+          axis.title = element_text(size = 17, inherit.blank = FALSE),
+          axis.text.x.bottom = element_text(margin = margin(t = 15, r = 15, b = 15, l = 15, unit = "pt"))) +
+    labs(x="Condition", y="Proteins")
+  #annotate("text", x = c(2, 6), y = c(0.6,0.6), label = c("proteome", "transcriptome") , color="gray30", size=4)
+
+  if(length(proteins) <= 8) {
+    plot <- plot + theme(legend.position = "bottom",
+                         legend.direction = "horizontal",
+                         legend.text = element_text(angle = 90, vjust = 0.9))
+  }
+  if(!dimension_x){
+    plot <- plot + theme(axis.text.x = element_text(angle = 90))
+  }
+  return(plot)
+  # }
+}
+

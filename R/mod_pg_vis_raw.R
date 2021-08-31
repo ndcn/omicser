@@ -154,7 +154,7 @@ mod_pg_vis_raw_ui <- function(id){
 #' pg_vis_raw Server Functions
 #'
 #' @noRd
-mod_pg_vis_raw_server <- function(id,rv_in, p){
+mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -181,75 +181,47 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
 
     #go_signal <- reactive( p$omics_list$viz )
 
-
     output$plot_box_out <- renderPlot({
       #req(rv_in$ad)
-      req(p$omics_list,
-          p$observ_grpA,
-          p$observ_x,
-          p$observ_subselA,
-          p$observ_y)
+      req( p$omics_list)
 
-      in_conf <- rv_in$config
-      #in_meta <- rv_in$meta
-      in_meta <- as.data.table(rv_in$ad$obs)
-      row.names(in_meta) <- rv_in$ad$obs_names
-
-      dat_source <- p$obs_type
-      #in_data <- isolate(rv_in$ad[[dat_source]][[dat_key]])
-      if (dat_source == "obs") {
-        in_fact <- p$observ_x #in_fact <- p$observ_grpA
-        dat_key <- p$observ_y
-        in_data <- isolate(rv_in$ad$obs[[dat_key]])
-        names(in_data) <- rv_in$ad$obs_names
-      } else if (dat_source == "var") {
-        in_fact <- p$feat_x #in_fact <- p$observ_grpA
-        dat_key <- p$feat_y
-        in_data <- isolate(rv_in$ad$var[[dat_key]])
-        names(in_data) <- isolate(rv_in$ad$var_names)
-      } else { #  (dat_source == "X")
-        in_data <- isolate(rv_in$ad$X)
-        # use the "obs" fact a
-        in_fact <- p$observ_x #in_fact <- p$observ_grpA
-        dat_key <- p$observ_y
-        # in_fact <- p$feat_x #in_fact <- p$observ_grpA
-        # dat_key <- p$feat_y
-        print('boxplots only for obs and var ?@!?')
-        #TODO:  spawn warning box
-        #return(NULL)
-      }
-
-      # grouping is for grouped boxes...
-      in_grp <- p$observ_grpA #  not enabled
-
-      in_subset <- p$observ_subsetA
-      in_subsel <- p$observ_subselA
-
-      feat_subset <- p$feat_subset
-      # For Boxplot if feat_subset "omic"
-      if (!is.null(feat_subset)) {
-        if (feat_subset == "omic") {
-          feat_subsel <- in_omic <- p$omics_list$value
-        } else {
-          feat_subsel <- in_omic <- p$feat_subsel
-        }
-      }
-
+      # box_data <- list(
+      #   x_name = in_fact,
+      #   y_name = dat_key,
+      #   dat_source = dat_source,
+      #   data = bx_data,
+      # )
       plot_type <- input$RB_dist_plot_type
       show_data_points <- input$CB_show_data_points
 
-      #TODO: make these interactive? (e.g. shinycell)
+      notch <- TRUE
       data_point_sz = .65
       plot_size = "Small"
       font_size = "Small"
-      color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
-      color_scheme = color_schemes[2]
-      in_quant <- dat_key #(maybe) just observ_y
-      pg_violin_box(in_conf, in_meta, in_fact, in_quant,
-                    in_grp, in_subset, in_subsel,
-                    in_data, in_omic, plot_type,
-                    show_data_points, data_point_sz, font_size )
+      grp <- ifelse(p$group_action=="none",FALSE,TRUE)
 
+      vplot <- violin_box(box_data$data, box_data$x_name,box_data$y_name,
+                          box_data$colors,
+                          plot_type,
+                          show_data_points,
+                          data_point_sz,
+                          font_size,
+                          notch,
+                          grp)
+
+
+      # #TODO: make these interactive? (e.g. shinycell)
+      # data_point_sz = .65
+      # plot_size = "Small"
+      # font_size = "Small"
+      # color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+      # color_scheme = color_schemes[2]
+      # in_quant <- dat_key #(maybe) just observ_y
+      # pg_violin_box(in_conf, in_meta, in_fact, in_quant,
+      #               in_grp, in_subset, in_subsel,
+      #               in_data, in_omic, plot_type,
+      #               show_data_points, data_point_sz, font_size )
+      return(vplot)
     })
 
     output$UI_viz_output <- renderUI({
@@ -279,89 +251,53 @@ mod_pg_vis_raw_server <- function(id,rv_in, p){
 
     # plot_heatmap_out renderPlot---------------------------------
     output$plot_heatmap_out <- renderPlot({
-      req(p$omics_list,
-          p$observ_grpA,
-          p$observ_subselA,
-          p$observ_y)
+
+      # hm_data <- list(
+      #   x_name = X_fact,
+      #   y_name = group_by$y,
+      #   x_source = x_is,
+      #   type = dat_loc,
+      #   data = hm_data,
+      #   mat = X_data,
+      #   meta = tmp_meta,
+      #   ready = TRUE
+      # )
+
+      print("in plot_heatmap_out")
 
 
-      in_conf <- rv_in$config
-      in_meta <- as.data.table(rv_in$ad$obs) #in_meta <- rv_in$meta
-      row.names(in_meta) <- rv_in$ad$obs_names
+      input_data <- heat_data$data
+      #
+      x_names <- heat_data$x_names
+      y_names <- heat_data$y_names
 
-      dat_source <-p$obs_type
-
-      in_quant <- "X" #dat_key #(maybe) just observ_y
-
-        in_data <- isolate(rv_in$ad$X)
-        # use the "obs" fact a
-        in_fact <- p$observ_x #in_fact <- p$observ_grpA
-        dat_key <- p$observ_y
-        # in_fact <- p$feat_x #in_fact <- p$observ_grpA
-        # dat_key <- p$feat_y
-
-
-
-      # these are the groups to show on thye y axis
-      all_omics <- rv_in$ad$var_names
-      names(all_omics) <- all_omics
-
-      all_obs <- rv_in$ad$obs_names
-      names(all_obs) <- all_obs
-
-      in_omics <- p$omics_list$value
-
-
-      # grouping is for grouped boxes...
-      in_grp <- p$observ_grpA #  not enabled
-      in_subset <- p$observ_subsetA
-      in_subsel <- p$observ_subselA
-
-      feat_subset <- p$feat_subset
-      feat_subsel <- in_omic <- p$feat_subsel
-
+browser()
       plot_type <- input$RB_heat_plot_type
       in_do_scale <- input$CB_scale
       in_clust_row <- input$CB_cluster_rows
       in_clust_col <- input$CB_cluster_cols
 
-
-      #TODO: make these interactive? (e.g. shinycell)
       plot_size = "Small"
       color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
       color_scheme = color_schemes[2]
-      pg_bubble_heatmap(in_conf, in_meta, in_omics, in_fact, plot_type,
-                        in_grp, in_subset,in_subsel,
-                        in_data, all_omics,
-                        input$CB_scale, input$CB_cluster_rows, input$CB_cluster_cols,
-                        color_scheme, plot_size)
 
-      # in_conf <- rv_in$config
-      # in_meta <- rv_in$meta
-      #
-      # in_fact <- p$observ_grpA
-      #
-      #    #  probably add a "matrix" column to config...
-      # # maybe use the data_source to indicate if we want raw or layers... short circuit for now
-      # in_data <- isolate(rv_in$ad$X)  # do we need to isolate it??
-      #
-      # in_quant <- "X" #dat_key #(maybe) just observ_y
-      #
-      # # these are the "groups" to show on the x axis
-      # in_group <- in_fact
-      #
-      # # these are the groups to show on thye y axis
-      # all_omics <- rv_in$ad$var_names
-      # names(all_omics) <- all_omics
-      #
-      # all_obs <- rv_in$ad$obs_names
-      # names(all_obs) <- all_obs
-      #
-      #
-      # pg_bubble_heatmap(in_conf, in_meta, p$omics_list$value, in_group, input$RB_heat_plot_type,
-      #            p$observ_grpA, p$observ_subselA, in_data, all_omics,
-      #            input$CB_scale, input$CB_cluster_rows, input$CB_cluster_cols,
-      #            color_scheme, plot_size)
+      grp <- ifelse(p$group_action=="none",FALSE,TRUE)
+
+      hmap <- bubble_heatmap(input_data, x_names, y_names, plot_type,
+                                 in_do_scale, in_clust_row, in_clust_col,
+                                 color_scheme, plot_size, grp, save = FALSE)
+#
+#       #TODO: make these interactive? (e.g. shinycell)
+#       plot_size = "Small"
+#       color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+#       color_scheme = color_schemes[2]
+#       pg_bubble_heatmap(in_conf, in_meta, in_omics, in_fact, plot_type,
+#                         in_grp, in_subset,in_subsel,
+#                         in_data, all_omics,
+#                         input$CB_scale, input$CB_cluster_rows, input$CB_cluster_cols,
+#                         color_scheme, plot_size)
+
+    return(hmap)
     })
 
     output$UI_heatmap <- renderUI({

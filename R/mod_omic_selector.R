@@ -22,17 +22,17 @@ mod_omic_selector_ui <- function(id){
     ), #fluidRow 2
 
     fluidRow(
-      column(width = 3 ,offset = 1,
+      column(width = 2 ,offset = 1,
              style='padding-left:0px; padding-right:1px',
-             actionButton(ns("AB_omics_submit"),"Submit",class="hidableSubmit")
+             actionButton(ns("AB_omics_submit"),"Submit",class = "btn btn-primary" ) #class="hidableSubmit"
       ),
-      column(width = 3, offset = 0,
+      column(width = 2, offset = 0,
              style='padding-left:0px; padding-right:1px',
-             actionButton(ns("AB_omics_reset"), "Clear",class="hidableClear")
+             actionButton(ns("AB_omics_reset"), "Clear", class = "btn btn-primary" ) #class="hidableClear"
       ),
-      column(width = 3, offset = 0,
+      column(width = 2, offset = 0,
              style='padding-left:0px; padding-right:1px',
-             actionButton(ns("AB_omics_def"), "Default",class="hidableClear")
+             actionButton(ns("AB_omics_def"), "Default", class = "btn btn-primary" ) #class="hidableDefault"
       )
     ),
     fluidRow(
