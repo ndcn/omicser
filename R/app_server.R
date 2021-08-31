@@ -46,20 +46,6 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     p_vis <- mod_side_selector_server("side_selector_ui_1", rv_in = rv)
-    # CHECK sidebar - get params:
-    # vis_params <- mod_sideselect_server("sideselect_ui_1", rv)
-        # omics_list = NULL,
-        # # aggregate obs
-        # feat_grp = NULL,
-        # feat_subsel = NULL,
-        # observ_grp = NULL,
-        # observ_subsel = NULL,
-        # observ_x = NULL,
-        # observ_y_raw = NULL,
-        # measure_type = NULL, #"raw" or "comp"
-        # raw_plot_type = NULL,
-        # comp_plot_type = NULL,
-        # obs_type = NULL
 
   }
 
@@ -106,7 +92,7 @@ app_server <- function(input, output, session) {
   ##      6a: mod_pg_vis_comp
   ##      6b: mod_pg_vis_raw
   ##      6c: mod_pg_table?
-  ##      6d: ??
+  ##      6d: mod_pc_qc
   ##
   ##
   ##     ###+
