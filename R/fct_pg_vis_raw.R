@@ -447,7 +447,7 @@ bubble_heatmap <- function(heat_data, x_names, y_names, plot_type,
   if(in_clust_col){
     hc_col = ggdendro::dendro_data(as.dendrogram(hclust(dist(t(gg_mat)))))
     gg_color = ggplot2::ggplot() +
-      ggplot2::geom_segment(hm_dat = hc_col$segments, ggplot2::aes(x=x,y=y,xend=xend,yend=yend)) +
+      ggplot2::geom_segment(data = hc_col$segments, ggplot2::aes(x=x,y=y,xend=xend,yend=yend)) +
       ggplot2::scale_x_continuous(breaks = seq_along(hc_col$labels$label),
                                   labels = hc_col$labels$label, expand = c(0.05, 0)) +
       ggplot2::scale_y_continuous(breaks = rep(0, uniqueN(hm_dat$omic)),

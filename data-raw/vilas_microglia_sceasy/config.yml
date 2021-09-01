@@ -23,7 +23,9 @@ obs_subset:
 - cell_type
 - sex
 - leiden
-x_var: highly_variable
+x_var:
+- <omic selector>
+- highly_variable
 y_var:
 - sct.detection_rate
 - sct.gmean
@@ -36,17 +38,15 @@ y_var:
 - dispersions
 - dispersions_norm
 var_groupby:
-- tissue
-- disease
-- cell_type
-- sex
-- leiden
+- <omic selector>
+- highly_variable
 var_subset:
-- tissue
-- disease
-- cell_type
-- sex
-- leiden
+- <omic selector>
+- highly_variable
+layers:
+- X
+- raw
+- counts
 diffs:
     diff_exp_comps:
     - Alzheimer_Disease vs. rest

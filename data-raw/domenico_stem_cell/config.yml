@@ -35,6 +35,10 @@ diffs:
     diff_exp_comp_type: grpVref
     diff_exp_obs_name: Condition
     diff_exp_tests: unknown
+layers:
+- X
+- raw
+- counts
 dimreds:
     obsm:
     - X_pca

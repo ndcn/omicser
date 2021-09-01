@@ -290,7 +290,7 @@ do_mwtest <- function(in_data) {
 #'
 box_plot <- function(in_data, title = "") {
   # create the plot
-  p <- in_data %>%
+  plt <- in_data %>%
     plot_ly(x = ~my_group_info,
             y = ~value,
             text = ~sample_name,
@@ -299,14 +299,12 @@ box_plot <- function(in_data, title = "") {
             boxpoints = "all",
             jitter = 0.4,
             pointpos = 0) %>%
-    layout(title = list(text = title,
-                        x = 0),
-           yaxis = list(title = "Value",
-                        exponentformat = "E"),
+    layout(title = list(text = title, x = 0),
+           yaxis = list(title = "Value",exponentformat = "E"),
            xaxis = list(title = "Group")) %>%
     hide_legend()
 
-  return(p)
+  return(plt)
 }
 
 
@@ -471,7 +469,7 @@ pg_volc_ly <- function(de, title = "") {
   # create the plot
   # p <- in_data %>%
 
-    p <- plot_ly(
+    plt <- plot_ly(
                   x = de$logfoldchange,
                   y = -log10(de$pvals),
                   name = "FDR > 0.05",
@@ -489,7 +487,7 @@ pg_volc_ly <- function(de, title = "") {
                   hoverinfo = "text",
                   color = ~I(de$point_color) )
 
-    p <- p %>%
+    plt <- plt %>%
       # Adding markers for a custom legend.  Technically,
       # the entire volcano plot trace is colored blue,
       # but we need a legend to indicate the meaning of the orange points,
@@ -507,15 +505,18 @@ pg_volc_ly <- function(de, title = "") {
 
       plotly::layout(
         title = title,
-        xaxis = list(title = "Effect (Beta)", range = c(-4, 4)),
-        yaxis = list(title = "-log10 p-value", range = c(0, 7.25))
+        xaxis = list(title = "Effect (logFC)", range = c(-4, 4)),
+        yaxis = list(title = "-log10 p-value", range = c(-0.1, 10.25))
       ) %>%
       # Disable the legend click since our traces do not correspond to the
       # actual legend labels
-      #onRender("function(el,x){el.on('plotly_legendclick', function(){ return false; })}") %>%
+      htmlwidgets::onRender("function(el,x){el.on('plotly_legendclick', function(){ return false; })}") %>%
       plotly::config(displayModeBar = FALSE)
 
-  return(p)
+
+    return(plt)
+
+#  return(p)
 }
 
 
