@@ -84,7 +84,6 @@ gen_config_table <- function(ad_in, ds_name) {
       )
       # Additional pre-processing for categorical metadata
       n_levels <- nlevels(obs_meta[[i_meta]])
-      print(levels(obs_meta[[i_meta]]))
 
       if (n_levels !=0 &
           n_levels <= max_levels &
@@ -138,8 +137,8 @@ gen_config_table <- function(ad_in, ds_name) {
           tmp_conf$fRow <- 1
         }
         #TODO: test for comp measure...
-        omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
       }
+      omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
 
     diffs <- conf_list$diffs
@@ -213,7 +212,26 @@ gen_config_table <- function(ad_in, ds_name) {
       }
     }
 
-    # obs to subset # default selection is all (if multi) or first (if only 1)
+
+    lr_to_include <- conf_list$layers
+    for (i_lr in lr_to_include) {
+      tmp_conf <- data.table(
+        ID = i_lr, UI = i_lr, fID = NA, fUI = NA,
+        fCL = NA, fRow = NA, Qobs = FALSE, field = "layer",
+        default = 0, grp = FALSE, measure= FALSE,
+        diff_exp = FALSE, dimred = TRUE
+      )
+      tmp_conf$fID <- levels(tmp_list)
+      tmp_conf$fUI <- tmp_conf$fID
+      tmp_conf$fCL <- "black"
+      tmp_conf$fRow <- 1
+        #TODO: test for comp measure...
+        omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
+    }
+
+
+
+     # obs to subset # default selection is all (if multi) or first (if only 1)
     # omics
     # vars subset
 

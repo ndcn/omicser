@@ -174,12 +174,13 @@ conf_list <- list(
   obs_groupby = c("tissue", "disease", "cell_type", "sex", "leiden"),
   obs_subset = c("tissue", "disease", "cell_type", "sex", "leiden"),
 
-  x_var = c("highly_variable"),
+  x_var = c("<omic selector>","highly_variable"),
   y_var = c("sct.detection_rate", "sct.gmean", "sct.variance","sct.residual_mean","sct.residual_variance", "sct.variable",
             "n_cells",  "means" , "dispersions", "dispersions_norm" ),
+  var_groupby = c("<omic selector>","highly_variable"),
+  var_subset = c("<omic selector>","highly_variable"),  # NOTE:  <omic selector> is NOT in the data object so its not actually going to load
 
-  var_groupby = c("tissue", "disease", "cell_type", "sex", "leiden"),
-  var_subset = c("tissue", "disease", "cell_type", "sex", "leiden"),
+  layers = c("X","raw","counts"),
 
   diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
                 diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this

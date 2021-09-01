@@ -1,3 +1,6 @@
+require(shinydashboardPlus)
+
+
 #' pg_vis_comp UI Function
 #'
 #' @description A shiny Module.
@@ -69,7 +72,7 @@ mod_pg_vis_comp_ui <- function(id){
         #               label = "Show corrected p-value",
         #               value = FALSE),
         # this dynamicall makes all of our test/group selectors
-        uiOutput(outputId = ns("UI_comp_group_selection"))
+          uiOutput(outputId = ns("UI_comp_group_selection"))
         # actionButton("Van_c1tog", "Toggle graphics controls"),
         # conditionalPanel(
         #   condition = "input.Van_c1tog % 2 == 1",
@@ -84,9 +87,25 @@ mod_pg_vis_comp_ui <- function(id){
       ), # End of column (6 space)
       column(9,
              #uiOutput(ns("UI_viz_output")),
-              plotlyOutput(outputId = ns("volcano_plot"),height = "800px"),
-              plotlyOutput(outputId = ns("test_boxplot")),
-              uiOutput(outputId = ns("UI_meta_box"))
+               plotlyOutput(outputId = ns("volcano_plot"),height = "800px")
+             )
+      ),
+      fluidRow(
+        box(id = ns("omic_boxplot"),
+            title = "Omic Distribution",
+            solidHeader = TRUE,
+            status = "primary",
+            plotlyOutput(outputId = ns("test_boxplot")),
+            width = 8),
+        # Info on metab selected on volcano plot
+        box(id = ns("omic_info"),
+            title = "Omic Details",
+            solidHeader = TRUE,
+            status = "primary",
+            htmlOutput(ns("UI_meta_box")),
+            #uiOutput(outputId = ns("UI_meta_box")), #htmlOutput(ns("metabinfo")),
+            width = 4)
+      )
 
                       # downloadButton("Van_c1oup.pdf", "Download PDF"),
                       # downloadButton("Van_c1oup.png", "Download PNG"), br(),
@@ -95,15 +114,10 @@ mod_pg_vis_comp_ui <- function(id){
                       #                  min = 4, max = 20, value = 8, step = 0.5)),
                       # div(style="display:inline-block",
                       #     numericInput("Van_c1oup.w", "PDF / PNG width:", width = "138px",
-                      #                  min = 4, max = 20, value = 10, step = 0.5))
-             )  # End of column (6 space)
-      )    # End of fluidRow (4 space)
 
-
- ) #taglist
+  ) #taglist
 
 }
-
 #' pg_vis_comp Server Functions
 #'
 #' @noRd
@@ -123,7 +137,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
 
     #### compare samples
     #### TODO: change name to diff_exp_filter or something since we are no longer testing here
-    test_result <- reactive({
+    filtered_de <- reactive({
       req(
           rv_in$de,
           #input$SI_comp_type,
@@ -142,6 +156,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
         dplyr::mutate(f=1,
                       significant = pvals_adj < 0.01,
                       point_color =  dplyr::recode(as.character(.data$significant), "TRUE" = "#FF7F00", "FALSE" = "#1F78B4"))
+
 
       return(de)
     })
@@ -184,9 +199,6 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
 
 
 
-    output$UI_meta_box <- renderUI({
-    })
-
     observeEvent(input$SI_comp_type, {
       req(rv_in$config,
           rv_in$default)
@@ -214,31 +226,185 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
 
 
     output$volcano_plot <- renderPlotly({
-      req(test_result, #input$SI_comp_type,
+      req(filtered_de, #input$SI_comp_type,
           input$SI_comp_fact)
 
-
       colorby_group <- input$SI_color_grp
-      de_local <- test_result()
+      de <- filtered_de()
+
+      browser()
+
       # title_text <- paste0(input$SI_comp_type, " || ", input$SI_comp_fact)
-      if( dim(de_local)[1]>0 ) {
-        # pg_volcano_ly(in_data = test_result(),
+      if( dim(de)[1]>0 ) {
+        # pg_volcano_ly(in_data = filtered_de(),
         #              pvalue_adjust = input$test_cor_pvalue,
         #              title = paste0(input$SI_comp_type, " vs ", input$test_group2))
         title_text <- paste0("comp: ", input$SI_comp_fact)
 
-       volc <- pg_volc_ly(de=de_local , title = title_text)
-       return(volc)
+
+
+        # volc <- pg_volc_ly(de=de_local , title = title_text)
+        # return(volc)
+        volc <- plot_ly(
+          x = de$logfoldchange,
+          y = -log10(de$pvals),
+          name = "FDR > 0.05",
+          type = "scatter",
+          showlegend = FALSE,
+          mode = "markers",
+          # Hovertext
+          text = paste(de$names,
+                       "</br></br>Beta: ",
+                       format( de$logfoldchanges, digits = 3, scientific = TRUE),
+                       " (score: ",
+                       format( de$scores, digits = 3, scientific = TRUE),
+                       "</br>Q-value: ",
+                       format(de$pvals_adj, digits = 3, scientific = TRUE)),
+          hoverinfo = "text",
+          color = ~I(de$point_color) )
+
+        volc <- volc %>%
+          # Adding markers for a custom legend.  Technically,
+          # the entire volcano plot trace is colored blue,
+          # but we need a legend to indicate the meaning of the orange points,
+          # so we add traces with orange and blue and relabel.
+          # It's hacky but it works better for animation and plotly_click purposes.
+
+          # Blue/not significant
+          plotly::add_markers(x= 0.8, y = 6.5, color = I("#1F78B4"), showlegend = FALSE, hoverinfo = "skip") %>%
+          plotly::add_annotations(x=0.8, y=6.5, xref = "x", yref = "y", text = "FDR > 0.01",
+                                  xanchor = 'left', showarrow = F, xshift = 10) %>%
+          # Orange/significant
+          plotly::add_markers(x= 0.8, y = 7, color = I("#FF7F00"), showlegend = FALSE, hoverinfo = "skip") %>%
+          plotly::add_annotations(x=0.8, y=7, xref = "x", yref = "y", text = "FDR < 0.01",
+                                  xanchor = 'left', showarrow = F, xshift = 10) %>%
+
+          plotly::layout(
+            title = title_text,
+            xaxis = list(title = "Effect (logFC)", range = c(-4, 4)),
+            yaxis = list(title = "-log10 p-value", range = c(-0.1, 10.25))
+          ) %>%
+          # Disable the legend click since our traces do not correspond to the
+          # actual legend labels
+          htmlwidgets::onRender("function(el,x){el.on('plotly_legendclick', function(){ return false; })}") %>%
+          plotly::config(displayModeBar = FALSE)
+
+
+
       }
 
+      return(volc)
 
     })
 
+    ### Set up data for boxplots
+    omic_by_subject <- reactive({
+      selected <- event_data(event = "plotly_click")$pointNumber + 1
+      scaled_counts <- scale(rv_in$ad$X[,selected])
+      grouping_var <- filtered_de()$obs_name[1]
+      omic_counts <- data.frame( rv_in$ad$obs_names,
+                                 scaled_counts,
+                                 rv_in$ad$obs[[grouping_var]] )
+      colnames(omic_counts) <- c("id", "val","grp")
+      #metab_counts$count <- log10(metab_counts$count)
+      return(omic_counts)t
+    })
 
-    # output$test_boxplot <- renderPlotly({
-    #   req(test_result)
+
+    output$test_boxplot <- renderPlotly({
+      validate(
+        need(
+          event_data(event = "plotly_click") & event_data(event = "plotly_click")$curveNumber == 0,
+          "Select a metabolite on the volcano plot above to view distribution among statuses."
+        )
+      )
+      # Plot by CACO status
+      # CO
+      plot_ly(
+        data = omic_by_subject(),
+        y = ~val,
+        color = ~grp,
+        type = "box",
+        boxpoints = "all",
+        pointpos = 0,
+        text = paste("Transformed Reading: ",
+                     format(omic_by_subject()$val, digits = 3)),
+        hoverinfo = list("median", "text"),
+        colors = "Dark2"
+      ) %>%
+        plotly::layout(
+          title = filtered_de()[event_data(event = "plotly_click")$pointNumber + 1,1],
+          yaxis = list(title = "Transformed Reading",
+                       hoverformat = ".2f"),
+          showlegend = FALSE
+        ) %>%
+        plotly::config(displayModeBar = FALSE)
+    })
+
+    # Information on omics selected on volcano plot
     #
-    #   if(!is.null(test_result())) {
+    # output$UI_meta_box <- renderUI({
+    # })
+
+    output$UI_meta_box <- renderText({
+      validate(
+        need(
+          event_data(event = "plotly_click") & event_data(event = "plotly_click")$curveNumber == 0,
+          "Select an omic on the volcano plot above to view distribution among statuses."
+        )
+      )
+      # PUT rv_in$ad$obs... or something here
+      # om_name <- volcano_data()[event_data(event = "plotly_click")$pointNumber + 1, 1]
+      metab_name = "dummy"
+      paste(
+        "<b>Metabolite</b>: ", metab_name, "</br>"
+        # "<b>Super Pathway</b>: ", metab_meta$`Super Pathway`[metab_meta$Metabolite == metab_name], "</br>",
+        # "<b>Sub Pathway:</b> ", metab_meta$`Sub Pathway`[metab_meta$Metabolite == metab_name],
+        # # Link to HMDB, if ID is available
+        # ifelse(
+        #   !is.na(metab_meta$`HMDB ID`[metab_meta$Metabolite == metab_name]),
+        #   paste(
+        #     "</br><b>HMDB ID:</b> ",
+        #     metab_meta$`HMDB ID`[metab_meta$Metabolite == metab_name]
+        #   ),
+        #   ""
+        # ),
+        # # Link to PubChem, if ID is available
+        # ifelse(
+        #   !is.na(metab_meta$`PubChem ID`[metab_meta$Metabolite == metab_name]),
+        #   paste("</br><b>PubChem ID:</b> ",
+        #         metab_meta$`PubChem ID`[metab_meta$Metabolite == metab_name]
+        #   ),
+        #   ""
+        # ),
+        # ifelse(
+        #   !is.na(metab_name),
+        #   paste(
+        #     # "</br><b>ADAD vs CO effect (q):</b> &nbsp&nbsp&nbsp",
+        #     # format(volcano_data_adadvsco$effects[volcano_data_adadvsco$metabs == metab_name], digits = 3, scientific = TRUE),
+        #     # " (", format(volcano_data_adadvsco$pvals_adj[volcano_data_adadvsco$metabs == metab_name], digits = 3, scientific = TRUE), ")", "</br>",
+        #     # "<b>AD vs CO effect (q)</b>: &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
+        #     # format(volcano_data_cavsco$effects[volcano_data_cavsco$metabs == metab_name], digits = 3, scientific = TRUE),
+        #     # " (", format(volcano_data_cavsco$pvals_adj[volcano_data_cavsco$metabs == metab_name], digits = 3, scientific = TRUE), ")", "</br>",
+        #     # "<b>TREM2 vs CO effect (q)</b>: &nbsp",
+        #     # format(volcano_data_trem2vsco$effects[volcano_data_trem2vsco$metabs == metab_name], digits = 3, scientific = TRUE),
+        #     # " (", format(volcano_data_trem2vsco$pvals_adj[volcano_data_trem2vsco$metabs == metab_name], digits = 3, scientific = TRUE), ")", "</br>",
+        #     # # "<b>ADAD vs AD effect (q)</b>: &nbsp&nbsp&nbsp",
+        #     # # format(volcano_data_adadvsca$effects[volcano_data_adadvsca$metabs == metab_name], digits = 3, scientific = TRUE),
+        #     # # " (", format(volcano_data_adadvsca$pvals_adj[volcano_data_adadvsca$metabs == metab_name], digits = 3, scientific = TRUE), ")",
+        #     sep = ""),
+        #   ""
+        # )
+      )
+    })
+
+
+  })
+}
+    # output$test_boxplot <- renderPlotly({
+    #   req(filtered_de)
+    #
+    #   if(!is.null(filtered_de())) {
     #     # capture the click event
     #     # this contains a column with the shortlipidname (column name: customdata)
     #     my_data <- event_data(event = "plotly_click",
@@ -246,7 +412,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
     #
     #     if(!is.null(my_data)) {
     #       # restructure data
-    #       plot_data <- test_result() %>%
+    #       plot_data <- filtered_de() %>%
     #         filter(.data$ShortLipidName %in% my_data$customdata) %>%
     #         select(.data$test_data) %>%
     #         unnest(.data$test_data)
@@ -381,28 +547,8 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
     # })
 
 
-    ###
-    output$HTML_header <- renderUI({
-      print("renderUI HTML header")
-
-      omic_list = p$omics_list$value
-      if(nrow(omic_list) > 50){
-        HTML("More than 50 input genes! Please reduce the gene list!")
-      } else {
-        oup = paste0(nrow(omic_list[present == TRUE]), " genes OK and will be plotted")
-        if(nrow(omic_list[present == FALSE]) > 0){
-          oup = paste0(oup, "<br/>",
-                       nrow(omic_list[present == FALSE]), " genes not found (",
-                       paste0(omic_list[present == FALSE]$omic, collapse = ", "), ")")
-        }
-        HTML(oup)
-      }
-    })
 
 
-
-  })
-}
 
 ## To be copied in the UI
 # mod_pg_vis_comp_ui("pg_vis_comp_ui_1")

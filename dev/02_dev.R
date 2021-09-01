@@ -19,7 +19,9 @@ usethis::use_package( "thinkr" )
 # add more?
 usethis::use_package("shiny")
 
-#usethis::use_package("shinyWidgets")
+usethis::use_package("shinyWidgets")
+usethis::use_package("shinydashboard")
+usethis::use_package("shinydashboardPlus")
 usethis::use_package("ggplot2")
 usethis::use_package("gridExtra")
 
@@ -34,7 +36,7 @@ usethis::use_package("anndata")
 usethis::use_package("SingleCellExperiment")
 
 usethis::use_package("tidyr") # called by dplyr as dependency?
-# usethis::use_package("magrittr")
+usethis::use_package("magrittr")
 # usethis::use_package("purrr")
 # usethis::use_package("tibble")
 

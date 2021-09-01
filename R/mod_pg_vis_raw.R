@@ -12,8 +12,8 @@ mod_pg_vis_raw_ui <- function(id){
   ns <- NS(id)
   tagList(
     HTML("Violinplot / Boxplot"),
-    h4("Cell information / omic expression violin plot / box plot"),
-    "Here we visualise the expression or continuous cell information ",
+    h4("Cell information violin plot / box plot"),
+    "Here we visualise the marginal expression values ",
     br(),br(),
     fluidRow(
       column(
@@ -61,7 +61,7 @@ mod_pg_vis_raw_ui <- function(id){
         #                selected = "Medium", inline = TRUE))
       ), # End of column (6 space)
       column(9,
-             uiOutput(ns("UI_viz_output")#,
+             uiOutput(ns("UI_box_output")#,
              # downloadButton("Van_c1oup.pdf", "Download PDF"),
              # downloadButton("Van_c1oup.png", "Download PNG"), br(),
              # div(style="display:inline-block",
@@ -146,7 +146,38 @@ mod_pg_vis_raw_ui <- function(id){
             #     numericInput("Van_d1oup.w", "PDF / PNG width:", width = "138px",
             #                  min = 4, max = 20, value = 10, step = 0.5))
      )  # End of column (6 space)
-   )    # End of fluidRow (4 space)
+   ),    # End of fluidRow (4 space)
+   HTML("Violinplot / Boxplot"),
+   h4("omic annotaion violin plot / box plot"),
+   "variable annotations (omic category marginals)",
+   br(),br(),
+   fluidRow(
+     column(
+       3, style = "border-right: 2px solid black",
+       radioButtons(ns("RB_dist_plot_type2"), "Plot type:",
+                    choices = c("violin", "boxplot"),
+                    selected = "violin", inline = TRUE),
+       checkboxInput(ns("CB_show_data_points2"), "Show data points", value = FALSE),
+
+       br()
+
+     ), # End of column (6 space)
+     column(9,
+            uiOutput(ns("UI_var_box_output")#,
+                     # downloadButton("Van_c1oup.pdf", "Download PDF"),
+                     # downloadButton("Van_c1oup.png", "Download PNG"), br(),
+                     # div(style="display:inline-block",
+                     #     numericInput("Van_c1oup.h", "PDF / PNG height:", width = "138px",
+                     #                  min = 4, max = 20, value = 8, step = 0.5)),
+                     # div(style="display:inline-block",
+                     #     numericInput("Van_c1oup.w", "PDF / PNG width:", width = "138px",
+                     #                  min = 4, max = 20, value = 10, step = 0.5))
+            )  # End of column (6 space)
+     )    # End of fluidRow (4 space)
+
+   )
+
+
 
   )  #taglist
 }
@@ -154,7 +185,7 @@ mod_pg_vis_raw_ui <- function(id){
 #' pg_vis_raw Server Functions
 #'
 #' @noRd
-mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data){
+mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -183,8 +214,8 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data){
 
     output$plot_box_out <- renderPlot({
       #req(rv_in$ad)
-      req( p$omics_list)
-
+      req( p$omics_list,
+           box_data$data)
       # box_data <- list(
       #   x_name = in_fact,
       #   y_name = dat_key,
@@ -224,34 +255,66 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data){
       return(vplot)
     })
 
-    output$UI_viz_output <- renderUI({
+
+    output$plot_varbox_out <- renderPlot({
+      #req(rv_in$ad)
+      req(p$omics_list,
+          varbox_data$data)
+      # box_data <- list(
+      #   x_name = in_fact,
+      #   y_name = dat_key,
+      #   dat_source = dat_source,
+      #   data = bx_data,
+      # )
+      plot_type <- input$RB_dist_plot_type2
+      show_data_points <- input$CB_show_data_points2
+
+      notch <- TRUE
+      data_point_sz = .65
+      plot_size = "Small"
+      font_size = "Small"
+      grp <- ifelse(p$group_action=="none",FALSE,TRUE)
+
+      vplot <- violin_box(varbox_data$data, varbox_data$x_name, varbox_data$y_name,
+                          varbox_data$colors,
+                          plot_type,
+                          show_data_points,
+                          data_point_sz,
+                          font_size,
+                          notch,
+                          grp)
+
+
+      # #TODO: make these interactive? (e.g. shinycell)
+      # data_point_sz = .65
+      # plot_size = "Small"
+      # font_size = "Small"
+      # color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+      # color_scheme = color_schemes[2]
+      # in_quant <- dat_key #(maybe) just observ_y
+      # pg_violin_box(in_conf, in_meta, in_fact, in_quant,
+      #               in_grp, in_subset, in_subsel,
+      #               in_data, in_omic, plot_type,
+      #               show_data_points, data_point_sz, font_size )
+      return(vplot)
+    })
+
+    output$UI_box_output <- renderUI({
       #if (p$omics_list$viz_now) {
         plotOutput(ns("plot_box_out"), height = pList2[plot_size])
       #}
     })
 
-
-    output$HTML_header <- renderUI({
-      print("renderUI HTML header")
-
-      omic_list = p$omics_list$value
-      if(nrow(omic_list) > 50){
-        HTML("More than 50 input genes! Please reduce the gene list!")
-      } else {
-        oup = paste0(nrow(omic_list[present == TRUE]), " genes OK and will be plotted")
-        if(nrow(omic_list[present == FALSE]) > 0){
-          oup = paste0(oup, "<br/>",
-                       nrow(omic_list[present == FALSE]), " genes not found (",
-                       paste0(omic_list[present == FALSE]$omic, collapse = ", "), ")")
-        }
-        HTML(oup)
-      }
+    output$UI_var_box_output <- renderUI({
+      #if (p$omics_list$viz_now) {
+      plotOutput(ns("plot_varbox_out"), height = pList2[plot_size])
+      #}
     })
 
 
     # plot_heatmap_out renderPlot---------------------------------
     output$plot_heatmap_out <- renderPlot({
-
+      req(heat_data$data)
       # hm_data <- list(
       #   x_name = X_fact,
       #   y_name = group_by$y,
@@ -263,15 +326,12 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data){
       #   ready = TRUE
       # )
 
-      print("in plot_heatmap_out")
-
 
       input_data <- heat_data$data
       #
       x_names <- heat_data$x_names
       y_names <- heat_data$y_names
 
-browser()
       plot_type <- input$RB_heat_plot_type
       in_do_scale <- input$CB_scale
       in_clust_row <- input$CB_cluster_rows
@@ -306,6 +366,24 @@ browser()
 
         plotOutput(ns("plot_heatmap_out"), height = pList3[plot_size])
 
+    })
+
+
+    output$HTML_header <- renderUI({
+      print("renderUI HTML header")
+
+      omic_list = p$omics_list$value
+      if(nrow(omic_list) > 50){
+        HTML("More than 50 input omics! Please reduce the omic list!")
+      } else {
+        oup = paste0(nrow(omic_list[present == TRUE]), " omic OK and will be plotted")
+        if(nrow(omic_list[present == FALSE]) > 0){
+          oup = paste0(oup, "<br/>",
+                       nrow(omic_list[present == FALSE]), " omic not found (",
+                       paste0(omic_list[present == FALSE]$omic, collapse = ", "), ")")
+        }
+        HTML(oup)
+      }
     })
 
     # output$Van_d1oup.pdf <- downloadHandler(

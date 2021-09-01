@@ -22,17 +22,19 @@ mod_omic_selector_ui <- function(id){
     ), #fluidRow 2
 
     fluidRow(
-      column(width = 2 ,offset = 1,
-             style='padding-left:0px; padding-right:1px',
-             actionButton(ns("AB_omics_submit"),"Submit",class = "btn btn-primary" ) #class="hidableSubmit"
-      ),
+
       column(width = 2, offset = 0,
-             style='padding-left:0px; padding-right:1px',
+             #style='padding-left:0px; padding-right:1px',
              actionButton(ns("AB_omics_reset"), "Clear", class = "btn btn-primary" ) #class="hidableClear"
       ),
       column(width = 2, offset = 0,
-             style='padding-left:0px; padding-right:1px',
+             #style='padding-left:0px; padding-right:1px',
              actionButton(ns("AB_omics_def"), "Default", class = "btn btn-primary" ) #class="hidableDefault"
+      ),
+      column(width = 2, offset = 0,style="border-right: 2px solid black"),
+      column(width = 2 ,offset = 4,
+             style='padding-left:0px; padding-right:1px',
+             actionButton(ns("AB_omics_submit"),"Submit",class = "btn btn-primary" ) #class="hidableSubmit"
       )
     ),
     fluidRow(
@@ -141,36 +143,31 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
       shinyjs::toggleState("AB_omics_submit", !all(input$SI_omics_select == "Choose omic feature (i.e. genes,proteins,lipids...)"))
     })
 
-    ############################
-    observe({ # turn on if the "placeholder" is gone
-      shinyjs::toggleState("AB_omics_submit", !all(input$SI_omics_select == "Choose omic feature (i.e. genes,proteins,lipids...)"))
-    })
-
-    # TODO:  force the list to reset when the database is re-loaded...
     observeEvent(input$AB_omics_reset, {
-      omics_list$viz_now = FALSE
+      omics_list$viz_now <- FALSE
       omics_list$value <- character(0)
-      # get rid of error message when resetting selection
-      output$ui_text_warn <- renderUI({ })
     })
 
-    # TODO:  force the list to reset when the database is re-loaded...
     observeEvent(input$AB_omics_def, {
-      omics_list$viz_now = FALSE
+      omics_list$viz_now <- FALSE
       omics_list$value <- isolate(def_omics())
-      # get rid of error message when resetting selection
-      output$ui_text_warn <- renderUI({ })
     })
 
     observeEvent(input$AB_omics_submit, {
       if(length(unique(omics_list$value)) < max_omic_feats ) { #defensive
         omics_list$value <- input$SI_omics_select #include direct selection from protein-box when pressing submit
-        omics_list$viz_now = TRUE
+        omics_list$viz_now <- TRUE
 
         output$ui_text_warn <- renderUI({
          p("updated plot")
         })
+      }
+    })
 
+    observe({
+      req(omics_list$viz_now)
+      if(omics_list$viz_now == FALSE) { #defensive
+        output$ui_text_warn <- renderUI({ })
       } # else ?? print warning??
     })
 

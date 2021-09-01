@@ -330,7 +330,7 @@ diff_exp <- readRDS( file = file.path("data-raw",DB_NAME, "diff_expr_table.rds")
 # what ad$obs do we want to make default values for...
 # # should just pack according to UI?
 default_factors <- c("Condition","Color","Replicate")
-helper_function<-('data-raw/create_config_table.R')
+#helper_function<-('data-raw/create_config_table.R')
 
 
 # differentials  #if we care we need to explicitly state. defaults will be the order...
@@ -351,6 +351,7 @@ conf_list <- list(
                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
                diff_exp_tests =  levels(factor(diff_exp$test_type))
   ),
+  layers = c("X","raw","counts"),
 
   # Dimred
   dimreds = list(obsm = ad$obsm_keys(),
