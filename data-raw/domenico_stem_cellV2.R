@@ -117,24 +117,24 @@ process_DIA_annot_de <- function( annot_de_file_path ){
   # output from proprietary software.   check with Domenico...
   #   rather... --> pass off "ownership" of DIA prep functions to Domenico.
   diff_exp <- de_annot_data %>% dplyr::transmute(group = gsub(" / ", "V", Comparison..group1.group2.),
-                                      names = Group,
-                                      obs_name = "Condition",
-                                      test_type = "unknown",
-                                      reference = Condition.Denominator,
-                                      comp_type = 'grpVref',
-                                      logfoldchange = AVG.Log2.Ratio,
-                                      scores = NA,
-                                      pvals = Pvalue,
-                                      pvals_adj = Qvalue,
-                                      versus = gsub(" / ", " vs. ", Comparison..group1.group2.) )
+                                                 names = Group,
+                                                 obs_name = "Condition",
+                                                 test_type = "unknown",
+                                                 reference = Condition.Denominator,
+                                                 comp_type = 'grpVref',
+                                                 logfoldchange = AVG.Log2.Ratio,
+                                                 scores = NA,
+                                                 pvals = Pvalue,
+                                                 pvals_adj = Qvalue,
+                                                 versus = gsub(" / ", " vs. ", Comparison..group1.group2.) )
 
   feat_annots <- unique(de_annot_data[, c("UniProtIds",
-                                      "Genes",
-                                      "ProteinDescriptions",
-                                      "ProteinNames",
-                                      "GO.Cellular.Component",
-                                      "GO.Molecular.Function",
-                                      "GO.Biological.Process")])
+                                          "Genes",
+                                          "ProteinDescriptions",
+                                          "ProteinNames",
+                                          "GO.Cellular.Component",
+                                          "GO.Molecular.Function",
+                                          "GO.Biological.Process")])
 
   all_proteins <- unique(de_annot_data$UniProtIds)
   row.names(feat_annots) <- feat_annots$UniProtIds
@@ -151,9 +151,9 @@ get_DIA_conditions <- function(conditions_table_path){
 
 
 prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,path_root){
-  raw_data <- process_sn_prot_quant(file.path(RAW_DIR, matrix_data_file))
-  de_annot <- process_DIA_annot_de (file.path(RAW_DIR, annot_de_file ))
-  conditions_table <- get_DIA_conditions( file.path(RAW_DIR,conditions_table_file) )
+  raw_data <- process_sn_prot_quant(file.path(path_root, matrix_data_file))
+  de_annot <- process_DIA_annot_de (file.path(path_root, annot_de_file ))
+  conditions_table <- get_DIA_conditions( file.path(path_root,conditions_table_file) )
 
 
   features <- row.names(raw_data) #protein names
@@ -212,7 +212,7 @@ conditions_table_file <- "170805_aging_against_SC_merged_all_lib_2_ConditionSetu
 data_list <- prep_DIA_files(matrix_data_file,annot_de_file,conditions_table_file,RAW_DIR)
 
 
-
+# save diff expression data for later...
 diff_exp <- data_list$de
 # saveRDS(diff_exp, file = file.path(DB_DIR, "diff_expr_table.rds"))
 saveRDS(diff_exp, file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
@@ -246,20 +246,37 @@ raw <- ad$copy()
 
 sc <- import("scanpy")
 
+
+#create layers, and raw
+# na_to_0 (raw but zeroed)
+# scaled
+# X_is_scaled_na_to_0
+
 #outvals <- sc$pp$filter_cells(ad, min_genes=200, inplace=FALSE)
-tmpX <- ad$X
-tmpX[is.na(tmpX)]<-0
-ad$X <- tmpX
-ad<-ad$copy() # fix
+
+
+zro_na <- ad$copy()
+zro_na$X[is.na(zro_na$X)]<-0
+zro_na <- zro_na$copy()
 
 scaled <- ad$copy() #scaled
 sc$pp$scale(scaled)
 
+ad_out <- ad$copy()
+
+ad_out$X[is.na(ad_out$X)]<-0
+ad <- ad_out$copy()
+sc$pp$scale(ad)
+
+ad_copy <- ad$copy()
+ad$layers <- list(zro_na=zro_na$X,
+              scaled=scaled$X,
+              X_is_scaled_na_to_0=ad_copy$X) #list('count'=layers)
+
+
 ad$raw <- raw
-ad$layers <- list(scaled=scaled$X,
-                  zeroed_NA=ad$X) #list('count'=layers)
-
-
+ad$raw$to_adata()
+ad <- ad$copy()
 ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data.h5ad"))
 
 #ad_tmp$layers <- list(non_regressed=ad$X) #list('count'=layers)
@@ -280,14 +297,15 @@ ad <- read_h5ad(file.path(DB_DIR,"normalized_data.h5ad"))
 
 ## Step 3: Do some basic preprocessing to run PCA and compute the neighbor graphs
 ##
-scaled <- ad$copy()
-scaled$X <- ad$layers$get('scaled')
-sc$pp$pca(scaled)
-sc$pp$neighbors(scaled)
+
+zro_na <- ad$copy()
+zro_na$X <- ad$layers$get('zro_na')
+sc$pp$pca(zro_na)
+sc$pp$neighbors(zro_na)
 ## Step 4: Infer clusters with the leiden algorithm
-sc$tl$leiden(scaled)
+sc$tl$leiden(zro_na)
 ## Step 5: Compute tsne and umap embeddings
-sc$tl$umap(scaled)
+sc$tl$umap(zro_na)
 
 
 sc$pp$pca(ad)
@@ -295,9 +313,12 @@ sc$pp$neighbors(ad)
 sc$tl$leiden(ad)
 sc$tl$umap(ad)
 
-ad$obsm$Xsc_pca <- ad$obsm$X_pca
-ad$obsm$Xsc_umap <- ad$obsm$X_umap
-ad$varm$sc_PCs <- ad$varm$PCs
+
+ad$obsm$unscaled_X_pca <- zro_na$obsm$X_pca
+ad$obsm$unscaled_X_umap <- zro_na$obsm$X_umap
+ad$varm$unscaled_PCs <- zro_na$varm$PCs
+ad$obsp$unscaled_distances <- zro_na$obsp$distances
+ad$obsp$unscaled_connectivities <- zro_na$obsp$connectivities
 
 ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_plus_dr.h5ad"))
 
@@ -351,7 +372,8 @@ conf_list <- list(
                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
                diff_exp_tests =  levels(factor(diff_exp$test_type))
   ),
-  layers = c("X","raw","counts"),
+
+  layers = c("X","raw","X_is_scaled_na_to_0","scaled","zro_na"),
 
   # Dimred
   dimreds = list(obsm = ad$obsm_keys(),

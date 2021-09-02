@@ -232,7 +232,6 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
       colorby_group <- input$SI_color_grp
       de <- filtered_de()
 
-      browser()
 
       # title_text <- paste0(input$SI_comp_type, " || ", input$SI_comp_fact)
       if( dim(de)[1]>0 ) {
@@ -307,7 +306,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
                                  rv_in$ad$obs[[grouping_var]] )
       colnames(omic_counts) <- c("id", "val","grp")
       #metab_counts$count <- log10(metab_counts$count)
-      return(omic_counts)t
+      return(omic_counts)
     })
 
 

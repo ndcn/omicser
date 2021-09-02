@@ -38,16 +38,18 @@ diffs:
 layers:
 - X
 - raw
-- counts
+- X_is_scaled_na_to_0
+- scaled
+- zro_na
 dimreds:
     obsm:
     - X_pca
     - X_umap
-    - Xsc_pca
-    - Xsc_umap
+    - unscaled_X_pca
+    - unscaled_X_umap
     varm:
     - PCs
-    - sc_PCs
+    - unscaled_PCs
 default_factors:
 - Condition
 - Color

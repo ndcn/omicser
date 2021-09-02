@@ -6,26 +6,14 @@ require(anndata)
 dataset_names <- c(
   "Domenico DIA" = "domenico_stem_cell",
   "Vilas Microglia" = "vilas_microglia",
-  "Vilas Microglia (seu)" = "vilas_microglia_seu",
+  #"Vilas Microglia (seu)" = "vilas_microglia_seu",
   "Vilas Microglia (sceasy)" = "vilas_microglia_sceasy",
-  "Yassene Lipid Concentrations" ="yassene_A_conc",
-  "Yassene Lipid Compositions" ="yassene_A_compos",
+  "Yassene Lipid concentraions & compositions" ="yassene_lipid",
+  #"Yassene Lipid Concentrations" ="yassene_A_conc",
+  #"Yassene Lipid Compositions" ="yassene_A_compos",
   "Oscar Microglia" ="oscar_microglia"
 )
 
-dataset_type <- c(
-  "Transcriptomics" = "transcript",
-  "Proteomics" = "prote",
-  "Lipidomics" = "lipid",
-  "Metabolomics" = "metabol",
-  "Other" = "X-"
-)
-
-observation_type <- c(
-  "Raw Quantity" = "raw",
-  "Comparitive Quantity" = "comp",
-  "Grouping" = "group"
-)
 #require(anndata)
 
 #' ingestor UI Function

@@ -44,20 +44,12 @@ gen_config_table <- function(ad_in, ds_name) {
     #   obs_meta <- dplyr::rename(obs_meta,sampleID_0=sampleID)
     # }
     X_dims <- dim(ad_in$X)
-
-
     meta_names <- ad_in$obs_keys()
-
-
     # default list of omics for subsetting/choosing
     def_omics = omics[1:20]  # first 20
 
-    #obs_meta = data.table(sampleID = samples)  # redundant but makes naming explicit..
-    #obs_meta = cbind(obs_meta,ad$obs)
-    #colnames(obs_meta) = c("sampleID", meta_names)
-    # for (i_meta in colnames(obs_meta)[-1]) {
 
-
+    # A observation meta (ad$obs)  ----------------------------------------
     obs_meta <- as.data.table(ad_in$obs)
     for (i_meta in colnames(obs_meta)) {
       obs_meta[[i_meta]] = unlist(obs_meta[[i_meta]]) # unlist and refactor
@@ -106,7 +98,7 @@ gen_config_table <- function(ad_in, ds_name) {
       omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
 
-    # B- "variable" annotations  (ad$var)
+    # B variable annotations (var-meta; ad$var)  ----------------------------------------
     var_to_include <- ad_in$var_keys()# the first one should be "omics
     for (i_var in var_to_include) {
       tmp_conf <- data.table(
@@ -141,12 +133,12 @@ gen_config_table <- function(ad_in, ds_name) {
       omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
 
+    # C differential expression   ----------------------------------------
     diffs <- conf_list$diffs
     # diffs <- list(diff_exp_groups =  levels(factor(diff_exp$group)),
     #               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
     #               diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
     #               diff_exp_tests =  levels(factor(diff_exp$test_type)))
-    # C- "diff_exp" annotations  (ad$var)
     de_to_include <- names(diffs) # the first one should be "omics
     for (i_diff in de_to_include) {
       tmp_conf <- data.table(
@@ -177,8 +169,8 @@ gen_config_table <- function(ad_in, ds_name) {
     }
 
 
+    # D- dimension reductions (ad$varm ) ---------------------
     dimreds <- conf_list$dimreds
-    # D- dimension reductions (ad$varm )
     dr_to_include <- names(dimreds) # the first one should be "omics
     for (i_dr in dr_to_include) {
       tmp_list <-dimreds[[i_dr]]
@@ -212,7 +204,7 @@ gen_config_table <- function(ad_in, ds_name) {
       }
     }
 
-
+    # E- matrix layers (ad$layers ) ---------------------
     lr_to_include <- conf_list$layers
     for (i_lr in lr_to_include) {
       tmp_conf <- data.table(
@@ -221,7 +213,7 @@ gen_config_table <- function(ad_in, ds_name) {
         default = 0, grp = FALSE, measure= FALSE,
         diff_exp = FALSE, dimred = TRUE
       )
-      tmp_conf$fID <- levels(tmp_list)
+      tmp_conf$fID <- 0
       tmp_conf$fUI <- tmp_conf$fID
       tmp_conf$fCL <- "black"
       tmp_conf$fRow <- 1
@@ -242,6 +234,7 @@ gen_config_table <- function(ad_in, ds_name) {
     #   obs_meta <- obs_meta[order(sampleID)]
     #   obs_meta$sampleID <- as.character(obs_meta$sampleID)
     # }
+    # OMIC MAPPING (disabled) ----------------------------------------
 
     omic_mapping <- omics
     names(omic_mapping) <- omics #
@@ -267,7 +260,7 @@ gen_config_table <- function(ad_in, ds_name) {
     }
 
 
-    # DEFAULTS ----------------------------------------
+  # DEFAULTS ----------------------------------------
     omxr_def <- list()
     omxr_def$omics <- def_omics #
 
@@ -293,6 +286,7 @@ gen_config_table <- function(ad_in, ds_name) {
 
     omxr_def$db_meta <- db_meta
 
+    # WRITE FILES  ----------------------------------------
 
     saveRDS(omxr_conf, file = file.path("data-raw",ds_name,"omxr_conf.rds") )
     saveRDS(omxr_def, file = file.path("data-raw",ds_name,"omxr_def.rds") )

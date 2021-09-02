@@ -1,36 +1,23 @@
 x_obs:
-- tissue
-- disease
-- cell_type
-- sex
+- cluster_name
 - leiden
+- batch
+- color
 y_obs:
-- nCount_RNA
-- nFeature_RNA
-- nCount_SCT
-- nFeature_SCT
 - n_genes
 - n_counts
 obs_groupby:
-- tissue
-- disease
-- cell_type
-- sex
+- cluster_name
 - leiden
+- batch
+- color
 obs_subset:
-- tissue
-- disease
-- cell_type
-- sex
+- cluster_name
 - leiden
+- batch
+- color
 x_var: highly_variable
 y_var:
-- sct.detection_rate
-- sct.gmean
-- sct.variance
-- sct.residual_mean
-- sct.residual_variance
-- sct.variable
 - n_cells
 - means
 - dispersions
@@ -40,15 +27,29 @@ var_subset: highly_variable
 layers:
 - X
 - raw
-- counts
 diffs:
     diff_exp_comps:
-    - Alzheimer_Disease vs. rest
+    - 0 vs. rest
+    - 1 vs. rest
+    - 10 vs. rest
+    - 11 vs. rest
+    - 12 vs. rest
+    - 13 vs. rest
+    - 14 vs. rest
+    - 2 vs. rest
+    - 3 vs. rest
+    - 4 vs. rest
+    - 5 vs. rest
+    - 6 vs. rest
+    - 7 vs. rest
+    - 8 vs. rest
+    - 9 vs. rest
     - Cluster_1 vs. rest
     - Cluster_10 vs. rest
     - Cluster_11 vs. rest
     - Cluster_12 vs. rest
     - Cluster_13 vs. rest
+    - Cluster_14 vs. rest
     - Cluster_2 vs. rest
     - Cluster_3 vs. rest
     - Cluster_4 vs. rest
@@ -57,12 +58,10 @@ diffs:
     - Cluster_7 vs. rest
     - Cluster_8 vs. rest
     - Cluster_9 vs. rest
-    - Mild_Cognitive_Impairment vs. rest
-    - Temporal_Lobe_Epilepsy vs. rest
     diff_exp_comp_type: grpVrest
     diff_exp_obs_name:
-    - cell_type
-    - disease
+    - cluster_name
+    - leiden
     diff_exp_tests:
     - t-test_overestim_var
     - wilcoxon
@@ -72,6 +71,6 @@ dimreds:
     - X_tsne
     varm: PCs
 default_factors:
-- cell_type
-- disease
-- tissue
+- cluster_name
+- leiden
+- batch
