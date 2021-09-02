@@ -90,12 +90,21 @@ ad <- read_h5ad(file.path("data-raw",DB_NAME,"core_data.h5ad"))
 ad
 
 sc <- import("scanpy")
+raw <- ad$raw$copy()
 
 #outvals <- sc$pp$filter_cells(ad, min_genes=200, inplace=FALSE)
 
 sc$pp$filter_cells(ad, min_genes=200)
 sc$pp$filter_genes(ad, min_cells=3)
-raw <- ad$copy()
+
+
+# FIX RAW
+
+rawX <- raw$X[,raw$var$name %in% ad$var_names]
+colnames(rawX) <- ad$var_names
+rownames(rawX) <- ad$obs_names
+raw$X <- rawX
+#
 
 
 # to conform with cellXgene scheme gene filtering is tricky.
@@ -174,27 +183,27 @@ conf_list <- list(
   obs_groupby = c("tissue", "disease", "cell_type", "sex", "leiden"),
   obs_subset = c("tissue", "disease", "cell_type", "sex", "leiden"),
 
-  x_var = c("<omic selector>","highly_variable"),
+  x_var = c("highly_variable"),
   y_var = c("sct.detection_rate", "sct.gmean", "sct.variance","sct.residual_mean","sct.residual_variance", "sct.variable",
             "n_cells",  "means" , "dispersions", "dispersions_norm" ),
-  var_groupby = c("<omic selector>","highly_variable"),
-  var_subset = c("<omic selector>","highly_variable"),  # NOTE:  <omic selector> is NOT in the data object so its not actually going to load
+  var_groupby = c("highly_variable"),
+  var_subset = c("highly_variable"),  # NOTE:  <omic selector> is NOT in the data object so its not actually going to load
 
   layers = c("X","raw","counts"),
 
   diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
-                diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this
-                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
-                diff_exp_tests =  levels(factor(diff_exp$test_type))
-                ),
+               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this
+               diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
+               diff_exp_tests =  levels(factor(diff_exp$test_type))
+  ),
 
   # Dimred
   dimreds = list(obsm = c('X_pca', 'X_tsne'),
-                  varm = c('PCs')),
+                 varm = c('PCs')),
 
   # what ad$obs do we want to make default values for...
   # # should just pack according to UI?
-  default_factors = c("disease","cell_type","tissue")
+  default_factors = c("cell_type","disease","tissue")
 )
 
 configr::write.config(config.dat = conf_list, file.path = file.path("data-raw",DB_NAME,"config.yml" ),
@@ -212,10 +221,3 @@ ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"omxr_data.h5ad"))
 
 ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"omxr_data.h5ad"))
 conf_list_out <- configr::read.config( file.path("data-raw",DB_NAME,"config.yml" ) )
-
-
-
-
-
-
-

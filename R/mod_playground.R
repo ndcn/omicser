@@ -59,22 +59,6 @@ mod_playground_server <- function(id ,rv_in, p) {
 
 
 
-    # p$data_source
-    # p$plot_x
-    # p$plot_y
-    # p$observ_subset
-    # p$observ_subsel
-    # # p$feat_subset
-    # # p$feat_subsel
-    # # group (plotting)
-    # p$feat_group_by
-    # p$observ_group_by
-    # # aggregate collapsing data matrix
-    # p$feat_agg
-    # p$observ_agg
-    # p$group_action
-    # p[["omics_list"]]
-
     # observe({
     #   req(p$omics_list)
     #   print("---> viz?? ")
@@ -157,13 +141,17 @@ print("in reactive: hm_data (playground)")
       x_is <- "obs" #haven't implimented visualizing by var yet...
       X_fact <- p$plot_x #in_fact <- p$observ_grpA
       dat_loc <- p$data_layer
+      browser()
       if (dat_loc=="X") {
         X_data <- isolate(rv_in$ad$X) #isolate
       } else if (dat_loc == "raw") {
         X_data <- isolate(rv_in$ad$raw$X)#isolate
-      } else if (dat_loc == "layers") { #must be a layer
-        if (dat_loc %in% rv_in$ad$layers_keys()) {
-          X_data <- isolate(rv_in$ad$layers[[dat_loc]]) #isolate
+      } else { #} if (dat_loc == "layers") { #must be a layer
+        is_layer <- any(dat_loc %in% rv_in$ad$layers$keys())
+        #is_layer <- any(rv_in$ad$layers$keys()==dat_loc)
+        if (is_layer) {
+          #X_data <- isolate(rv_in$ad$layers[[dat_loc]]) #isolate
+          X_data <- isolate(rv_in$ad$layers$get(dat_loc) )
         } else {
           print("data not found")
           return(ret_vals)
@@ -207,12 +195,12 @@ print("in reactive: hm_data (playground)")
         } else {
           grp_x <- p$observ_group_by
         }
-        grp_y <- p$feat_group_by # NOTE: could be "omics" from selector
 
-        if (grp_y != "NA") {
-          grp_ys <- rv_in$ad$var[[ grp_y ]][which( dat_js_set %in% dat_js )]
-        } else {
+        grp_y <- p$feat_group_by # NOTE: could be "omics" from selector
+        if ((grp_y == "NA") | (grp_y == "")) {
           grp_ys <- dat_js
+        } else {
+          grp_ys <- rv_in$ad$var[[ grp_y ]][which( dat_js_set %in% dat_js )]
         }
         #group_ys <- rv_in$ad$var[[ grp_by$y ]] [which( dat_js_set %in% dat_js )]
         names(grp_ys) <- dat_js
@@ -446,7 +434,8 @@ print("in reactive: hm_data (playground)")
       #         p$data_source)
       observe({
         req(rv_in$ad,
-            p$data_source)
+            p$data_source,
+            p$plot_feats)
 
         # hm_data <- list(
         #   x_names = X_fact,
@@ -461,7 +450,7 @@ print("in reactive: hm_data (playground)")
         #   ready = TRUE
         # )
         print("in reactive: varbox_data (playground)")
-
+browser()
         group_action <- p$group_action
 
         in_conf <- rv_in$config
@@ -500,6 +489,12 @@ print("in reactive: hm_data (playground)")
 
         # do we need different ID and UI??
         bx_data <- tmp_meta[, c(in_conf[ID == in_fact]$ID, in_conf[ID == grp_by]$ID, in_conf[UI == in_subset]$ID),  with = FALSE]
+
+        # we should never get here, but hack an early return if we don't have x&y available
+        if (!dim(bx_data)[1]){
+          return(varbox_data)
+        }
+
         cols <- c("X","grp","sub")
         colnames(bx_data) = cols
         bx_data <- bx_data[,(cols) := lapply(.SD, as.factor), .SDcols = cols] # force the columns to be factors (i.e. if logical)

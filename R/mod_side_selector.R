@@ -28,6 +28,7 @@ mod_side_selector_ui <- function(id){
 
     fluidRow(
       hr(style = "border-top: 1px solid #000000;"),
+      h4("Choose plotting variables-X & measure-Y"),
       column(
         width=2,
         "choose:"
@@ -59,7 +60,19 @@ mod_side_selector_ui <- function(id){
     uiOutput(ns("ui_obs_subset")),
 
     hr(style = "border-top: 1px dashed grey;"),
-    h4("omic annotation x & y"),
+
+    fluidRow(
+      column(
+        width = 8,
+        h4("Omic annotation summary:")
+      ),
+      column(
+        width=3,
+        offset=1,
+        checkboxInput( ns("CB_xy_var_select"), "show?",
+                       value = FALSE)
+      )
+    ),
     uiOutput(ns("ui_xy_var_select")),
     hr(style = "border-top: 1px dashed grey;"),
 
@@ -111,6 +124,8 @@ mod_side_selector_server <- function(id, rv_in){
       plot_var_y = NULL,
       feat_subset = NULL,   # NOT ENABLEDj, using omics selector
       feat_subsel = NULL,  # NOT ENABLED
+      # feature X & Y?
+      plot_feats = NULL,
 
       # TODO:  make this conditional on what kind of data is loaded.. and just a single plot type
       raw_plot_type = NULL,
@@ -250,7 +265,6 @@ mod_side_selector_server <- function(id, rv_in){
     output$ui_xy_select <- renderUI({
       req(input$RB_obs_X,
           rv_in) # do i need this?
-
       # TODO:  add "NA" to group and subset options...
       print("ui_xy_select")
 
@@ -261,6 +275,12 @@ mod_side_selector_server <- function(id, rv_in){
 
         group_obs <- rv_in$config[grp == TRUE & field=="obs"]$UI # <- choices_x
         group_var <- NA                                         #
+
+
+        def_x <- rv_in$default$obs_x
+        def_y <- rv_in$default$obs_y
+        def_grp_o <- rv_in$default$obs_subset
+        def_grp_v <- group_var[1]
 
       } else { # X
         # choices X and group_obs same?
@@ -274,7 +294,10 @@ mod_side_selector_server <- function(id, rv_in){
         group_var <- rv_in$config[grp == TRUE & field=="var"]$UI # subset for aggregating
 
         #x_is_obs_or_var = rv_in$config[measure == TRUE & field=="var"]$UI # are we grouping by obs or var?
-
+        def_x <- rv_in$default$obs_x
+        def_y <- rv_in$default$obs_y
+        def_grp_o <- rv_in$default$obs_subset
+        def_grp_v <- rv_in$default$var_subset
       }
 
 
@@ -292,7 +315,7 @@ mod_side_selector_server <- function(id, rv_in){
             selectizeInput(ns("SI_x"),
                            label = "variable (x-axis)",
                            choices = choices_x,
-                           selected = choices_x[1])
+                           selected = def_x)
           ),
           column(
             width = 5,
@@ -300,7 +323,7 @@ mod_side_selector_server <- function(id, rv_in){
             selectizeInput(ns("SI_y"),
                            label = "measure (y-axis):",
                            choices = choices_y,
-                           selected = choices_y[1])
+                           selected = def_y)
 
           )
         ),
@@ -321,7 +344,7 @@ mod_side_selector_server <- function(id, rv_in){
               selectizeInput(ns("SI_group_obs"),
                              label = "observ group (samples)",
                              choices = group_obs,
-                             selected = group_obs[1])
+                             selected = def_grp_o)
             )
           ),
           column(
@@ -331,7 +354,7 @@ mod_side_selector_server <- function(id, rv_in){
               selectizeInput(ns("SI_group_var"),
                              label = "feature group (omics)",
                              choices = group_var,
-                             selected = group_var[1])
+                             selected = def_grp_v)
             )
           )
         )#fluidRow
@@ -341,49 +364,54 @@ mod_side_selector_server <- function(id, rv_in){
 
     })
 
-
     # dynamic x and y selector
     output$ui_xy_var_select <- renderUI({
       req(rv_in) # do i need this?
-      print("ui_xy_var_select")
 
-      choices_x <- rv_in$config[grp == TRUE & field=="var"]$UI
-      choices_y <- rv_in$config[measure == TRUE & field=="var"]$UI
-      group_var <- c("<omic selector>",choices_x) # rv_in$config[grp == TRUE & field=="var"]$UI #
 
-      to_return <-  tagList(
-        fluidRow(
-          column(
-            width=2,
-            "Choose:",br(),
-            "X & Y",
-            "to viz"
-          ),
-          column(
-            width=5,
-            offset=0,
-            selectizeInput(ns("SI_var_x"),
-                           label = "variable (x-axis)",
-                           choices = choices_x,
-                           selected = choices_x[1])
-          ),
-          column(
-            width = 5,
-            offset = 0,
-            selectizeInput(ns("SI_var_y"),
-                           label = "measure (y-axis):",
-                           choices = choices_y,
-                           selected = choices_y[1])
 
+      if (input$CB_xy_var_select) {
+
+        choices_x <- rv_in$config[grp == TRUE & field=="var"]$UI
+        choices_y <- rv_in$config[measure == TRUE & field=="var"]$UI
+        group_var <- c("<omic selector>",choices_x) # rv_in$config[grp == TRUE & field=="var"]$UI #
+
+
+        to_return <-  tagList(
+          fluidRow(
+            column(
+              width=2,
+              "Choose:",br(),
+              "group & meas"
+            ),
+            column(
+              width=5,
+              offset=0,
+              selectizeInput(ns("SI_var_x"),
+                             label = "omic group (x)",
+                             choices = choices_x,
+                             selected = choices_x[1])
+            ),
+            column(
+              width = 5,
+              offset = 0,
+              selectizeInput(ns("SI_var_y"),
+                             label = "measure (y):",
+                             choices = choices_y,
+                             selected = choices_y[1])
+
+            )
           )
         )
-      )
 
-      return(to_return)
+        return(to_return)
+      } else {
+
+        return(NULL)
+
+      }
 
     })
-
-
 
 
     ### observe s =========================================================
@@ -458,6 +486,21 @@ mod_side_selector_server <- function(id, rv_in){
       }
     })
 
+
+    observe({
+      req(rv_in$config)
+
+      choices_x <- rv_in$config[grp == TRUE & field=="var"]$UI
+      choices_y <- rv_in$config[measure == TRUE & field=="var"]$UI
+
+      if (isTruthy(choices_x) & isTruthy(choices_y) ) {
+        shinyjs::enable("CB_xy_var_select")
+      } else {
+        shinyjs::disable("CB_xy_var_select")
+      }
+    })
+
+
     #TODO:  make the choices *named* paste0(rv_in$config$fID, fUI)
     # dat_source = rv_in$config$mat[fID == rv_in$aux_raw]$ID
     # paste(raw_choices, dat_sourcce)
@@ -500,6 +543,7 @@ mod_side_selector_server <- function(id, rv_in){
 
         out_params$plot_var_x <- input$SI_var_x
         out_params$plot_var_y <- input$SI_var_y
+        out_params$plot_feats <- input$CB_xy_var_select
 
         out_params[["omics_list"]] <- omics_list  # value & viz_now
         # do the subsetting here?  create a reactive "data blob"?
