@@ -12,12 +12,12 @@
 #' @noRd
 #' @import data.table
 #' @import RColorBrewer
-gen_config_table <- function(ad_in, ds_name) {
+gen_config_table <- function(ad_in, ds_name, ds_root_path) {
   # load or generate configs..
 
-  config_files <- c(file.path("data-raw",ds_name,"omxr_conf.rds" ),
-                    file.path("data-raw",ds_name,"omxr_def.rds" ),
-                    file.path("data-raw",ds_name,"omxr_omics.rds" ))
+  config_files <- c(file.path(ds_root_path,ds_name,"omxr_conf.rds" ),
+                    file.path(ds_root_path,ds_name,"omxr_def.rds" ),
+                    file.path(ds_root_path,ds_name,"omxr_omics.rds" ))
 
   # check if we have it or are forcing
   if ( all(file.exists( config_files )) ) {
@@ -29,8 +29,8 @@ gen_config_table <- function(ad_in, ds_name) {
     legend_cols = 4
     max_levels_ui = 50  # ceiling for UI levels
 
-    conf_list <- configr::read.config( file.path("data-raw",ds_name,"config.yml" ) )
-    db_meta <- configr::read.config( file.path("data-raw",ds_name,"db_meta.yml" ) )
+    conf_list <- configr::read.config( file.path(ds_root_path,ds_name,"config.yml" ) )
+    db_meta <- configr::read.config( file.path(ds_root_path,ds_name,"db_meta.yml" ) )
 
 
     # PREPROCESS --------------------------------
@@ -290,9 +290,9 @@ gen_config_table <- function(ad_in, ds_name) {
 
     # WRITE FILES  ----------------------------------------
 
-    saveRDS(omxr_conf, file = file.path("data-raw",ds_name,"omxr_conf.rds") )
-    saveRDS(omxr_def, file = file.path("data-raw",ds_name,"omxr_def.rds") )
-    saveRDS(omics_, file = file.path("data-raw",ds_name,"omxr_omics.rds") )
+    saveRDS(omxr_conf, file = file.path(ds_root_path,ds_name,"omxr_conf.rds") )
+    saveRDS(omxr_def, file = file.path(ds_root_path,ds_name,"omxr_def.rds") )
+    saveRDS(omics_, file = file.path(ds_root_path,ds_name,"omxr_omics.rds") )
 
   }
 
