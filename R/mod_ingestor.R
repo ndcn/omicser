@@ -100,6 +100,7 @@ mod_ingestor_server <- function(id) {
     DS_ROOT_PATH <- CONFIG$ds_root_path
     dataset_names <- DATASET_NAMES
     print(DATASET_NAMES)
+    print(DS_ROOT_PATH)
     ############################ +
     ## initiate reactive database structure
     ##
@@ -155,7 +156,7 @@ mod_ingestor_server <- function(id) {
           ad <- anndata::read_h5ad(filename=file.path(DS_ROOT_PATH,ds_name,"omxr_data.h5ad"))
           diff_exp = readRDS(file = file.path(DS_ROOT_PATH,ds_name,"diff_expr_table.rds"))
 
-          conf_def <- gen_config_table(ad, ds_name)
+          conf_def <- gen_config_table(ad, ds_name, DS_ROOT_PATH)
 
 
           omics <- ad$var_names
