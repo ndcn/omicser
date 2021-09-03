@@ -34,14 +34,18 @@ usethis::use_package("plotly")
 usethis::use_package("Matrix")
 
 usethis::use_package("anndata")
-usethis::use_package("SingleCellExperiment")
+
+#  installing these by hand for now....
+#  0
+#usethis::use_package("BiocManager")
+#usethis::use_package("SingleCellExperiment")
 
 usethis::use_package("tidyr") # called by dplyr as dependency?
 usethis::use_package("magrittr")
 # usethis::use_package("purrr")
 # usethis::use_package("tibble")
 usethis::use_package("broom")
-# usethis::use_package("xml2")
+1# usethis::use_package("xml2")
 # usethis::use_package("readr")
 # usethis::use_package("stringr")
 # usethis::use_package("shinyWidgets")
