@@ -1,3 +1,8 @@
+
+#require("data.table")
+#require("RColorBrewer")
+
+
 #' ingestor
 #'
 #' @description A fct function
@@ -5,11 +10,8 @@
 #' @return The return value, if any, from executing the function.
 #'
 #' @noRd
-
-
-
-require("data.table")
-require("RColorBrewer")
+#' @import data.table
+#' @import RColorBrewer
 gen_config_table <- function(ad_in, ds_name) {
   # load or generate configs..
 
