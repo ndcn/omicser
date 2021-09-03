@@ -9,9 +9,9 @@
 #' @param sc scanpy
 #'
 #' @return
-#' @export
+#' @export compute_de_table
 #'
-#' @examples
+#' @examples TODO
 compute_de_table <- function(ad,comp_types, test_types, obs_names,sc) {
   # this should update ad in place with the diff_exp data...
 

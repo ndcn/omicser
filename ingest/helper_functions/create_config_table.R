@@ -12,10 +12,12 @@
 #' @param db_dir
 #'
 #' @return
-#' @export
 #'
-#' @examples
 #' @import data.table RColorBrewer
+#'
+#' @export create_config_table
+#'
+#' @examples  TODO
 create_config_table <- function(ad_in,
                                 measures,
                                 diffs,

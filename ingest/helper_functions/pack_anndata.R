@@ -1,11 +1,11 @@
-#' Title
+#' pack_anndata
 #'
 #' @param data_in
 #'
 #' @return
-#' @export
+#' @export pack_anndata
 #'
-#' @examples
+#' @examples  TODO
 pack_anndata <- function (data_in){
 
   #tools::file_path_sans_ext(data_in)
