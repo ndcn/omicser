@@ -1,24 +1,28 @@
 
 #' setup_database
 #'
+#' @param database_name
+#' @param db_path
+#' @param data_in
+#' @param db_meta
+#' @param re_pack
+#'
 #' @description A a function to create the anndata database
 #'
 #' @return The return value, if any, from executing the function.
 #' @export setup_database
 #'
 #' @examples  TODO
-setup_database <- function(database_name, data_in, db_meta , re_pack=TRUE){
+setup_database <- function(database_name,db_path, data_in, db_meta , re_pack=TRUE){
   #LOAD & PACK into ANNDATA
   ##if data_in contains filenames they must be the full path (i.e. RAW_DIR inlcuded)
-
-  DB_NAME <- database_name
 
 
   # require(reticulate)
   # reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
   # require(anndata)
 
-  DB_DIR = file.path("data-raw",DB_NAME)
+  DB_DIR = file.path(db_path,database_name)
   if (!dir.exists(DB_DIR)) {
     dir.create(DB_DIR)
   }
