@@ -89,6 +89,7 @@ mod_ingestor_server <- function(id) {
     # ds_root_path =  golem::get_golem_options( "ds_root_path" )
     # global from omxr_options.yml (app_server.R)
     dataset_names <- DATASET_NAMES
+    print(DATASET_NAMES)
     ############################ +
     ## initiate reactive database structure
     ##
