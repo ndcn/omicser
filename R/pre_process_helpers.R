@@ -362,7 +362,7 @@ create_config_table <- function(ad_in,
 #' @export pack_anndata
 #'
 #' @examples  TODO
-pack_anndata <- function (data_in){
+pack_anndata <- function(data_in){
 
   #tools::file_path_sans_ext(data_in)
   if ( class(data_in)[1] == "list" ) {
