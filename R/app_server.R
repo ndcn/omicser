@@ -1,7 +1,8 @@
 # hardwire for now
 
 
-CONFIG <- configr::read.config( "omxr_options.yml" )
+CONFIG <- configr::read.config( "./omxr_options.yml" )
+print(getwd())
 
 DATASET_NAMES <- CONFIG$dataset_names
 CONDA_ENV <- CONFIG$conda_environment
@@ -16,7 +17,7 @@ DS_ROOT_PATH <- CONFIG$ds_root_path
 #' @noRd
 app_server <- function(input, output, session) {
   # Your application server logic
-
+  print(getwd())
 
   reticulate::use_condaenv(
                           required = TRUE,
