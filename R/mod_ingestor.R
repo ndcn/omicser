@@ -28,6 +28,11 @@ mod_ingestor_ui <- function(id) {
   # TODO: deltet this or make it dynamic?
   #dataset_names =  golem::get_golem_options( "dataset_names" )
   # dataset_names <- DATASET_NAMES
+  CONFIG <- configr::read.config( "./omxr_options.yml" )
+  print(getwd())
+
+  DATASET_NAMES <- CONFIG$dataset_names
+
 
   tagList(
     fluidRow(
@@ -88,6 +93,11 @@ mod_ingestor_server <- function(id) {
     # dataset_names =  golem::get_golem_options( "dataset_names" )
     # ds_root_path =  golem::get_golem_options( "ds_root_path" )
     # global from omxr_options.yml (app_server.R)
+    CONFIG <- configr::read.config( "./omxr_options.yml" )
+
+    DATASET_NAMES <- CONFIG$dataset_names
+    CONDA_ENV <- CONFIG$conda_environment
+    DS_ROOT_PATH <- CONFIG$ds_root_path
     dataset_names <- DATASET_NAMES
     print(DATASET_NAMES)
     ############################ +
