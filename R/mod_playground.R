@@ -450,7 +450,6 @@ print("in reactive: hm_data (playground)")
         #   ready = TRUE
         # )
         print("in reactive: varbox_data (playground)")
-browser()
         group_action <- p$group_action
 
         in_conf <- rv_in$config
