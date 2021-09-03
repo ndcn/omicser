@@ -18,6 +18,7 @@
 
 #==== 0. preamble/setup =========================================================================
 
+CONDA_ENV <- "omxr"
 
 require(Seurat)
 require(configr)
@@ -82,7 +83,7 @@ ad$write_h5ad(file.path("data-raw",DB_NAME,"core_data.h5ad"))
 
 #==== 5. post processing =========================================================================
 require(reticulate)
-reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
+reticulate::use_condaenv(required = TRUE, condaenv = CONDA_ENV)
 require(anndata)
 
 DB_NAME = "vilas_microglia_sceasy"
