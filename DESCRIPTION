@@ -25,6 +25,7 @@ Imports:
     shiny (>= 1.6.0),
     shinydashboard,
     shinydashboardPlus,
+    shinyjs,
     shinyWidgets,
     SingleCellExperiment,
     thinkr,
