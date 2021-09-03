@@ -1,5 +1,3 @@
-require(shinydashboardPlus)
-
 
 #' pg_vis_comp UI Function
 #'
@@ -11,7 +9,7 @@ require(shinydashboardPlus)
 #'
 #' @importFrom shiny NS tagList
 #' @importFrom plotly plotlyOutput
-
+#' @importFrom shinydashboardPlus box
 mod_pg_vis_comp_ui <- function(id){
   ns <- NS(id)
   tagList(

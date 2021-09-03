@@ -1,5 +1,3 @@
-require(anndata)
-
 
 # TODO: pack this into a .yml for easy updates
 #
