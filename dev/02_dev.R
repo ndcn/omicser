@@ -18,6 +18,7 @@
 usethis::use_package( "thinkr" )
 # add more?
 usethis::use_package("shiny")
+usethis::use_package("shinyjs")
 
 usethis::use_package("shinyWidgets")
 usethis::use_package("shinydashboard")
