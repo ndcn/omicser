@@ -24,14 +24,53 @@ CZI, NDCN -Omics Browser
 Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 202.
 
 
+ Introduction
+
+The goal is to make a shiny app which contains a simple omics data browser. A variety of data formats can be configured to browse.  See the  `Ingest` section below.
+1install_miniconda(path = miniconda_path(), update = TRUE, force = FALSE)
+**This a work in progress!!**
+
+# Installation
+
+This shiny app is build inside an R package and can be installed with `devtools::install_github("ergonyc/omicser")`.
+
+
+# Usage
+
+## Locally
+
+You can use it locally from RStudio by:
+
+    library(omicser)
+    launchApp()
+
+## Shiny server
+
+To run it from a shiny server you have to make sure the package is installed and then 
+you only have to create a file called `app.R` in the folder where you want to run it from.
+The file `app.R` should only contain:
+
+    omicser::launchApp()
+
+# Example data
+
+I added 2 files (positive and negative mode) as example data. After installing the package 
+you can find them in the folder `extdata`. In the repository you can find them in `inst/extdata`.
+
+
+
 ## Installation
 
 You can install the current version of omicser from giuthub with:
 
 `devtools::install_github("omicser")`
 
+but first run this::
+
 ```{r example}
-x <- 1
+list.of.packages <- c("devtools", "golem", "data.table", "DT", "magrittr")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
 
 ```
 

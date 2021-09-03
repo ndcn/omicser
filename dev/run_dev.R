@@ -6,7 +6,7 @@ options(golem.app.prod = FALSE) # TRUE = production mode, FALSE = development mo
 #  DETACHING RETICULATE SEEMS TO CAUSE PROBLEMS...
 
 #
-# rm(list=ls(all.names = TRUE))
+#rm(list=ls(all.names = TRUE))
 detach("package:omicser")
 
 # Document and reload your package

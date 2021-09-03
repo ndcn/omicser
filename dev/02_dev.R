@@ -39,7 +39,7 @@ usethis::use_package("tidyr") # called by dplyr as dependency?
 usethis::use_package("magrittr")
 # usethis::use_package("purrr")
 # usethis::use_package("tibble")
-
+usethis::use_package("broom")
 # usethis::use_package("xml2")
 # usethis::use_package("readr")
 # usethis::use_package("stringr")

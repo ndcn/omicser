@@ -141,7 +141,7 @@ print("in reactive: hm_data (playground)")
       x_is <- "obs" #haven't implimented visualizing by var yet...
       X_fact <- p$plot_x #in_fact <- p$observ_grpA
       dat_loc <- p$data_layer
-      browser()
+
       if (dat_loc=="X") {
         X_data <- isolate(rv_in$ad$X) #isolate
       } else if (dat_loc == "raw") {
