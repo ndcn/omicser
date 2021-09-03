@@ -5,9 +5,8 @@
 #' @description A fct function
 #'
 #' @return The return value, if any, from executing the function.
-#'
+#' @export
 #' @noRd
-
 setup_database <- function(database_name, data_in, db_meta , re_pack=TRUE){
   #LOAD & PACK into ANNDATA
   ##if data_in contains filenames they must be the full path (i.e. RAW_DIR inlcuded)
@@ -15,9 +14,9 @@ setup_database <- function(database_name, data_in, db_meta , re_pack=TRUE){
   DB_NAME <- database_name
 
 
-  require(reticulate)
-  reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
-  require(anndata)
+  # require(reticulate)
+  # reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
+  # require(anndata)
 
   DB_DIR = file.path("data-raw",DB_NAME)
   if (!dir.exists(DB_DIR)) {

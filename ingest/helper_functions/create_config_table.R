@@ -1,8 +1,21 @@
 
 
-require("data.table")
-require("RColorBrewer")
 
+#' Title
+#'
+#' @param ad_in
+#' @param measures
+#' @param diffs
+#' @param dimreds
+#' @param default_factors
+#' @param db_prefix
+#' @param db_dir
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' @import data.table RColorBrewer
 create_config_table <- function(ad_in,
                                 measures,
                                 diffs,

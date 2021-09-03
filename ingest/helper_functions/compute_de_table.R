@@ -1,6 +1,18 @@
 
 
-compute_de_table <- function(ad,comp_types, test_types, obs_names) {
+#' Title
+#'
+#' @param ad
+#' @param comp_types
+#' @param test_types
+#' @param obs_names
+#' @param sc scanpy
+#'
+#' @return
+#' @export
+#'
+#' @examples
+compute_de_table <- function(ad,comp_types, test_types, obs_names,sc) {
   # this should update ad in place with the diff_exp data...
 
   diff_exp <- data.frame()
