@@ -1,12 +1,13 @@
 
 
-#' ingestor
+#' setup_database
 #'
-#' @description A fct function
+#' @description A a function to create the anndata database
 #'
 #' @return The return value, if any, from executing the function.
-#' @export
-#' @noRd
+#' @export setup_database
+#'
+#' @examples  TODO
 setup_database <- function(database_name, data_in, db_meta , re_pack=TRUE){
   #LOAD & PACK into ANNDATA
   ##if data_in contains filenames they must be the full path (i.e. RAW_DIR inlcuded)
