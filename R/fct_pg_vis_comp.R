@@ -1,3 +1,5 @@
+#TODO: clean up unused functions / code here
+#
 
 #' @title Do a statitical test
 #'

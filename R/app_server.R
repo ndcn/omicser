@@ -1,6 +1,11 @@
 # hardwire for now
-require(reticulate)
-reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
+
+
+CONFIG <- configr::read.config( "omxr_options.yml" )
+
+DATASET_NAMES <- CONFIG$dataset_names
+CONDA_ENV <- CONFIG$conda_environment
+DS_ROOT_PATH <- CONFIG$ds_root_path
 
 
 #' The application server-side
@@ -11,6 +16,13 @@ reticulate::use_condaenv(required = TRUE, condaenv = 'omxr')
 #' @noRd
 app_server <- function(input, output, session) {
   # Your application server logic
+
+
+  reticulate::use_condaenv(
+                          required = TRUE,
+                          condaenv =  CONDA_ENV
+                          )
+
 
   ############################ +
   ## Module 4 : "Ingest" Data

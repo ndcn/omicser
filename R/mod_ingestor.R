@@ -1,16 +1,16 @@
 
 # TODO: pack this into a .yml for easy updates
 #
-dataset_names <- c(
-  "Domenico DIA" = "domenico_stem_cell",
-  "Vilas Microglia" = "vilas_microglia",
-  #"Vilas Microglia (seu)" = "vilas_microglia_seu",
-  "Vilas Microglia (sceasy)" = "vilas_microglia_sceasy",
-  "Yassene Lipid concentraions & compositions" ="yassene_lipid",
-  #"Yassene Lipid Concentrations" ="yassene_A_conc",
-  #"Yassene Lipid Compositions" ="yassene_A_compos",
-  "Oscar Microglia" ="oscar_microglia"
-)
+# dataset_names <- c(
+#   "Domenico DIA" = "domenico_stem_cell",
+#   "Vilas Microglia" = "vilas_microglia",
+#   #"Vilas Microglia (seu)" = "vilas_microglia_seu",
+#   "Vilas Microglia (sceasy)" = "vilas_microglia_sceasy",
+#   "Yassene Lipid concentraions & compositions" ="yassene_lipid",
+#   #"Yassene Lipid Concentrations" ="yassene_A_conc",
+#   #"Yassene Lipid Compositions" ="yassene_A_compos",
+#   "Oscar Microglia" ="oscar_microglia"
+# )
 
 #require(anndata)
 
@@ -25,7 +25,9 @@ dataset_names <- c(
 #' @importFrom shiny NS tagList
 mod_ingestor_ui <- function(id) {
   ns <- NS(id)
-
+  # TODO: deltet this or make it dynamic?
+  #dataset_names =  golem::get_golem_options( "dataset_names" )
+  # dataset_names <- DATASET_NAMES
 
   tagList(
     fluidRow(
@@ -33,7 +35,7 @@ mod_ingestor_ui <- function(id) {
         width=12,
         selectizeInput(
           ns("SI_dataset"), "Dataset",
-          choices = dataset_names,
+          choices = DATASET_NAMES,
           select = "vilas_microglia_sceasy" #"VilasB"  # should i have a default??
           )
         )
@@ -82,7 +84,11 @@ mod_ingestor_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-
+    # # TODO: deltet this or make it dynamic?
+    # dataset_names =  golem::get_golem_options( "dataset_names" )
+    # ds_root_path =  golem::get_golem_options( "ds_root_path" )
+    # global from omxr_options.yml (app_server.R)
+    dataset_names <- DATASET_NAMES
     ############################ +
     ## initiate reactive database structure
     ##
@@ -125,16 +131,18 @@ mod_ingestor_server <- function(id) {
       if (!is.null(input$SI_dataset)) { # unnesscasary defensive?
         ds_name <- (input$SI_dataset)
         ds_label <- names(dataset_names[match(ds_name,dataset_names)])
-
         if (is.na(ds_label)) {
 
           print("NO DATA LOADED")
           to_return$database_name <- NULL
           #to_return$omics_type <- "NA"
         } else {
-
-          ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/omxr_data.h5ad"))
-          diff_exp = readRDS(file = paste0("data-raw/",ds_name,"/diff_expr_table.rds"))
+          # ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/omxr_data.h5ad"))
+          # diff_exp = readRDS(file = paste0("data-raw/",ds_name,"/diff_expr_table.rds"))
+          #globals: DS_ROOT_PATH
+                    #
+          ad <- anndata::read_h5ad(filename=file.path(DS_ROOT_PATH,ds_name,"omxr_data.h5ad"))
+          diff_exp = readRDS(file = file.path(DS_ROOT_PATH,ds_name,"diff_expr_table.rds"))
 
           conf_def <- gen_config_table(ad, ds_name)
 
