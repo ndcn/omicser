@@ -202,7 +202,7 @@ mod_side_selector_server <- function(id, rv_in){
     ## dynamic subset UI group
     output$ui_obs_subset <- renderUI({
       req(input$RB_obs_X,
-          rv_in)
+          rv_in$config)
 
         subs_label <- paste0("select ",isolate(input$SI_obs_subset),"s: ")
         choices_obs_x <- rv_in$config[grp == TRUE & field=="obs"]$UI
@@ -235,8 +235,7 @@ mod_side_selector_server <- function(id, rv_in){
     output$ui_obs_subset_sel <- renderUI({
       req(input$RB_obs_X,
           input$SI_obs_subset,
-          rv_in)
-      print("ui_obs_subset_sel")
+          rv_in$config)
 
       cfg <- isolate(rv_in$config)
 
@@ -264,9 +263,8 @@ mod_side_selector_server <- function(id, rv_in){
     # dynamic x and y selector
     output$ui_xy_select <- renderUI({
       req(input$RB_obs_X,
-          rv_in) # do i need this?
+          rv_in$config) # do i need this?
       # TODO:  add "NA" to group and subset options...
-      print("ui_xy_select")
 
       if (input$RB_obs_X == "obs") {
         #render X and Y from obs
@@ -366,7 +364,7 @@ mod_side_selector_server <- function(id, rv_in){
 
     # dynamic x and y selector
     output$ui_xy_var_select <- renderUI({
-      req(rv_in) # do i need this?
+      req(rv_in$config) # do i need this?
 
 
 

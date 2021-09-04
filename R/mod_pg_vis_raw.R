@@ -18,36 +18,11 @@ mod_pg_vis_raw_ui <- function(id){
     fluidRow(
       column(
         3, style = "border-right: 2px solid black",
-        # selectInput("Van_c1inp1", "Cell information (X-axis):",
-        #             choices = Van_conf[grp == TRUE]$UI,
-        #             selected = Van_def$grp1) ,
-        # # %>%
-        #   helper(type = "inline", size = "m", fade = TRUE,
-        #          title = "Cell information to group cells by",
-        #          content = c("Select categorical cell information to group cells by",
-        #                      "- Single cells are grouped by this categorical covariate",
-        #                      "- Plotted as the X-axis of the violin plot / box plot")),
-        # selectInput("Van_c1inp2", "measures", choices=NULL),# %>%
-          # helper(type = "inline", size = "m", fade = TRUE,
-          #        title = "Cell Info / Gene to plot",
-          #        content = c("Select cell info / gene to plot on Y-axis",
-          #                    "- Can be continuous cell information (e.g. nUMIs / scores)",
-          #                    "- Can also be gene expression")),
         radioButtons(ns("RB_dist_plot_type"), "Plot type:",
                      choices = c("violin", "boxplot"),
                      selected = "violin", inline = TRUE),
         checkboxInput(ns("CB_show_data_points"), "Show data points", value = FALSE),
-        # actionButton("Van_c1togL", "Toggle to subset cells"),
-        # conditionalPanel(
-        #   condition = "input.Van_c1togL % 2 == 1",
-        #   selectInput("Van_c1sub1", "Cell information to subset:",
-        #               choices = Van_conf[grp == TRUE]$UI,
-        #               selected = Van_def$grp1),
-        #   uiOutput("Van_c1sub1.ui"),
-        #   actionButton("Van_c1sub1all", "Select all groups", class = "btn btn-primary"),
-        #   actionButton("Van_c1sub1non", "Deselect all groups", class = "btn btn-primary")
-        # ), br(),
-        br()
+               br()
         # actionButton("Van_c1tog", "Toggle graphics controls"),
         # conditionalPanel(
         #   condition = "input.Van_c1tog % 2 == 1",
@@ -84,25 +59,6 @@ mod_pg_vis_raw_ui <- function(id){
    fluidRow(
      column(
        3, style="border-right: 2px solid black",
-       # textAreaInput("Van_d1inp", HTML("List of gene names <br />
-       #                                    (Max 50 genes, separated <br />
-       #                                     by , or ; or newline):"),
-       #               height = "200px",
-       #               value = paste0(Van_def$genes, collapse = ", ")) %>%
-       #   helper(type = "inline", size = "m", fade = TRUE,
-       #          title = "List of genes to plot on bubbleplot / heatmap",
-       #          content = c("Input genes to plot",
-       #                      "- Maximum 50 genes (due to ploting space limitations)",
-       #                      "- Genes should be separated by comma, semicolon or newline")),
-       # selectInput("Van_d1grp", "Group by:",
-       #             choices = Van_conf[grp == TRUE]$UI,
-       #             selected = Van_conf[grp == TRUE]$UI[1]), #%>%
-       #   # helper(type = "inline", size = "m", fade = TRUE,
-       #   #        title = "Cell information to group cells by",
-       #   #        content = c("Select categorical cell information to group cells by",
-       #   #                    "- Single cells are grouped by this categorical covariate",
-       #   #                    "- Plotted as the X-axis of the bubbleplot / heatmap")),
-       #   #
        radioButtons(ns("RB_heat_plot_type"), "Plot type:",
                     choices = c("Bubbleplot", "Heatmap"),
                     selected = "Bubbleplot", inline = TRUE),
@@ -110,29 +66,7 @@ mod_pg_vis_raw_ui <- function(id){
        checkboxInput(ns("CB_cluster_rows"), "Cluster rows (omics)", value = TRUE),
        checkboxInput(ns("CB_cluster_cols"), "Cluster columns (samples)", value = FALSE),
        br(),
-     #   actionButton("Van_d1togL", "Toggle to subset cells"),
-     #   conditionalPanel(
-     #     condition = "input.Van_d1togL % 2 == 1",
-     #     selectInput("Van_d1sub1", "Cell information to subset:",
-     #                 choices = Van_conf[grp == TRUE]$UI,
-     #                 selected = Van_def$grp1),
-     #     uiOutput("Van_d1sub1.ui"),
-     #     actionButton("Van_d1sub1all", "Select all groups", class = "btn btn-primary"),
-     #     actionButton("Van_d1sub1non", "Deselect all groups", class = "btn btn-primary")
-     #   ), br(), br(),
-     #   actionButton("Van_d1tog", "Toggle graphics controls"),
-     #   conditionalPanel(
-     #     condition = "input.Van_d1tog % 2 == 1",
-     #     radioButtons("Van_d1cols", "Colour scheme:",
-     #                  choices = c("White-Red", "Blue-Yellow-Red",
-     #                              "Yellow-Green-Purple"),
-     #                  selected = "Blue-Yellow-Red"),
-     #     radioButtons("Van_d1psz", "Plot size:",
-     #                  choices = c("Small", "Medium", "Large"),
-     #                  selected = "Medium", inline = TRUE),
-     #     radioButtons("Van_d1fsz", "Font size:",
-     #                  choices = c("Small", "Medium", "Large"),
-     #                  selected = "Medium", inline = TRUE))
+
      ), # End of column (6 space)
      column(9,
             h4(htmlOutput("HTML_header")),
@@ -189,21 +123,7 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    # # omics_list
-    #   feat_grp
-    #   feat_subsel
-    #   observ_grpA
-    #   observ_subselA
-    #   observ_grpB
-    #   observ_subselB
-    #   observ_x
-    #   observ_y
-    #   measure_type
-    #   raw_plot_type
-    #   comp_plot_type
-    #   obs_type
-    # #
-
+   # TODO: enable interactive setting of these values
     data_point_sz = .65
     plot_size = "Small"
     font_size = "Small"
@@ -211,17 +131,11 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
     color_scheme = color_schemes[2]
 
     #go_signal <- reactive( p$omics_list$viz )
-
     output$plot_box_out <- renderPlot({
       #req(rv_in$ad)
       req( p$omics_list,
            box_data$data)
-      # box_data <- list(
-      #   x_name = in_fact,
-      #   y_name = dat_key,
-      #   dat_source = dat_source,
-      #   data = bx_data,
-      # )
+
       plot_type <- input$RB_dist_plot_type
       show_data_points <- input$CB_show_data_points
 
@@ -260,12 +174,7 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
       #req(rv_in$ad)
       req(p$omics_list,
           varbox_data$data)
-      # box_data <- list(
-      #   x_name = in_fact,
-      #   y_name = dat_key,
-      #   dat_source = dat_source,
-      #   data = bx_data,
-      # )
+
       plot_type <- input$RB_dist_plot_type2
       show_data_points <- input$CB_show_data_points2
 
@@ -315,17 +224,6 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
     # plot_heatmap_out renderPlot---------------------------------
     output$plot_heatmap_out <- renderPlot({
       req(heat_data$data)
-      # hm_data <- list(
-      #   x_name = X_fact,
-      #   y_name = group_by$y,
-      #   x_source = x_is,
-      #   type = dat_loc,
-      #   data = hm_data,
-      #   mat = X_data,
-      #   meta = tmp_meta,
-      #   ready = TRUE
-      # )
-
 
       input_data <- heat_data$data
       #
@@ -362,15 +260,12 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
 
     output$UI_heatmap <- renderUI({
       #if (p$omics_list$viz_now) {
-        print("renderUI UI heatmap")
-
         plotOutput(ns("plot_heatmap_out"), height = pList3[plot_size])
 
     })
 
 
     output$HTML_header <- renderUI({
-      print("renderUI HTML header")
 
       omic_list = p$omics_list$value
       if(nrow(omic_list) > 50){

@@ -1,7 +1,5 @@
 
-#require("data.table")
-#require("RColorBrewer")
-
+# TODO: fill out the roxygen tags
 
 #' ingestor
 #'
@@ -40,11 +38,6 @@ gen_config_table <- function(ad_in, ds_name, ds_root_path) {
     omics <- ad_in$var_names
     var_meta <- ad_in$var
 
-    # # just in case...
-    # if (!is.null(obs_meta$sampleID)){ #if we already have sampleID
-    #   # call sampleID sampleIDog
-    #   obs_meta <- dplyr::rename(obs_meta,sampleID_0=sampleID)
-    # }
     X_dims <- dim(ad_in$X)
     meta_names <- ad_in$obs_keys()
     # default list of omics for subsetting/choosing
@@ -223,21 +216,12 @@ gen_config_table <- function(ad_in, ds_name, ds_root_path) {
         omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
 
-
-
-     # obs to subset # default selection is all (if multi) or first (if only 1)
+    # obs to subset # default selection is all (if multi) or first (if only 1)
     # omics
     # vars subset
 
-
-    # # force sampleID to match X column names
-    # if (!isTRUE(all.equal(obs_meta$sampleID, X_colnm))) {
-    #   obs_meta$sampleID <- factor(obs_meta$sampleID, levels = X_colnm)
-    #   obs_meta <- obs_meta[order(sampleID)]
-    #   obs_meta$sampleID <- as.character(obs_meta$sampleID)
-    # }
     # OMIC MAPPING (disabled) ----------------------------------------
-
+    # just make a sorted list
     omic_mapping <- omics
     names(omic_mapping) <- omics #
 
