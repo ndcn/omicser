@@ -24,16 +24,14 @@ CZI, NDCN -Omics Browser
 Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 202.
 
 
- Introduction
+# Introduction
 
-The goal is to make a shiny app which contains a simple omics data browser. A variety of data formats can be configured to browse.  See the  `Ingest` section below.
-1install_miniconda(path = miniconda_path(), update = TRUE, force = FALSE)
-**This a work in progress!!**
+The goal is to make a shiny app which contains a simple omics data browser. A variety of data formats can be configured to browse.  Check the `Quickstart` guide.
+
 
 # Installation
 
-This shiny app is build inside an R package and can be installed with `devtools::install_github("ergonyc/omicser")`.
-
+This shiny app is build inside an R package and can be installed with `devtools::install_github("ergonyc/omicser")`.  It is crucial to set up a python environment for reticulate which includes scanpy.
 
 # Usage
 
@@ -67,28 +65,19 @@ You can install the current version of omicser from giuthub with:
 
 but first run this::
 
-```{r example}
-list.of.packages <- c("devtools", "golem", "data.table", "DT", "magrittr")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
+```{r example, eval=FALSE}
 
+install.packages("devtools")
+install.packages("BiocManager")
+BiocManager::install("SingleCellExperiment")
+
+install.packages("reticulate")
+
+require(reticulate)
+reticulate::install_miniconda()
+reticulate::conda_create("omxr",python_version = 3.9)
+reticulate::conda_install(envname = "omxr", packages = "scanpy")
+reticulate::conda_install(envname="omxr",
+                          channel = "conda-forge",
+                          packages = c("leidenalg") )
 ```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-```{r example2}
-library(omicser)
-## basic example code
-```
- `devtools::build_readme()` 
-
-```{r}
-
-
-
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>.
-
