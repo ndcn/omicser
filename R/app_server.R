@@ -12,8 +12,7 @@ app_server <- function(input, output, session) {
   # Your application server logic
   print(getwd())
 
-
-
+  # TODO: move this config to the ./inst/ directory
   CONFIG <- configr::read.config( "./omxr_options.yml" )
   print(getwd())
 
