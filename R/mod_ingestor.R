@@ -1,19 +1,4 @@
 
-# TODO: pack this into a .yml for easy updates
-#
-# dataset_names <- c(
-#   "Domenico DIA" = "domenico_stem_cell",
-#   "Vilas Microglia" = "vilas_microglia",
-#   #"Vilas Microglia (seu)" = "vilas_microglia_seu",
-#   "Vilas Microglia (sceasy)" = "vilas_microglia_sceasy",
-#   "Yassene Lipid concentraions & compositions" ="yassene_lipid",
-#   #"Yassene Lipid Concentrations" ="yassene_A_conc",
-#   #"Yassene Lipid Compositions" ="yassene_A_compos",
-#   "Oscar Microglia" ="oscar_microglia"
-# )
-
-#require(anndata)
-
 #' ingestor UI Function
 #'
 #' @description A shiny Module.
@@ -25,14 +10,12 @@
 #' @importFrom shiny NS tagList
 mod_ingestor_ui <- function(id) {
   ns <- NS(id)
-  # TODO: deltet this or make it dynamic?
-  #dataset_names =  golem::get_golem_options( "dataset_names" )
-  # dataset_names <- DATASET_NAMES
-  CONFIG <- configr::read.config( "./omxr_options.yml" )
-  print(getwd())
 
-  DATASET_NAMES <- CONFIG$dataset_names
-
+  # # TODO: deltet this or make it dynamic?
+  # #dataset_names =  golem::get_golem_options( "dataset_names" )
+  # # dataset_names <- DATASET_NAMES
+  # CONFIG <- configr::read.config( "./omxr_options.yml" )
+  # DATASET_NAMES <- CONFIG$dataset_names
 
   tagList(
     fluidRow(
@@ -40,9 +23,9 @@ mod_ingestor_ui <- function(id) {
         width=12,
         selectizeInput(
           ns("SI_dataset"), "Dataset",
-          choices = DATASET_NAMES,
-          select = "vilas_microglia_sceasy" #"VilasB"  # should i have a default??
+          "",multiple=FALSE, options = list(placeholder = " dataset first")
           )
+
         )
       ),
     fluidRow(
@@ -85,7 +68,7 @@ mod_ingestor_ui <- function(id) {
 #' ingestor Server Functions
 #'
 #' @noRd
-mod_ingestor_server <- function(id) {
+mod_ingestor_server <- function(id,DATASET_NAMES, DS_ROOT_PATH) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -93,14 +76,13 @@ mod_ingestor_server <- function(id) {
     # dataset_names =  golem::get_golem_options( "dataset_names" )
     # ds_root_path =  golem::get_golem_options( "ds_root_path" )
     # global from omxr_options.yml (app_server.R)
-    CONFIG <- configr::read.config( "./omxr_options.yml" )
-
-    DATASET_NAMES <- CONFIG$dataset_names
-    CONDA_ENV <- CONFIG$conda_environment
-    DS_ROOT_PATH <- CONFIG$ds_root_path
+    # CONFIG <- configr::read.config( "./omxr_options.yml" )
+    #
+    # DATASET_NAMES <- CONFIG$dataset_names
+    # CONDA_ENV <- CONFIG$conda_environment
+    # DS_ROOT_PATH <- CONFIG$ds_root_path
     dataset_names <- DATASET_NAMES
-    print(DATASET_NAMES)
-    print(DS_ROOT_PATH)
+
     ############################ +
     ## initiate reactive database structure
     ##
@@ -135,56 +117,44 @@ mod_ingestor_server <- function(id) {
       trigger = 0
     )
 
+    updateSelectizeInput(session, "SI_dataset", choices = DATASET_NAMES, selected = DATASET_NAMES[1], server=TRUE)
 
     ############################ +
     ## load dataset
     ############################ +
     observeEvent(input$SI_dataset, {
-      if (!is.null(input$SI_dataset)) { # unnesscasary defensive?
-        ds_name <- (input$SI_dataset)
-        ds_label <- names(dataset_names[match(ds_name,dataset_names)])
-        if (is.na(ds_label)) {
+      req(input$SI_dataset)
 
-          print("NO DATA LOADED")
-          to_return$database_name <- NULL
-          #to_return$omics_type <- "NA"
-        } else {
-          # ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/omxr_data.h5ad"))
-          # diff_exp = readRDS(file = paste0("data-raw/",ds_name,"/diff_expr_table.rds"))
-          #globals: DS_ROOT_PATH
-                    #
-          ad <- anndata::read_h5ad(filename=file.path(DS_ROOT_PATH,ds_name,"omxr_data.h5ad"))
-          diff_exp = readRDS(file = file.path(DS_ROOT_PATH,ds_name,"diff_expr_table.rds"))
+      ds_name <- (input$SI_dataset)
+      # ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/omxr_data.h5ad"))
+      # diff_exp = readRDS(file = paste0("data-raw/",ds_name,"/diff_expr_table.rds"))
+      #globals: DS_ROOT_PATH
+      #
+      ad <- anndata::read_h5ad(filename=file.path(DS_ROOT_PATH,ds_name,"omxr_data.h5ad"))
+      diff_exp = readRDS(file = file.path(DS_ROOT_PATH,ds_name,"diff_expr_table.rds"))
 
-          conf_def <- gen_config_table(ad, ds_name, DS_ROOT_PATH)
+      conf_def <- gen_config_table(ad, ds_name, DS_ROOT_PATH)
 
+      omics <- ad$var_names
+      names(omics) <- omics
 
-          omics <- ad$var_names
-          names(omics) <- omics
-          # omicmeta <- ad$obs
-          #omics_sorted <- conf_def$omics
+      to_return$de <- diff_exp
 
+      to_return$omics_type <- to_return$db_meta$omics_type
+      to_return$ad <- ad
+      to_return$omics <- omics
+      # to_return$meta <- omicmeta  # this might be too redundant
 
-          to_return$de <- diff_exp
+      to_return$config <- conf_def$conf
+      to_return$default <- conf_def$def
 
-          to_return$database_name <- ds_label
-          to_return$omics_type <- to_return$db_meta$omics_type
-          to_return$ad <- ad
-          to_return$omics <- omics
-          # to_return$meta <- omicmeta  # this might be too redundant
+      to_return$db_meta$name<-ds_name
+      to_return$db_meta$omics_type<-conf_def$def$db_meta$omic_type
+      to_return$db_meta$measurment<-conf_def$def$db_meta$measurement
+      to_return$db_meta$organism<-conf_def$def$db_meta$organizm
+      to_return$db_meta$publication<-conf_def$def$db_meta$pub
+      to_return$db_meta$etc<-conf_def$def$db_meta$annotation_database
 
-          to_return$config <- conf_def$conf
-          to_return$default <- conf_def$def
-
-          to_return$db_meta$name<-ds_name
-          to_return$db_meta$omics_type<-conf_def$def$db_meta$omic_type
-          to_return$db_meta$measurment<-conf_def$def$db_meta$measurement
-          to_return$db_meta$organism<-conf_def$def$db_meta$organizm
-          to_return$db_meta$publication<-conf_def$def$db_meta$pub
-          to_return$db_meta$etc<-conf_def$def$db_meta$annotation_database
-        }
-
-      }
     })
 
 
@@ -193,7 +163,7 @@ mod_ingestor_server <- function(id) {
         shinyjs::enable("AB_ingest_load")
       } else {
         shinyjs::disable("AB_ingest_load")
-        print(" no database loaded... try Vilas Trans or Domenico or Yassene.")
+        print(" no database loaded... .")
       }
     })
 
@@ -215,8 +185,6 @@ mod_ingestor_server <- function(id) {
         print(paste0("Current database omics: ", paste( names(omics)[1:10], collapse = ",")) )
       }
     })
-
-
 
     # keep these up to date for side_select..
     # # Should this just be done in     observeEvent(input$SI_dataset,?

@@ -14,7 +14,6 @@ app_server <- function(input, output, session) {
 
   # TODO: move this config to the ./inst/ directory
   CONFIG <- configr::read.config( "./omxr_options.yml" )
-  print(getwd())
 
   DATASET_NAMES <- CONFIG$dataset_names
   CONDA_ENV <- CONFIG$conda_environment
@@ -32,7 +31,7 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     # Call module "ingest"
-    rv <- mod_ingestor_server("ingestor_ui_1")
+    rv <- mod_ingestor_server("ingestor_ui_1", DATASET_NAMES, DS_ROOT_PATH)
 
     # rv <- mod_ingest_server("ingest_ui_1")
     # print(isolate(rv$data_table))
