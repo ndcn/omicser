@@ -2,7 +2,7 @@
 title: "Additional Info - Godel, Escher, & Erdos"
 output: html_document
 ---
-
+ >>>>>>>>PLACEHOLDER <<<<<<<<<<<<<<<<<<
 
 ### About DATABASE XYZ
 
