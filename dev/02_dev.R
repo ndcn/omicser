@@ -23,39 +23,30 @@ usethis::use_package("shinyjs")
 usethis::use_package("shinyWidgets")
 usethis::use_package("shinydashboard")
 usethis::use_package("shinydashboardPlus")
+
 usethis::use_package("ggplot2")
 usethis::use_package("gridExtra")
-
 usethis::use_package("ggdendro")
-usethis::use_package("DT")
-usethis::use_package("dplyr")
 
 usethis::use_package("plotly")
+
+usethis::use_package("DT")
 usethis::use_package("Matrix")
+
+usethis::use_package("configr")
 
 usethis::use_package("anndata")
 
-#  installing these by hand for now....
-#  0
-usethis::use_package("BiocManager")
-usethis::use_package("SingleCellExperiment")
+# DISABLED for now
+# usethis::use_package("BiocManager")
+# usethis::use_package("SingleCellExperiment")
 
-usethis::use_package("tidyr") # called by dplyr as dependency?
-usethis::use_package("magrittr")
-# usethis::use_package("purrr")
-# usethis::use_package("tibble")
+usethis::use_package("dplyr")
+#usethis::use_package("tidyr") # called by dplyr as dependency?
+#usethis::use_package("magrittr")  # use_pipe()
 usethis::use_package("broom")
-usethis::use_package("configr")
-# usethis::use_package("xml2")
-# usethis::use_package("readr")
-# usethis::use_package("stringr")
-# usethis::use_package("shinyWidgets")
-# usethis::use_package("waiter")
-# usethis::use_package("vroom")
-# usethis::use_package("readxl")
-# usethis::use_package("yaml")
-# usethis::use_package("rclipboard")
-# usethis::use_package("markdown")
+
+
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module( name = "ingestor" ) # Name of the module
@@ -73,15 +64,8 @@ golem::add_module( name = "pg_vis_qc") # Name of the module
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
-# golem::add_fct( "module" ) # sever
-# golem::add_utils( "module" ) #ui
-#   e.g.  boxplot, heatmap, functions
-golem::add_fct( "pg_vis_raw" ) # sever
-#  e.g. volcano plot functions..
-golem::add_fct( "pg_vis_comp" ) # sever
-
-golem::add_fct( "ingestor" ) # sever
-
+# golem::add_fct( "module" ) # NOTE: `fct` are server helpers
+# golem::add_utils( "module" ) #   'utils` are ui helpers
 
 # ## External resources
 # TODO: ADD THESE JS/CSS resources
@@ -90,26 +74,12 @@ golem::add_fct( "ingestor" ) # sever
 # golem::add_js_handler( "handlers" )
 # golem::add_css_file( "custom" )
 
-## Add internal datasets ----
-## If you have data in your package
-usethis::use_data_raw( name = "transcript_gold_standard", open = FALSE )
-usethis::use_data_raw( name = "metabol_gold_standard", open = FALSE )
-usethis::use_data_raw( name = "proteo_gold_standard", open = FALSE )
-usethis::use_data_raw( name = "lipid_gold_standard", open = FALSE )
-usethis::use_data_raw( name = "vilas_A", open = FALSE )
-usethis::use_data_raw( name = "vilas_B", open = FALSE )
-usethis::use_data_raw( name = "domenico_A", open = FALSE )
-usethis::use_data_raw( name = "domenico_B", open = FALSE )
-usethis::use_data_raw( name = "oscar_microglia", open = FALSE )
-usethis::use_data_raw( name = "oscar_toy", open = FALSE )
-usethis::use_data_raw( name = "yassene_example", open = FALSE )
-
+# TODO:  add tests ASAP
 ## Tests ----
 ## Add one line by test you want to create
-usethis::use_test( "app" )
+#usethis::use_test( "app" )
 
 # Documentation
-
 ## Vignette ----
 usethis::use_vignette("omicser")
 devtools::build_vignettes()

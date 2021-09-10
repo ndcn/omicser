@@ -1,6 +1,3 @@
-# hardwire for now
-
-
 
 #' The application server-side
 #'
@@ -10,14 +7,17 @@
 #' @noRd
 app_server <- function(input, output, session) {
   # Your application server logic
-  print(getwd())
 
-  # TODO: move this config to the ./inst/ directory
-  CONFIG <- configr::read.config( "./omxr_options.yml" )
+  # config is in the ./inst/db_info/ directory
+  # for now we have NOT added these config options to the golem-config.yml
+  #CONFIG <- configr::read.config( "./omxr_options.yml" )
+  CONFIG <- configr::read.config(system.file("db_info",
+                                             "db_config.yml",
+                                             package = "omicser"))
 
-  DATASET_NAMES <- CONFIG$dataset_names
+  DB_NAMES <- CONFIG$db_names
   CONDA_ENV <- CONFIG$conda_environment
-  DS_ROOT_PATH <- CONFIG$ds_root_path
+  DB_ROOT_PATH <- CONFIG$db_root_path
 
   reticulate::use_condaenv(
     required = TRUE,
@@ -31,21 +31,8 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     # Call module "ingest"
-    rv <- mod_ingestor_server("ingestor_ui_1", DATASET_NAMES, DS_ROOT_PATH)
+    rv <- mod_ingestor_server("ingestor_ui_1", DB_NAMES, DB_ROOT_PATH)
 
-    # rv <- mod_ingest_server("ingest_ui_1")
-    # print(isolate(rv$data_table))
-    # Ingest "LOAD" button triggers sharing the rv structure:
-
-    #   rv$data_table - datatable
-    #   rv$database_name  - internal name of db
-    #   rv$gene_names - full list of genes
-    #   rv$var0 (column name)
-    #   rv$factors0  - factors in that column
-    #   rv$use_var1 - logical flag to idnciate if var1/factor 1 are used
-    #   rv$var1  (column name)
-    #   rv$factors1  - factors in that column
-    #   rv$trigger
   }
 
 
@@ -58,20 +45,6 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     p_vis <- mod_side_selector_server("side_selector_ui_1", rv_in = rv)
-    # CHECK sidebar - get params:
-    # vis_params <- mod_sideselect_server("sideselect_ui_1", rv)
-        # omics_list = NULL,
-        # # aggregate obs
-        # feat_grp = NULL,
-        # feat_subsel = NULL,
-        # observ_grp = NULL,
-        # observ_subsel = NULL,
-        # observ_x = NULL,
-        # observ_y_raw = NULL,
-        # measure_type = NULL, #"raw" or "comp"
-        # raw_plot_type = NULL,
-        # comp_plot_type = NULL,
-        # obs_type = NULL
 
   }
 

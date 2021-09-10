@@ -2,7 +2,6 @@
 #
 
 
-
 #' Title
 #'
 #' @param ad
@@ -111,23 +110,15 @@ create_config_table <- function(ad_in,
   omics <- ad_in$var_names
   var_meta <- ad_in$var
 
-  # # just in case...
-  # if (!is.null(obs_meta$sampleID)){ #if we already have sampleID
-  #   # call sampleID sampleIDog
-  #   obs_meta <- dplyr::rename(obs_meta,sampleID_0=sampleID)
-  # }
   X_dims <- dim(ad_in$X)
-
 
   meta_names <- ad_in$obs_keys()
 
-
-
-
-
-
-
-  def_omics = omics[1:20]  # first 20
+  if (is.null(conf_list$def_omics)){
+    def_omics <- omics[1:20]  # first 20
+  } else {
+    def_omics <- conf_list$def_omics
+  }
 
   obs_meta = data.table(sampleID = samples)  # redundant but makes naming explicit..
   obs_meta = cbind(obs_meta,ad$obs)
@@ -209,11 +200,6 @@ create_config_table <- function(ad_in,
     }
   }
 
-  # diffs <- list(diff_exp_groups =  levels(factor(diff_exp$group)),
-  #               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
-  #               diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
-  #               diff_exp_tests =  levels(factor(diff_exp$test_type)))
-  # C- "diff_exp" annotations  (ad$var)
   de_to_include <- names(diffs) # the first one should be "omics
   for (i_diff in de_to_include) {
     tmp_conf <- data.table(
@@ -277,18 +263,6 @@ create_config_table <- function(ad_in,
       omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
   }
-
-  # obs to subset # default selection is all (if multi) or first (if only 1)
-  # omics
-  # vars subset
-
-
-  # # force sampleID to match X column names
-  # if (!isTRUE(all.equal(obs_meta$sampleID, X_colnm))) {
-  #   obs_meta$sampleID <- factor(obs_meta$sampleID, levels = X_colnm)
-  #   obs_meta <- obs_meta[order(sampleID)]
-  #   obs_meta$sampleID <- as.character(obs_meta$sampleID)
-  # }
 
   omic_mapping <- omics
   names(omic_mapping) <- omics #
@@ -454,10 +428,10 @@ pack_anndata <- function(data_in){
       }
 
       ad$raw <- raw
-
-    } else if (class(data_in)[1] == "SingleCellExperiment") {
-      print("SingleCellExperiment not enabled")
-      ad <- NULL
+      #  DISABLED >> getting bio-conductor dependencies is a pain...
+      #     } else if (class(data_in)[1] == "SingleCellExperiment") {
+      #       print("SingleCellExperiment not enabled")
+      #       ad <- NULL
 
     } else if ("data.frame" %in% class(data_in)) {
       # could _everything be in a dataframe???
