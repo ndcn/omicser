@@ -12,18 +12,18 @@ mod_ingestor_ui <- function(id) {
   ns <- NS(id)
 
   # # TODO: deltet this or make it dynamic?
-  # #dataset_names =  golem::get_golem_options( "dataset_names" )
-  # # dataset_names <- DATASET_NAMES
+  # #database_names =  golem::get_golem_options( "database_names" )
+  # # database_names <- DB_NAMES
   # CONFIG <- configr::read.config( "./omxr_options.yml" )
-  # DATASET_NAMES <- CONFIG$dataset_names
+  # DB_NAMES <- CONFIG$database_names
 
   tagList(
     fluidRow(
       column(
         width=12,
         selectizeInput(
-          ns("SI_dataset"), "Dataset",
-          "",multiple=FALSE, options = list(placeholder = " dataset first")
+          ns("SI_database"), "Database",
+          "",multiple=FALSE, options = list(placeholder = " database first")
           )
 
         )
@@ -68,20 +68,20 @@ mod_ingestor_ui <- function(id) {
 #' ingestor Server Functions
 #'
 #' @noRd
-mod_ingestor_server <- function(id,DATASET_NAMES, DS_ROOT_PATH) {
+mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # # TODO: deltet this or make it dynamic?
-    # dataset_names =  golem::get_golem_options( "dataset_names" )
+    # database_names =  golem::get_golem_options( "database_names" )
     # ds_root_path =  golem::get_golem_options( "ds_root_path" )
     # global from omxr_options.yml (app_server.R)
     # CONFIG <- configr::read.config( "./omxr_options.yml" )
     #
-    # DATASET_NAMES <- CONFIG$dataset_names
+    # DB_NAMES <- CONFIG$database_names
     # CONDA_ENV <- CONFIG$conda_environment
-    # DS_ROOT_PATH <- CONFIG$ds_root_path
-    dataset_names <- DATASET_NAMES
+    # DB_ROOT_PATH <- CONFIG$ds_root_path
+    database_names <- DB_NAMES
 
     ############################ +
     ## initiate reactive database structure
@@ -117,23 +117,23 @@ mod_ingestor_server <- function(id,DATASET_NAMES, DS_ROOT_PATH) {
       trigger = 0
     )
 
-    updateSelectizeInput(session, "SI_dataset", choices = DATASET_NAMES, selected = DATASET_NAMES[1], server=TRUE)
+    updateSelectizeInput(session, "SI_database", choices = database_names, selected = DB_NAMES[1], server=TRUE)
 
     ############################ +
     ## load dataset
     ############################ +
-    observeEvent(input$SI_dataset, {
-      req(input$SI_dataset)
+    observeEvent(input$SI_database, {
+      req(input$SI_database)
 
-      ds_name <- (input$SI_dataset)
-      # ad <- anndata::read_h5ad(filename=paste0("data-raw/",ds_name,"/omxr_data.h5ad"))
-      # diff_exp = readRDS(file = paste0("data-raw/",ds_name,"/diff_expr_table.rds"))
+      db_name <- (input$SI_database)
+      # ad <- anndata::read_h5ad(filename=paste0("data-raw/",db_name,"/omxr_data.h5ad"))
+      # diff_exp = readRDS(file = paste0("data-raw/",db_name,"/diff_expr_table.rds"))
       #globals: DS_ROOT_PATH
       #
-      ad <- anndata::read_h5ad(filename=file.path(DS_ROOT_PATH,ds_name,"omxr_data.h5ad"))
-      diff_exp = readRDS(file = file.path(DS_ROOT_PATH,ds_name,"diff_expr_table.rds"))
+      ad <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,db_name,"omxr_data.h5ad"))
+      diff_exp = readRDS(file = file.path(DB_ROOT_PATH,db_name,"diff_expr_table.rds"))
 
-      conf_def <- gen_config_table(ad, ds_name, DS_ROOT_PATH)
+      conf_def <- gen_config_table(ad, db_name, DB_ROOT_PATH)
 
       omics <- ad$var_names
       names(omics) <- omics
@@ -148,7 +148,7 @@ mod_ingestor_server <- function(id,DATASET_NAMES, DS_ROOT_PATH) {
       to_return$config <- conf_def$conf
       to_return$default <- conf_def$def
 
-      to_return$db_meta$name<-ds_name
+      to_return$db_meta$name<-db_name
       to_return$db_meta$omics_type<-conf_def$def$db_meta$omic_type
       to_return$db_meta$measurment<-conf_def$def$db_meta$measurement
       to_return$db_meta$organism<-conf_def$def$db_meta$organizm
@@ -187,10 +187,10 @@ mod_ingestor_server <- function(id,DATASET_NAMES, DS_ROOT_PATH) {
     })
 
     # keep these up to date for side_select..
-    # # Should this just be done in     observeEvent(input$SI_dataset,?
+    # # Should this just be done in     observeEvent(input$SI_database,?
     observe({
-      #to_return$database_name <- input$SI_dataset
-      to_return$database_name  <- names(which(dataset_names==input$SI_dataset))
+      #to_return$database_name <- input$SI_database
+      to_return$database_name  <- names(which(database_names==input$SI_database))
 
     })
 
@@ -202,7 +202,7 @@ mod_ingestor_server <- function(id,DATASET_NAMES, DS_ROOT_PATH) {
 
     # load button :: send the reactive object back to the app...
     observeEvent(input$AB_ingest_load, {
-      # all other return values set with SI_dataset
+      # all other return values set with SI_database
       to_return$trigger <- to_return$trigger + 1
     })
 

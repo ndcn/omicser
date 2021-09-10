@@ -3,11 +3,11 @@ title: "Quickstart"
 author: "andy henrie"
 date: "9/3/2021"
 output:
+  html_document: default
   word_document: 
     toc: yes
     keep_md: yes
   pdf_document: default
-  html_document: default
 ---
 
 ```{r, setup, include=FALSE}
@@ -20,8 +20,8 @@ In order to use the NDCN ‘omics’ browser we need to set a few things up.  Th
 
 1. Setup the environment: The underlying tools/packages from R and python
 2. Create the browser itself: which is an R package available on github
-3. Prepare the ‘omics’ data for browsing, and finally
-4. Configure the browser for data ingest
+3. Curate a _database_ of ‘omics’ data for browsing
+4. Configure the _database_ for the browser, and finally
 5. Run the browser!
 
 The following materials should provide a simple set of steps to accomplish this and start browsing ‘omics’!
@@ -31,61 +31,58 @@ Note:  although the NDCN browser is not yet officially named, there are referenc
 ## 1. Environment setup
 We will need an R environment, which could be as simple as the base RStudio R, and a python environment which we will specify with conda. (In the future we can encapsulate everything in a docker container (including RSTudio?) to make it even more straightforward.)
 
-### Within RStudio / R
+### Option A: Environment Setup Within RStudio / R 
+
+Executing the following commands in the R console or as an R-script will set up the requisite packages/dependencies and create the python environment.  Variables in _CAPS_ sucth as `YOUR_CONDA_ENV` are customizable. 
+
 ```{r, 01-env_setup-1, eval=FALSE}
 
-install.packages("devtools")
-install.packages("BiocManager")
-BiocManager::install("SingleCellExperiment")
+YOUR_CONDA_ENV <- "omxr"
 
+install.packages("devtools")
 install.packages("reticulate")
 
 require(reticulate)
-reticulate::install_miniconda()
-reticulate::conda_create("omxr",python_version = 3.9)
-reticulate::conda_install(envname = "omxr", packages = "scanpy")
-reticulate::conda_install(envname="omxr",
+reticulate::install_miniconda() 
+reticulate::conda_create(YOUR_CONDA_ENV,python_version = 3.9)
+reticulate::conda_install(envname = YOUR_CONDA_ENV, packages = "scanpy")
+reticulate::conda_install(envname= YOUR_CONDA_ENV,
                           channel = "conda-forge",
                           packages = c("leidenalg") )
 
-# all other dependencies will be loaded by "omicser"
+# NOTE: all other dependencies will be loaded by "omicser"
 
 ```
 
-### WIth Command Line
+### Option B: Using the Command Line
 
-Make sure you ahve anaconda or mini-conda installed. e.g.
+Make sure you have anaconda or mini-conda installed. e.g.
 ```{bash, 01-env_setup-2, eval = FALSE}
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
 bash ~/miniconda.sh -b -p $HOME/miniconda
 ```
 
 
-Then make a conda environment to use with reticulate
+Then make a conda environment to use with reticulate.   For this example we've called the environment `omxr`.
 ```{bash, 01-env_setup-3, eval = FALSE}
 conda create --name omxr python=3.9 scanpy                                                                             
 conda install -c conda-forge leidenalg                                                                                  
 conda activate omxr
 ```
 
-This is how you tell reticulate to use this conda environment:
-
-```{r, 01-env_setup-4, eval=FALSE}
-reticulate::use_condaenv("omxr")
-```
-
 
 ## 2. NDCN Browser spin-up 
-We will need an R environment, which could be as simple as the base RStudio R, and a python environment which we will specify with conda. (In the future we can encapsulate everything in a docker container (including RSTudio?) to make it even more straightforward.)
-(https://github.com/ergonyc/omicser)
-
 
 There are two ways to set up the omicser:  
-1. Passive: Simply install the browser and curate the data.
+1. Install package: Simply install the browser as-is as an R-package from github (https://github.com/ergonyc/omicser).
 2. Development mode: Clone the repository and customize for your needs.
 
 
 ### Option 1:  passive mode
+
+Assuming that you have alread installed the pre-requisite such as `devtools` and `reticulate` the browser can be installed in the R-console.
+
+
 ```{r, 2-setup-1, eval=FALSE}
 
 devtools::install_github("ergonyc/omicser")
@@ -94,22 +91,44 @@ devtools::install_github("ergonyc/omicser")
 
 
 ### Option 2:  development mode
-Here you want to clone the repo and develop a local version. e.g. 
+If you would like to fine tune (or contribute to the open-source efforts!) you can clone the repo and install locally.
 
-![rstuido clone](/Users/ahenrie/Projects/NDCN_dev/omicser/inst/clone_gh_inrstuido.png)
+For instance within R-studio:
+![rstuido clone](/Users/ahenrie/Projects/NDCN_dev/omicser/inst/clone_gh_inrstuido.png){width=50%}
 
-or with the github cli:
+Or from the command line.  For example using the github cli:
 ```{bash, 2-setup-2, eval = FALSE}
 gh repo clone ergonyc/omicser
 ```
 
+From the repo home directory the library can be loaded with:
+```{r, 2-setup-3, eval=FALSE}
 
+library("omicser")
+
+```
+
+    
 ## 3. Data Prep
-For this stage you are the ‘curator’ of the data.   The data needs to be formatted for the browser and placed somewhere the browser can access it.  
+The most crucial step is _curating_ your data into a database that can be loaded by the browser.  As the _curator_ you will have the responsibility to make some choices about what and how the data can be seen.  
+This process results in specifying the location of the data, and creating files which are formatted for the browser.
 
-The `curate_domenico_stem_cell.R` script in the examples subdirectory illustrates the steps needed to curate the data for reading into the browser. 
+As an example there is the `curate_domenico_stem_cell.R` script in the /examples subdirectory, which illustrates the steps and some of the choices required to curate your data into a browsable _database_. 
 
-There are several steps, but the first step will be to make the .yml file that will let the browser know what/where the data will be.  Your options are to edit the "omxr_options.yml" directly or make a new one. e.g. for the stem cell proteomics example:
+The process as illustrated in the example can be broken into the following steps:
+
+0. preamble / setup - make sure all the required tools/repos are loaded
+1. provenance & meta data setup - define the meta-data and context for the dataset
+2. helper function definition - any helpers you need
+3. raw data ingest - load the raw data from whatever format they live in
+4. pack into the browser data format - pack into the anndata structure (scanpy/python)
+5. post-processing - compute relavent marginal quantities, define additional annotation and grouping variables, etc.
+  5a. dimension reduction - compute and cluster if needed
+6. differential expression tables - compute and/or formate existing tables
+7. write database - write the files to the database location
+
+
+The first step will be to make the .yml file that will let the browser know what/where the data will be.  Your options are to edit the "omxr_options.yml" directly or make a new one. e.g. for the stem cell proteomics example:
 
 ```{r, 3-prep-1, eval=FALSE}
 
@@ -118,7 +137,7 @@ dataset_names <- list(
 )
 # where do our data files live. # WARNING do not use the ~ alias for Home
 # MUST BE FULL or RELATIVE PATH... ~ will cause loading to
-ds_root_path = 'omicsdata'
+ds_root_path = 'test_db'
 
 # python environment
 conda_environment = 'omxr'
@@ -126,6 +145,7 @@ conda_environment = 'omxr'
 omicser_options <- list(dataset_names=dataset_names,
                         ds_root_path=ds_root_path,
                         conda_environment=conda_environment)
+
 
 require(configr)
 configr::write.config(config.dat = omicser_options, file.path = "omxr_options.yml",
@@ -138,19 +158,6 @@ The anndata scheme requires us to define three main tables:
 3. sample meta data - e.g.  sex, experiemntal condition, etc.
 
 We also need to define differential omic-expression tables.
-
-Overall the basic task is to take the data being curated and place it into the NDCN browsers schema. I have separated this into a sequence straightforward steps:
-
-0. preamble / setup - make sure all the required tools/reposiries are laoded
-1. provenance & meta data setup - define the meta-data and context for the dataset
-2. helper function definition - any helpers you need
-3. load the raw data - load the raw data from whatever format they live in
-4. pack into the browser data format - pack into the anndata structure (scanpy/python)
-5. post-processing - compute relavent marginal quantities, define additional annotation and grouping variables, etc.
-  5a. dimension reduction - compute and cluster if needed
-6. differential expression tables - compute and/or formate existing tables
-7. write database - write the files to the database location
-
 
 Here are some of the key helper functions and he section they fall into.
 
@@ -197,6 +204,7 @@ sc$tl$umap(ad)
 
 
 Although most proteomic, metabelomic and lipidomic data has differnetial calculations at the output of the instrumentation (which leverages know statastical assumptions of the quantifications) we can also use scanpys tools to compute differentalial expression.  The diff_exp tables will be needed for volcano plots either way.
+
 ``` {r 3-prep-5, eval=FALSE}
 #==== 6. differential expression =====================================================================
 test_types <- c('wilcoxon','t-test_overestim_var')
@@ -242,7 +250,7 @@ conf_list <- list(
   var_subset = character(0),
 
   diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
-               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this
+               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
                diff_exp_tests =  levels(factor(diff_exp$test_type))
   ),

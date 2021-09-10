@@ -143,7 +143,7 @@ mod_side_selector_server <- function(id, rv_in){
       if (is.null(rv_in$database_name)) {
         out_text <- "No data loaded"
       } else {
-          out_text <- paste("Current dataset: ", rv_in$database_name)
+          out_text <- paste("Current databse: ", rv_in$database_name)
       }
       out_text <- h4(out_text)
       return(out_text)
