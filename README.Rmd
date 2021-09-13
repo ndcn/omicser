@@ -19,19 +19,104 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
+## Introduction
+
+This package allows creation of a web browser that can visualize a 
+variety of -omics data from multiple data formats.
+
 NDCN -Omics Browser (omicser TBC)
 CZI, NDCN -Omics Browser
 Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 202.
 
+The NDCN Browser (`Omicser`) was developing using `{golem}`: "an opinionated framework for building production-grade shiny applications." - https://github.com/ThinkR-open/golem
 
-# Introduction
-
-The goal is to make a shiny app which contains a simple omics data browser. A variety of data formats can be configured to browse.  Check the `Quickstart` guide.
+Note:  although the NDCN browser is not yet officially named, there are references to the browser/package as `omicser` or `omxr`.  
 
 
-# Installation
+## Dependencies and environment
 
-This shiny app is build inside an R package and can be installed with `devtools::install_github("ergonyc/omicser")`.  It is crucial to set up a python environment for reticulate which includes scanpy.
+Running this package creates a Shiny app which can load and visualize -omics data.
+It is crucial to ensure all dependencies are installed,
+and to set up a python environment that can be recognized by R.
+Other dependencies will be loaded by "omicser"
+
+There are two options for installing the required software
+and creating the necessary environments: 
+using R, or on the command line.
+
+### Option A: Via R/RStudio
+
+Execute the following commands in R to install dependencies and create your environment:
+
+```{r r_env, eval=FALSE}
+YOUR_CONDA_ENV <- "omxr"
+
+install.packages("devtools")
+install.packages("reticulate")
+
+require(reticulate)
+reticulate::install_miniconda() 
+reticulate::conda_create(YOUR_CONDA_ENV,python_version = 3.9)
+reticulate::conda_install(envname = YOUR_CONDA_ENV, packages = "scanpy")
+reticulate::conda_install(envname= YOUR_CONDA_ENV,
+                          channel = "conda-forge",
+                          packages = c("leidenalg") )
+```
+
+### Option B: Via the command line
+
+The following instructions provide an alternative to executing the above code in R:
+
+Make sure you have anaconda or mini-conda installed. e.g.
+
+```{bash, conda_inst, eval = FALSE}
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
+bash ~/miniconda.sh -b -p $HOME/miniconda
+```
+
+Then make a conda environment to use with reticulate.   For this example we've called the environment `omxr`.
+```{bash, conda_env, eval = FALSE}
+conda create --name omxr python=3.9 scanpy                                                                             
+conda install -c conda-forge leidenalg                                                                                  
+conda activate omxr
+```
+
+## Installing this package
+
+There are two ways to install this package,
+depending on how much you expect to customize the interface:  
+plug-and-play or development mode.
+
+### Option A:  Plug-and-play mode
+
+This option allows you to install the package directly from GitHub,
+and is appropriate for running the software as-is (with no customization).
+
+Run the following R code to install this package:
+
+```{r, plug_mode, eval=FALSE}
+devtools::install_github("ergonyc/omicser")
+```
+
+### Option B:  Development mode
+
+This option clones the repository before installing,
+and is appropriate if you would like to:
+- customize features of the Shiny app
+- contribute code (e.g., new features) to this project
+
+Execute the following code on the command line:
+
+```{bash, dev_mode, eval = FALSE}
+# using git
+git clone https://github.com/k8hertweck/omicser.git
+
+# using the GitHub CLI
+gh repo clone ergonyc/omicser
+```
+
+If you install the package from the command line,
+remember to install and load the package in R!
 
 # Usage
 
@@ -55,29 +140,11 @@ The file `app.R` should only contain:
 I added 2 files (positive and negative mode) as example data. After installing the package 
 you can find them in the folder `extdata`. In the repository you can find them in `inst/extdata`.
 
+## ETC. Caveats
+Several “big” updates are planned.
 
-
-## Installation
-
-You can install the current version of omicser from giuthub with:
-
-`devtools::install_github("omicser")`
-
-but first run this::
-
-```{r example, eval=FALSE}
-
-install.packages("devtools")
-install.packages("BiocManager")
-BiocManager::install("SingleCellExperiment")
-
-install.packages("reticulate")
-
-require(reticulate)
-reticulate::install_miniconda()
-reticulate::conda_create("omxr",python_version = 3.9)
-reticulate::conda_install(envname = "omxr", packages = "scanpy")
-reticulate::conda_install(envname="omxr",
-                          channel = "conda-forge",
-                          packages = c("leidenalg") )
-```
++  Consistent `roxygen2` headers.  Currently importing functions (e.g. `require(“package”)`) or using the `package::function` syntax is inconsistent.  
++ Migrate all dplyr::  tidyverse table manipulation to data.frame syntax and/or dtdplyr.  
+(test speed improvements on mac, with caveat of apple disabled multithreading)
++ Clean up directory structures Remove /data and move more things to the /inst subdirectory
++ migration to the NDCN githyb.  Currently things are in my personal github ("ergonyc")
