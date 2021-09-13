@@ -11,9 +11,7 @@ app_server <- function(input, output, session) {
   # config is in the ./inst/db_info/ directory
   # for now we have NOT added these config options to the golem-config.yml
   #CONFIG <- configr::read.config( "./omxr_options.yml" )
-  CONFIG <- configr::read.config(system.file("db_info",
-                                             "db_config.yml",
-                                             package = "omicser"))
+  CONFIG <- configr::read.config(system.file('omicser_options.yml', package = "omicser"))
 
   DB_NAMES <- CONFIG$db_names
   CONDA_ENV <- CONFIG$conda_environment

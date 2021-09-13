@@ -130,8 +130,8 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
       # diff_exp = readRDS(file = paste0("data-raw/",db_name,"/diff_expr_table.rds"))
       #globals: DS_ROOT_PATH
       #
-      ad <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,db_name,"omxr_data.h5ad"))
-      diff_exp = readRDS(file = file.path(DB_ROOT_PATH,db_name,"diff_expr_table.rds"))
+      ad <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,db_name,"db_data.h5ad"))
+      diff_exp = readRDS(file = file.path(DB_ROOT_PATH,db_name,"db_de_table.rds"))
 
       conf_def <- gen_config_table(ad, db_name, DB_ROOT_PATH)
 

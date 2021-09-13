@@ -1,8 +1,0 @@
-dataset_names:
-    Domenico DIA: domenico_stem_cell
-    Vilas Microglia: vilas_microglia
-    #Vilas Microglia (sceasy): vilas_microglia_sceasy
-    #Yassene Lipid concentraions & compositions: yassene_lipid
-    #Oscar Microglia: oscar_microglia
-ds_root_path: data-raw
-conda_environment: omxr

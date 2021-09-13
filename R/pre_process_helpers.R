@@ -396,7 +396,6 @@ pack_anndata <- function(data_in){
 
     data_in = readRDS( file = data_in )
 
-
     if(class(data_in)[1] == "Seurat"){
       # how stereotyped is this pattern?  check for Oscar...
       ad <- sceasy::convertFormat(data_in, from="seurat", to="anndata",
@@ -416,14 +415,15 @@ pack_anndata <- function(data_in){
 
       #enforce sample_ID
       # TODO: use anndata:: instead of py_to_r wrappers?
-      if ( !("sample_ID" %in% py_to_r(ad$obs_keys()) ) ){
-        tmp <- dplyr::mutate( py_to_r(ad$obs),
-                              sample_ID=py_to_r(ad$obs_names))
-        ad$obs <- r_to_py(tmp)
+      #      replace dplyr with data.table
+      if ( !("sample_ID" %in% reticulate::py_to_r(ad$obs_keys()) ) ){
+        tmp <- dplyr::mutate( reticulate::py_to_r(ad$obs),
+                              sample_ID=reticulate::py_to_r(ad$obs_names))
+        ad$obs <- reticulate::r_to_py(tmp)
 
-        tmp <- dplyr::mutate( py_to_r(raw$obs),
-                              sample_ID=py_to_r(raw$obs_names))
-        raw$obs <- r_to_py(tmp)
+        tmp <- dplyr::mutate( reticulate::py_to_r(raw$obs),
+                              sample_ID=reticulate::py_to_r(raw$obs_names))
+        raw$obs <- reticulate::r_to_py(tmp)
 
       }
 

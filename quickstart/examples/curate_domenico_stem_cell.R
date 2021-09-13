@@ -16,32 +16,27 @@
 # golem::document_and_reload()
 
 #==== 0. preamble/setup ==================================================
+# assume we are in the [omicser_path]
+# getwd()
+# pkgload::load_all('.')
+golem::document_and_reload()
 
-require(configr)
 
-# could read
-omxr_options <- configr::read.config( file = "omxr_options.yml")
+# BOOTSTRAP the options we have already set up...
+omxr_options <- omicser::get_config("quickstart")
+
+
 CONDA_ENV <- omxr_options$conda_environment
-DB_NAME <- omxr_options$dataset_names[1]
-DS_ROOT_PATH <- omxr_options$ds_root_path
-
-require(magrittr)
-require(reticulate)
-reticulate::use_condaenv(required = TRUE, condaenv = CONDA_ENV)
-require(anndata)
-require(matrixStats)
+DB_NAME <- omxr_options$database_names[1]
+DB_ROOT_PATH <- omxr_options$db_root_path
 
 
-require("omicser")
 
-# create the folder to contain the raw data
 #DB_NAME = "domenico_stem_cell"
-DB_DIR = file.path(DS_ROOT_PATH,DB_NAME)
+DB_DIR = file.path(DB_ROOT_PATH,DB_NAME)
 if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
 }
-
-
 
 
 #==== 1. documentation / provenance ==============================================================
@@ -60,8 +55,8 @@ db_meta <- list(
   date = format(Sys.time(), "%a %b %d %X %Y")
 )
 
-out_fn <-  file.path(DS_ROOT_PATH,DB_NAME,"db_meta.yml")
-write.config(config.dat = db_meta, file.path = out_fn,
+out_fn <-  file.path(DB_ROOT_PATH,DB_NAME,"db_meta.yml")
+configr::write.config(config.dat = db_meta, file.path = out_fn,
              write.type = "yaml", indent = 4)
 
 
@@ -83,9 +78,6 @@ write.config(config.dat = db_meta, file.path = out_fn,
 #' @export
 #'
 #' @examples
-#'
-#'
-#'
 process_sn_prot_quant <- function(matrix_data_path, exp_name=NULL) {
   mp_all <- read.delim(matrix_data_path, sep = "\t", header = TRUE, as.is = TRUE)
   # remove contaminant
@@ -136,6 +128,21 @@ process_DIA_annot_de <- function( annot_de_file_path ){
                                                  pvals_adj = Qvalue,
                                                  versus = gsub(" / ", " vs. ", Comparison..group1.group2.) )
 
+  ###
+  ###  the differential expression table has these fields:
+  ###  group - the comparison   {names}V{reference}
+  ###  names - what are we comparing?
+  ###  obs_name  - name of the meta data variable
+  ###  test_type - what statistic are we using
+  ###  reference - the denomenator. or the condition we are comparing expressions values to
+  ###  comp_type - grpVref or grpVrest. rest is all other conditions
+  ###  logfoldchange - log2(name/reference)
+  ###  scores - statistic score
+  ###  pvals - pvalues from the stats test. e.g. t-test
+  ###  pvals_adj - adjusted pvalue (Q)
+  ###  versus - label which we will choose in the browser
+  ###
+
   feat_annots <- unique(de_annot_data[, c("UniProtIds",
                                           "Genes",
                                           "ProteinDescriptions",
@@ -181,14 +188,14 @@ prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,
   tmp_mat <- data
   tmp_mat[is.na(tmp_mat)] <- 0
 
-  de_annot$annot$expr_geomean <- colMeans( log(data),na.rm = TRUE) #exp minus 1?
-  de_annot$annot$expr_mean <- colMeans(data,na.rm = TRUE)
-  de_annot$annot$expr_var  <- colVars(data,na.rm = TRUE)
-  de_annot$annot$expr_frac <- colMeans(tmp_mat>0)
+  de_annot$annot$expr_geomean <- Matrix::colMeans( log(data),na.rm = TRUE) #exp minus 1?
+  de_annot$annot$expr_mean <- Matrix::colMeans(data,na.rm = TRUE)
+  de_annot$annot$expr_var  <- matrixStats::colVars(data,na.rm = TRUE)
+  de_annot$annot$expr_frac <- Matrix::colMeans(tmp_mat>0)
 
-  conditions_table$expr_var <- rowVars(data,na.rm=TRUE)
-  conditions_table$expr_mean <- rowMeans(data,na.rm=TRUE)
-  conditions_table$expr_frac <- rowMeans(tmp_mat>0)
+  conditions_table$expr_var <- matrixStats::rowVars(data,na.rm=TRUE)
+  conditions_table$expr_mean <- Matrix::rowMeans(data,na.rm=TRUE)
+  conditions_table$expr_frac <- Matrix::rowMeans(tmp_mat>0)
 
 
   # scemaa
@@ -204,9 +211,15 @@ prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,
   return(data_list)
 }
 
+
+
+
+# TODO:  define "get marker genes" or some such
+
+
 #==== 3. load data -========================================================================================
 
-RAW_DIR <- "rawdata/Domenico_A"
+RAW_DIR <- "raw_data/Domenico_A"
 
 # report table
 matrix_data_file <- "20210524_093609_170805_aging_against_SC_merged_all_lib_2_Report.xls"
@@ -223,7 +236,7 @@ data_list <- prep_DIA_files(matrix_data_file,annot_de_file,conditions_table_file
 # save diff expression data for later...
 diff_exp <- data_list$de
 # saveRDS(diff_exp, file = file.path(DB_DIR, "diff_expr_table.rds"))
-saveRDS(diff_exp, file.path(DS_ROOT_PATH,DB_NAME, "diff_expr_table.rds"))
+saveRDS(diff_exp, file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
 #==== 4. pack into anndata =========================================================================
 
@@ -231,41 +244,29 @@ saveRDS(diff_exp, file.path(DS_ROOT_PATH,DB_NAME, "diff_expr_table.rds"))
 # source(helper_function)
 
 ad <- omicser::setup_database(database_name=DB_NAME,
-                              db_path=DS_ROOT_PATH,
+                              db_path=DB_ROOT_PATH,
                               data_in=data_list,
                               db_meta=NULL ,
                               re_pack=TRUE)
 
-ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"core_data.h5ad"))
+ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"core_data.h5ad"))
 
 
 #==== 5. post processing =========================================================================               --
 
-# require(anndata)
-# require(reticulate)
-# DB_NAME = "domenico_stem_cell"
-#
-#
-# ad <- read_h5ad(file.path(DS_ROOT_PATH,DB_NAME,"core_data.h5ad"))
-# ad
-
+# Add the raw field
 raw <- ad$copy()
-
 # make raw #includes NA
 #     X="zeroed_NA" (for PCA)
 #     "scaled"  (zeroed)
-#
-#
 
-sc <- import("scanpy")
-
+# use scanpy to do some scaling and calculations...
+sc <- reticulate::import("scanpy")
 
 #create layers, and raw
 # na_to_0 (raw but zeroed)
 # scaled
 # X_is_scaled_na_to_0
-
-#outvals <- sc$pp$filter_cells(ad, min_genes=200, inplace=FALSE)
 
 
 zro_na <- ad$copy()
@@ -290,16 +291,16 @@ ad$layers <- list(zro_na=zro_na$X,
 ad$raw <- raw
 ad$raw$to_adata()
 ad <- ad$copy()
-ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
-
-#ad_tmp$layers <- list(non_regressed=ad$X) #list('count'=layers)
 
 
+
+
+sc$pp$highly_variable_genes(ad,n_top_genes=40)
+
+# save an intermediate file (incase we want to revert...)
+ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
 
 #==== 5-a. dimension reduction - PCA / umap =========================================================================
-
-# ad <- read_h5ad(file.path(DB_DIR,"normalized_data.h5ad"))
-
 
 ## Step 3: Do some basic preprocessing to run PCA and compute the neighbor graphs
 ##
@@ -326,35 +327,23 @@ ad$varm$unscaled_PCs <- zro_na$varm$PCs
 ad$obsp$unscaled_distances <- zro_na$obsp$distances
 ad$obsp$unscaled_connectivities <- zro_na$obsp$connectivities
 
-ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
+# save an intermediate file (incase we want to revert...)
+ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 
 
 #==== 6. differential expression  ======================================================================
+#already have from the DIA helper fucnctions.
+file.exists(file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
-#already computed!!
-file.exists(file.path(DS_ROOT_PATH,DB_NAME, "diff_expr_table.rds"))
-
-# diff_exp <- readRDS(file = file.path(DS_ROOT_PATH,DB_NAME, "diff_expr_table.rds"))
-
-
+# diff_exp <- readRDS(file = file.path(DB_ROOT_PATH,DB_NAME, "diff_expr_table.rds"))
 
 
 #==== 7. create configs =========================================================================
-
-#
-# ad <- read_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
-# ad <- read_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
-# diff_exp <- readRDS( file = file.path(DS_ROOT_PATH,DB_NAME, "diff_expr_table.rds"))
-
-
 # what ad$obs do we want to make default values for...
-# # should just pack according to UI?
 default_factors <- c("Condition","Color","Replicate")
-#helper_function<-('data-raw/create_config_table.R')
-
 
 # differentials  #if we care we need to explicitly state. defaults will be the order...
-conf_list <- list(
+config_list <- list(
   x_obs = c("Is.Reference","Condition","Replicate", "Label"),
   y_obs =  c("expr_var", "expr_mean", "expr_frac", "sample_ID", "leiden"), #MEASURES
   obs_groupby = c("Is.Reference","Condition","Replicate", "Label"),
@@ -384,11 +373,11 @@ conf_list <- list(
 
 )
 
-configr::write.config(config.dat = conf_list, file.path = file.path(DS_ROOT_PATH,DB_NAME,"config.yml" ),
+configr::write.config(config.dat = config_list, file.path = file.path(DB_ROOT_PATH,DB_NAME,"db_config.yml" ),
                       write.type = "yaml", indent = 4)
 
 
 
 #==== 8. write data file to load  =========================================================================
-ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"omxr_data.h5ad"))
+ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
 

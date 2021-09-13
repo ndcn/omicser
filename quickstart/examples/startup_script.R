@@ -11,57 +11,59 @@ reticulate::conda_install(envname = "omxr", packages = "scanpy")
 reticulate::conda_install(envname="omxr",channel = "conda-forge",packages = c("leidenalg") )
 
 
-
+# execute THIS:
 devtools::install_github("ergonyc/omicser")
 
-# shortcuts incase things need to be tweaked
+# or if we are doing a DEV installation.  make sure you are in the Omicser based directory and either
+# golem::document_and_reload()
+# assume we are in the or
+getwd()
+
+pkgload::load_all(getwd())
+# shortcuts in-case things need to be tweaked
 #detach("package:omicser")
 #remove.packages("omicser")
 
 
 
+# place the configureation file `omicser_optiions.yml` in the quickstart folder of the repo
+setwd("quickstart" )
+getwd()
 #=======================================================
-# example with domenicao datast
-## this script sets up the list of datasets and data directory locatiosn for our data into
-## the OMXR_databases.yml
-
-# > files to curate a dataset have been put into a "domenico_stem_cell" folder which is a
-#   subdirectory of "omicsdata"  in the my current working directory (.e.g. ~/spin-up )
-#
-
-
-dataset_names <- list(
-  "Domenico DIA" = "domenico_stem_cell"
+database_names <- list(
+  "Domenico DIA" = "domenico_stem_cell",
+  "Vilas Microglia" = "vilas_microglia",
+  #"Vilas Microglia (seu)" = "vilas_microglia_seu",
+  "Vilas Microglia (sceasy)" = "vilas_microglia_sceasy",
+  "Yassene Lipid concentraions & compositions" ="yassene_lipid"
+  #"Yassene Lipid Concentrations" ="yassene_A_conc",
+  #"Yassene Lipid Compositions" ="yassene_A_compos",
+  #"Oscar Microglia" ="oscar_microglia"
 )
 
-
 # where do our data files live. # WARNING do not use the ~ alias for Home
-# MUST BE FULL or RELATIVE PATH... ~ will cause loading to
+# MUST BE FULL or RELATIVE PATH to where this is executed...... ~ will cause loading to
+db_root_path = 'test_db'
 
-# create the omxr_options.yml ==============================
-# could also edit the .yml directly
-ds_root_path = 'omicsdata'
 
 # python environment
 conda_environment = 'omxr'
 
-omicser_options <- list(dataset_names=dataset_names,
-                        ds_root_path=ds_root_path,
+omicser_options <- list(database_names=database_names,
+                        db_root_path=db_root_path,
                         conda_environment=conda_environment)
 
-require(configr)
-configr::write.config(config.dat = omicser_options, file.path = "omxr_options.yml",
-                      write.type = "yaml", indent = 4)
-
-
-#=======================================================
-# curate data
-# look at this config fileh
+omicser::write_config(omicser_options)
 
 
 
+# CURATE DATA HERE =======================================================
 #source("examples/curate_domenico_stem_cell.R")
 
 
-library(omicser)
+
+# CURATE DATA HERE =======================================================
+
+
+# NOTE this shoudl be run in the quickstart directory...
 omicser::run_app(options = list(launch.browser = TRUE))
