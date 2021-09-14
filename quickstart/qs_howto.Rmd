@@ -1,10 +1,13 @@
 ---
 title: "Quickstart"
 author: "andy henrie"
-date: "9/3/2021"
+date: "9/14/2021"
 output:
-  html_document: default
+  html_document: 
     keep_md: yes
+    toc: true
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r, setup, include=FALSE}
@@ -213,3 +216,4 @@ run_app(options = list(launch.browser = TRUE))
 ```
 
 Note, that if you are using a development setup, you might want to run the run_dev script which will handle unloading / re-loading for you.
+
