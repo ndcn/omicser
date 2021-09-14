@@ -6,10 +6,6 @@ output:
   html_document: 
     toc: yes
     keep_md: yes
-  word_document: 
-    toc: yes
-    keep_md: yes
-  pdf_document: default
 ---
 
 ```{r, setup, include=FALSE}
