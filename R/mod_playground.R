@@ -53,8 +53,19 @@ mod_playground_server <- function(id ,rv_in, p) {
 
     mod_pg_table_server("pg_table_ui_2",rv_in, p)
     mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_in, p,heat_data,box_data,varbox_data)
-    mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_in, p)
+    mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_in, p, active_layer_data)
     mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_in, p)
+
+
+
+
+    # observe({
+    #   req(p$omics_list)
+    #   print("---> viz?? ")
+    #   if (heat_data$ready) {
+    #     p$omics_list$viz_now <- FALSE  # reset it here...
+    #   }
+    # })
 
     heat_data <- reactiveValues(
       x_names = NULL,
@@ -79,6 +90,7 @@ mod_playground_server <- function(id ,rv_in, p) {
       data = NULL
     )
 
+
     varbox_data <- reactiveValues(
       x_name = NULL,
       y_name = NULL,
@@ -87,13 +99,68 @@ mod_playground_server <- function(id ,rv_in, p) {
       data = NULL
     )
 
-    # OBSERVE s  ========================================
-    # send this to the "raw" tab
-    # heat_data reactive  ========================================
+    # TODO:  get units/label for dat_loc
+    # grab the right matrix for the heatmap and for the volcano plot distribution)
+    active_layer_data <- reactiveValues(
+      layer = NULL,
+      data = NULL
+    )
+
+
     observe({
       req(rv_in$ad,
-          p$data_source)
+          p$data_layer)
 
+      layer <- p$data_layer
+      if (layer=="X") {
+        X_data <- isolate(rv_in$ad$X) #isolate
+      } else if (layer == "raw") {
+        X_data <- isolate(rv_in$ad$raw$X)#isolate
+      } else { #} if (dat_loc == "layers") { #must be a layer
+        is_layer <- any(layer %in% rv_in$ad$layers$keys())
+        #is_layer <- any(rv_in$ad$layers$keys()==dat_loc)
+        if (is_layer) {
+          #X_data <- isolate(rv_in$ad$layers[[dat_loc]]) #isolate
+          X_data <- isolate(rv_in$ad$layers$get(dat_loc) )
+        } else {
+          print("data not found")
+          return(ret_vals)
+        }
+      }
+      if(is.null(dimnames(X_data)[[1]])){
+        dimnames(X_data) <- list(rv_in$ad$obs_names,rv_in$ad$var_names)
+      }
+
+      active_layer_data$layer <- layer
+      active_layer_data$data <- X_data
+
+    })
+
+
+    # send this to the "raw" tab
+    observe({
+      req(rv_in$ad,
+          p$data_source,
+          active_layer_data$data)
+
+      # need: data, x_name,y_name,
+      # data -> table with $variable
+      #                    $value
+      #                    $group (if group == variable then non-grouped...
+      #                    else grouped along x_name)
+      #
+      #
+print("in reactive: hm_data (playground)")
+        # ret_vals <- list(
+        #   x_names = NULL,
+        #   y_names = NULL,
+        #   x_source =NULL,
+        #   type = NULL,
+        #   data = NULL,
+        #   mat = NULL,
+        #   meta = NULL,
+        #   ready = FALSE
+        # )
 
       in_conf <- rv_in$config
       in_meta <- as.data.table(rv_in$ad$obs)
@@ -111,26 +178,31 @@ mod_playground_server <- function(id ,rv_in, p) {
       # TODO: make an "x_is" oaram in side_selector
       x_is <- "obs" #haven't implimented visualizing by var yet...
       X_fact <- p$plot_x #in_fact <- p$observ_grpA
-      dat_loc <- p$data_layer
 
-      if (dat_loc=="X") {
-        X_data <- isolate(rv_in$ad$X) #isolate
-      } else if (dat_loc == "raw") {
-        X_data <- isolate(rv_in$ad$raw$X)#isolate
-      } else { #} if (dat_loc == "layers") { #must be a layer
-        is_layer <- any(dat_loc %in% rv_in$ad$layers$keys())
-        #is_layer <- any(rv_in$ad$layers$keys()==dat_loc)
-        if (is_layer) {
-          #X_data <- isolate(rv_in$ad$layers[[dat_loc]]) #isolate
-          X_data <- isolate(rv_in$ad$layers$get(dat_loc) )
-        } else {
-          print("data not found")
-          return(ret_vals)
-        }
-      }
-      if(is.null(dimnames(X_data)[[1]])){
-        dimnames(X_data) <- list(rv_in$ad$obs_names,rv_in$ad$var_names)
-      }
+
+      # dat_loc <- p$data_layer
+      #
+      # if (dat_loc=="X") {
+      #   X_data <- isolate(rv_in$ad$X) #isolate
+      # } else if (dat_loc == "raw") {
+      #   X_data <- isolate(rv_in$ad$raw$X)#isolate
+      # } else { #} if (dat_loc == "layers") { #must be a layer
+      #   is_layer <- any(dat_loc %in% rv_in$ad$layers$keys())
+      #   #is_layer <- any(rv_in$ad$layers$keys()==dat_loc)
+      #   if (is_layer) {
+      #     #X_data <- isolate(rv_in$ad$layers[[dat_loc]]) #isolate
+      #     X_data <- isolate(rv_in$ad$layers$get(dat_loc) )
+      #   } else {
+      #     print("data not found")
+      #     return(ret_vals)
+      #   }
+      # }
+      # if(is.null(dimnames(X_data)[[1]])){
+      #   dimnames(X_data) <- list(rv_in$ad$obs_names,rv_in$ad$var_names)
+      # }
+      #
+
+      X_data <- active_layer_data$data
       ## AGGREGATE along x-axis
       # if (x_is == "obs"){
 
@@ -146,6 +218,8 @@ mod_playground_server <- function(id ,rv_in, p) {
           dat_js_set <- rv_in$ad$var_names
           omic_js <-  dat_js  # dat_js_set[rv_in$ad$var_names %in% dat_js]
         }
+
+
 
         tmp_meta <- as.data.table(rv_in$ad$obs) # can probably just acces ad$obs directly since we don' tneed it to be a data_table?
         row.names(tmp_meta) <- rv_in$ad$obs_names
@@ -171,9 +245,11 @@ mod_playground_server <- function(id ,rv_in, p) {
         } else {
           grp_ys <- rv_in$ad$var[[ grp_y ]][which( dat_js_set %in% dat_js )]
         }
+        #group_ys <- rv_in$ad$var[[ grp_by$y ]] [which( dat_js_set %in% dat_js )]
         names(grp_ys) <- dat_js
 
         X_ID = "sample_ID"
+
 
       # create the table
       hm_data = data.table()
@@ -204,7 +280,7 @@ mod_playground_server <- function(id ,rv_in, p) {
        heat_data$x_source <- x_is
        heat_data$subsel <- in_subsel
        heat_data$subset <- in_subset
-       heat_data$type <- dat_loc
+       heat_data$type <- active_layer_data$layer #   dat_loc
        heat_data$data <- hm_data
        heat_data$mat <- X_data
        heat_data$meta <- tmp_meta
@@ -217,11 +293,28 @@ mod_playground_server <- function(id ,rv_in, p) {
       # send hm_data to heatmap_reactive
       # send X_data to violin (in case we need to collapse X)
 
-    # box_data reactive  ========================================
-    observe({
+
+
+    # box_data <- reactive({
+    #   req(rv_in$ad,
+    #         p$data_source)
+      observe({
         req(rv_in$ad,
             p$data_source)
 
+        # hm_data <- list(
+        #   x_names = X_fact,
+        #   y_names = grp_by$y,
+        #    x_group = grp_x
+        #   y_group = grp_y
+        #   x_source = x_is,
+        #   type = dat_loc,
+        #   data = hm_data,
+        #   mat = X_data,
+        #   meta = tmp_meta,
+        #   ready = TRUE
+        # )
+      print("in reactive: box_data (playground)")
 
       in_conf <- rv_in$config
       in_meta <- as.data.table(rv_in$ad$obs)
@@ -261,6 +354,16 @@ mod_playground_server <- function(id ,rv_in, p) {
       } else { # is "X"
 
         if (is.null(heat_data$x_source)) {
+          # hm_data <- list(
+          #   x_names = X_fact,
+          #   y_names = grp_by$y,
+          #   x_source = x_is,
+          #   type = dat_loc,
+          #   data = hm_data,
+          #   mat = X_data,
+          #   meta = tmp_meta,
+          #   ready = TRUE
+          # )
           print("not data from hm_data yet")
           return()
         } else {
@@ -321,12 +424,28 @@ mod_playground_server <- function(id ,rv_in, p) {
       }
     ) # observe box_data
 
-    # varbox_data reactive  =======================================
-    observe({
+
+      # box_data <- reactive({
+      #   req(rv_in$ad,
+      #         p$data_source)
+      observe({
         req(rv_in$ad,
             p$data_source,
             p$plot_feats)
 
+        # hm_data <- list(
+        #   x_names = X_fact,
+        #   y_names = grp_by$y,
+        #    x_group = grp_x
+        #   y_group = grp_y
+        #   x_source = x_is,
+        #   type = dat_loc,
+        #   data = hm_data,
+        #   mat = X_data,
+        #   meta = tmp_meta,
+        #   ready = TRUE
+        # )
+        print("in reactive: varbox_data (playground)")
         group_action <- p$group_action
 
         in_conf <- rv_in$config

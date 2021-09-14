@@ -39,7 +39,27 @@ mod_omic_selector_ui <- function(id){
     ),
     fluidRow(
       uiOutput(ns("ui_text_warn"), width = "100%"),
-    ) #fluidRow 3
+    ), #fluidRow 3
+    # COPY/PASTE HACK JAVASCRIPT BELOW
+    tags$script(
+      HTML(
+        ' console.log("page will load now");
+          document.addEventListener("DOMContentLoaded", function(){
+            console.log("page loaded");
+            document.addEventListener("copy", (event) => {
+              console.log("coppying from item:", event.target);
+              const anchorNode = document.getSelection().anchorNode
+              if (anchorNode instanceof HTMLElement && anchorNode.classList.contains("selectize-input")) {
+                const items = Array.from(anchorNode.getElementsByClassName("item active"))
+                const selectedItemsAsString = items.map(i => i.innerText).join(", ")
+                console.log("coppied content:", selectedItemsAsString);
+                event.clipboardData.setData("text/plain", selectedItemsAsString)
+                event.preventDefault()
+              }
+            })
+          });'
+      )
+    )
 
   )
 

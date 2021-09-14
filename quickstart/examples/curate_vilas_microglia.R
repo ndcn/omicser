@@ -20,11 +20,13 @@
 # assume we are in the [omicser_path]
 # getwd()
 # pkgload::load_all('.')
+require(golem)
 golem::document_and_reload()
 
 
 # BOOTSTRAP the options we have already set up...
-omxr_options <- omicser::get_config("quickstart")
+# NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
+omxr_options <- omicser::get_config(in_path="quickstart")
 
 
 CONDA_ENV <- omxr_options$conda_environment
@@ -53,9 +55,8 @@ db_meta <- list(
 )
 
 
-out_fn <-  file.path(DB_ROOT_PATH,DB_NAME,"db_meta.yml")
-configr::write.config(config.dat = db_meta, file.path = out_fn,
-                      write.type = "yaml", indent = 4)
+write_db_meta(DB_NAME, db_root = DB_ROOT_PATH)
+
 
 
 #==== 2. helper functions =========================================================================
@@ -113,10 +114,11 @@ sc$pp$filter_genes(ad, min_cells=3)
 
 
 # FIX RAW
+colnames(raw$X) <- raw$var_names
+rownames(raw$X) <- raw$obs_names
 
-raw <- raw[which(raw$obs_names %in% ad$obs_names),raw$var_names %in% ad$var_names]
-colnames(raw$X) <- ad$var_names
-rownames(raw$X) <- ad$obs_names
+raw <- raw[(raw$obs_names %in% ad$obs_names),(raw$var_names %in% ad$var_names)]
+
 #
 
 
@@ -135,6 +137,12 @@ sc$pp$highly_variable_genes(ad, min_mean=0.0125, max_mean=3, min_disp=0.5  )
 sc$pp$highly_variable_genes(ad,n_top_genes=40)
 
 ad$raw <- raw
+
+#  don't know how to make this work....
+#sc$pp$highly_variable_genes(ad,n_top_genes=40)
+ad$var$var_rank <- order(ad$var$expr_var)
+# choose top 40 genes by variance across dataset as our "targets"
+target_omics <- ad$var_names[which(ad$var$var_rank <= 40)]
 
 # save an intermediate file (incase we want to revert...)
 ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
