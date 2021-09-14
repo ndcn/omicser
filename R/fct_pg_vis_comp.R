@@ -9,7 +9,7 @@ pg_volc_ly <- function(de, title = "") {
   # p <- in_data %>%
 
     plt <- plot_ly(
-                  x = de$logfoldchange,
+                  x = de$logfoldchanges,
                   y = -log10(de$pvals),
                   name = "FDR > 0.05",
                   type = "scatter",

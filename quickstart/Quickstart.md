@@ -12,9 +12,7 @@ output:
   pdf_document: default
 ---
 
-```{r, setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ## Overview
 
@@ -50,7 +48,8 @@ The process as illustrated in the example can be broken into the following steps
 
 The first step will be to make the .yml file that will let the browser know what/where the data will be.  Your options are to edit the "omxr_options.yml" directly or make a new one. e.g. for the stem cell proteomics example:
 
-```{r, 3-prep-1, eval=FALSE}
+
+```r
 dataset_names <- list(
   "Domenico DIA" = "domenico_stem_cell"
 )
@@ -78,7 +77,8 @@ Here are some of the key helper functions and he section they fall into.
 
 Here is an example of loading three data files and then pakaging them with a "helper function" (defined in section #2 of the example curation script) into the `data_list` which will be used by the next stage.
 
-``` {r, 3-prep-2, eval=FALSE}
+
+```r
 #==== 3. load data -========================================================================================
 matrix_data_file <- "20210524_093609_170805_aging_against_SC_merged_all_lib_2_Report.xls"
 # candidate table without filter
@@ -94,7 +94,8 @@ saveRDS(diff_exp, file.path(DS_ROOT_PATH,DB_NAME, "diff_expr_table.rds"))
 
 The `omicser::setup_database()` function packages the separate tables -- data matrix, omic annotations, sample meta -- into the anndata object.  This function can also take the name of a seurat object file, or some other transcritpomic data objects, but most generically the data_list is data from .csv or other simple data tables.
 
-``` {r , 3-prep-3, eval=FALSE}
+
+```r
 #==== 4. pack into anndata =========================================================================
 ad <- omicser::setup_database(database_name=DB_NAME,
                               db_path=DS_ROOT_PATH,
@@ -106,7 +107,8 @@ ad <- omicser::setup_database(database_name=DB_NAME,
 
 Although this stage is not nescessary, its included as an example of how the python backend can be leveraged to do dimension reduction and clustering.
 
-``` {r, 3-prep-4, eval=FALSE}
+
+```r
 #==== 5-a. dimension reduction - PCA / umap ========================================================
 sc <- import("scanpy")
 # scanpy pre-processing - sc$pp
@@ -119,7 +121,8 @@ sc$tl$umap(ad)
 
 Although most proteomic, metabelomic and lipidomic data has differnetial calculations at the output of the instrumentation (which leverages know statastical assumptions of the quantifications) we can also use scanpys tools to compute differentalial expression.  The diff_exp tables will be needed for volcano plots either way.
 
-``` {r 3-prep-5, eval=FALSE}
+
+```r
 #==== 6. differential expression =====================================================================
 test_types <- c('wilcoxon','t-test_overestim_var')
 comp_types <- c("grpVrest")
@@ -129,7 +132,8 @@ diff_exp <- omicser::compute_de_table(ad,comp_types, test_types, obs_names)
 
 Finally we write this the anndata file to our database location specified in the  omxr_options.yml.
 
-``` {r, 3-prep-6, eval=FALSE}
+
+```r
 #==== 8. write data file to load  =========================================================================
 ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"omxr_data.h5ad"))
 ```
@@ -146,7 +150,8 @@ Edit the .yml or better yet include it in the curation script.  e.g. part 7
 
 Finally we need to define the configuration.  Most of these fields *could* be inferred from the anndata file, but this is where curation is important.  Lets choose the most reasonable quantities _only_.  
 
-``` {r, 3-config-1, eval=FALSE}
+
+```r
 #==== 7. create configs =========================================================================
 # differentials  #if we care we need to explicitly state. defaults will be the order...
 conf_list <- list(
@@ -179,6 +184,7 @@ configr::write.config(config.dat = conf_list, file.path = file.path(DS_ROOT_PATH
 
 Assuming you have already loaded the omicser package, once the .yml files have been generated and teh data placed in the right directories you are good to browse!
 
-```{r, 4-browse-1, eval=FALSE}
+
+```r
 run_app(options = list(launch.browser = TRUE))
 ```

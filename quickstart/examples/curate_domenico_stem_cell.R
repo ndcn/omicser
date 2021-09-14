@@ -2,28 +2,18 @@
 ##
 ##  Muscle Stem Cell Proteomics
 ##  - DIA DATASET developed from "wRapper_example" script
-##
-#  formely `domenico_A`
-#
-#
-# Golem options (Inactive) -
-# Set options here
-# options(golem.app.prod = FALSE) # TRUE = production mode, FALSE = development mode
-# # Detach all loaded packages and clean your environment
-# golem::detach_all_attached()
-# # rm(list=ls(all.names = TRUE))
-# # Document and reload your package
-# golem::document_and_reload()
 
 #==== 0. preamble/setup ==================================================
 # assume we are in the [omicser_path]
 # getwd()
 # pkgload::load_all('.')
+require(golem)
 golem::document_and_reload()
 
 
 # BOOTSTRAP the options we have already set up...
-omxr_options <- omicser::get_config("quickstart")
+# NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
+omxr_options <- omicser::get_config(in_path="quickstart")
 
 
 CONDA_ENV <- omxr_options$conda_environment
@@ -47,7 +37,7 @@ if (!dir.exists(DB_DIR)) {
 db_meta <- list(
   organism = 'mmusculus',
   lab = "Ori/Ward",
-  annotation_database =  "uniprot_for_annotation.RData",
+  annotation_database =  "uniprot_for_annotation.RData?",
   title = "DIA proteomics",
   omic_type = "Proteomics",
   measurment = "normalized counts",
@@ -55,9 +45,7 @@ db_meta <- list(
   date = format(Sys.time(), "%a %b %d %X %Y")
 )
 
-out_fn <-  file.path(DB_ROOT_PATH,DB_NAME,"db_meta.yml")
-configr::write.config(config.dat = db_meta, file.path = out_fn,
-             write.type = "yaml", indent = 4)
+write_db_meta(db_meta,DB_NAME, db_root = DB_ROOT_PATH)
 
 
 #==== 2. helper functions =================================================================================
@@ -122,7 +110,7 @@ process_DIA_annot_de <- function( annot_de_file_path ){
                                                  test_type = "unknown",
                                                  reference = Condition.Denominator,
                                                  comp_type = 'grpVref',
-                                                 logfoldchange = AVG.Log2.Ratio,
+                                                 logfoldchanges = AVG.Log2.Ratio,
                                                  scores = NA,
                                                  pvals = Pvalue,
                                                  pvals_adj = Qvalue,
@@ -243,11 +231,13 @@ saveRDS(diff_exp, file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 # helper_function<-('data-raw/ingest_helpers.R')
 # source(helper_function)
 
+
 ad <- omicser::setup_database(database_name=DB_NAME,
                               db_path=DB_ROOT_PATH,
                               data_in=data_list,
                               db_meta=NULL ,
                               re_pack=TRUE)
+
 
 ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"core_data.h5ad"))
 
@@ -294,8 +284,14 @@ ad <- ad$copy()
 
 
 
+#  don't know how to make this work....
+#sc$pp$highly_variable_genes(ad,n_top_genes=40)
+ad$var$var_rank <- order(ad$var$expr_var)
+# choose top 40 proteins by variance across dataset as our "targets"
+target_omics <- ad$var_names[which(ad$var$var_rank <= 40)]
 
-sc$pp$highly_variable_genes(ad,n_top_genes=40)
+ad$var$decile <- dplyr::ntile(ad$var$expr_var, 10)
+
 
 # save an intermediate file (incase we want to revert...)
 ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
@@ -349,11 +345,11 @@ config_list <- list(
   obs_groupby = c("Is.Reference","Condition","Replicate", "Label"),
   obs_subset = c("Is.Reference","Condition","Replicate", "Label"),
 
-  x_var = character(0),
+  x_var = c("decile"),
   y_var = c("expr_geomean", "expr_mean", "expr_var", "expr_frac" ),
 
-  var_groupby = character(0),
-  var_subset = character(0),
+  var_groupby = c("decile"),
+  var_subset = c("decile"),
 
   diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
                diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this
@@ -369,14 +365,21 @@ config_list <- list(
 
   # what ad$obs do we want to make default values for...
   # # should just pack according to UI?
-  default_factors = c("Condition","Color","Replicate")
+  default_factors = c("Condition","Color","Replicate"),
+  target_omics = target_omics,
+  omic_details = c("Genes",
+                   "ProteinDescriptions",
+                   "ProteinNames",
+                   "GO.Cellular.Component",
+                   "GO.Molecular.Function",
+                   "GO.Biological.Process",
+                   "decile")
 
 )
 
-configr::write.config(config.dat = config_list, file.path = file.path(DB_ROOT_PATH,DB_NAME,"db_config.yml" ),
-                      write.type = "yaml", indent = 4)
 
 
+omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
 
 #==== 8. write data file to load  =========================================================================
 ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))

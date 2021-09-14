@@ -1,11 +1,12 @@
 
-# TODO: fill out the roxygen tags
-
-#' ingestor
+#' gen_config_table
 #'
-#' @description A fct function
+#' @description function to read the data object and create the config files needed by the UI
+#' @param ad_in  anndata object input
+#' @param db_name where is the database name
+#' @param db_root_path where is out database located
 #'
-#' @return The return value, if any, from executing the function.
+#' @return list containint config table, defaults list and omics vector
 #'
 #' @noRd
 #' @import data.table
@@ -14,14 +15,16 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
   # load or generate configs..
 
   config_files <- c(file.path(db_root_path,db_name,"omxr_conf.rds" ),
-                    file.path(db_root_path,db_name,"omxr_def.rds" ),
-                    file.path(db_root_path,db_name,"omxr_omics.rds" ))
+                    file.path(db_root_path,db_name,"omxr_def.rds" ))
+  # DISABLED THIS... we can just read from the anndata
+  # ,
+  #                   file.path(db_root_path,db_name,"omxr_omics.rds" ))
 
   # check if we have it or are forcing
   if ( all(file.exists( config_files )) ) {
     omxr_conf <- readRDS(file = config_files[1])
     omxr_def <- readRDS(file = config_files[2])
-    omics_ <- readRDS(file = config_files[3])
+    #omics_ <- readRDS(file = config_files[3])
   } else {
     max_levels <- 50 # ceiling for considering somethign a factor
     legend_cols = 4
@@ -41,7 +44,6 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     X_dims <- dim(ad_in$X)
     meta_names <- ad_in$obs_keys()
     # default list of omics for subsetting/choosing
-    def_omics = omics[1:20]  # first 20
 
 
     # A observation meta (ad$obs)  ----------------------------------------
@@ -248,7 +250,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
 
   # DEFAULTS ----------------------------------------
     omxr_def <- list()
-    omxr_def$omics <- def_omics #
+    omxr_def$omics <- conf_list$target_omics # first 20
 
     omxr_def$obs_x <- omxr_conf[default == 1]$UI #
 
@@ -271,18 +273,20 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     omxr_def$test <- diffs$diff_exp_tests[1]  # t-test, xx
 
     omxr_def$db_meta <- db_meta
+    omxr_def$omic_details <- conf_list$omic_details
 
     # WRITE FILES  ----------------------------------------
 
     saveRDS(omxr_conf, file = file.path(db_root_path,db_name,"omxr_conf.rds") )
     saveRDS(omxr_def, file = file.path(db_root_path,db_name,"omxr_def.rds") )
-    saveRDS(omics_, file = file.path(db_root_path,db_name,"omxr_omics.rds") )
+    #saveRDS(omics_, file = file.path(db_root_path,db_name,"omxr_omics.rds") )
 
   }
 
   out_vals <- list(conf  = omxr_conf,
-                   def   = omxr_def,
-                   omics = omics_)
+                   def   = omxr_def)
+                  #    ,
+                   #omics = omics_)
   return(out_vals)
 
 }
