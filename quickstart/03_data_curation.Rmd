@@ -58,7 +58,7 @@ The first step will be to make a folder to contain your data.  We will call this
 The anndata scheme requires us to define three pieces of data:
 
 
-1. DATA: a matrix - e.g. transcriptomics - count matrix of cells X genes.
+1. DATA: a matrix - e.g. transcriptomics - count matrix of cells X genes. (WARNING: make sure its a proper matrix, e.g.: `as.matrix(data)`)
 2. FEATURE METADATA - a table of `omic` annotation - e.g. gene/protein names, families, "highly variable genes", "is marker gene"
 3. SAMPLE METADATA: a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experiemntal condition, etc.
 

@@ -245,15 +245,7 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
                                  in_do_scale, in_clust_row, in_clust_col,
                                  color_scheme, plot_size, grp, save = FALSE)
 #
-#       #TODO: make these interactive? (e.g. shinycell)
-#       plot_size = "Small"
-#       color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
-#       color_scheme = color_schemes[2]
-#       pg_bubble_heatmap(in_conf, in_meta, in_omics, in_fact, plot_type,
-#                         in_grp, in_subset,in_subsel,
-#                         in_data, all_omics,
-#                         input$CB_scale, input$CB_cluster_rows, input$CB_cluster_cols,
-#                         color_scheme, plot_size)
+
 
     return(hmap)
     })
@@ -280,12 +272,12 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
         HTML(oup)
       }
     })
-
+    # TODO: enable save/export
     # output$Van_d1oup.pdf <- downloadHandler(
     #   filename = function() { paste0("Van_",input$Van_d1plt,"_",input$Van_d1grp,".pdf") },
     #   content = function(file) { ggsave(
     #     file, device = "pdf", height = input$Van_d1oup.h, width = input$Van_d1oup.w,
-    #     plot = pg_bubble_heatmap(Van_conf, Van_meta, input$Van_d1inp, input$Van_d1grp, input$Van_d1plt,
+    #     plot = bubble_heatmap(Van_conf, Van_meta, input$Van_d1inp, input$Van_d1grp, input$Van_d1plt,
     #                       input$Van_d1sub1, input$Van_d1sub2, "Van_gexpr.h5", Van_gene,
     #                       input$Van_d1scl, input$Van_d1row, input$Van_d1col,
     #                       input$Van_d1cols, input$Van_d1fsz, save = TRUE) )
@@ -294,7 +286,7 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
     #   filename = function() { paste0("Van_",input$Van_d1plt,"_",input$Van_d1grp,".png") },
     #   content = function(file) { ggsave(
     #     file, device = "png", height = input$Van_d1oup.h, width = input$Van_d1oup.w,
-    #     plot = pg_bubble_heatmap(Van_conf, Van_meta, input$Van_d1inp, input$Van_d1grp, input$Van_d1plt,
+    #     plot = bubble_heatmap(Van_conf, Van_meta, input$Van_d1inp, input$Van_d1grp, input$Van_d1plt,
     #                       input$Van_d1sub1, input$Van_d1sub2, "Van_gexpr.h5", Van_gene,
     #                       input$Van_d1scl, input$Van_d1row, input$Van_d1col,
     #                       input$Van_d1cols, input$Van_d1fsz, save = TRUE) )

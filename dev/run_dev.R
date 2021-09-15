@@ -13,5 +13,5 @@ detach("package:omicser")
 golem::document_and_reload()
 
 # Run the application
-run_app(options = list(launch.browser = TRUE))
+run_app(options = list(launch.browser = TRUE)) #with = "shinyAppDir"
 
