@@ -58,7 +58,7 @@ mod_pg_vis_comp_ui <- function(id){
 #'
 #' @noRd
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
-mod_pg_vis_comp_server <- function(id,rv_in, p){
+mod_pg_vis_comp_server <- function(id,rv_in, p, active_layer_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -144,9 +144,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
         names(subs2) <- seq_along(subs2)
         subs <- subs[as.numeric(names(sort(subs2)))]
       }
-
       #subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
-
       updateSelectInput(inputId = "SI_comp_fact",
                         label = "compare :",
                         choices = subs,
@@ -162,29 +160,41 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
 
       colorby_group <- input$SI_color_grp
       de <- filtered_de()
-
-
       # title_text <- paste0(input$SI_comp_type, " || ", input$SI_comp_fact)
       if( dim(de)[1]>0 ) {
         # pg_volcano_ly(in_data = filtered_de(),
         #              pvalue_adjust = input$test_cor_pvalue,
         #              title = paste0(input$SI_comp_type, " vs ", input$test_group2))
-        title_text <- paste0("comp: ", input$SI_comp_fact)
+        title_text <- paste0("differential expression - ", input$SI_comp_fact)
+
+        # group - the comparison {names}V{reference}
+        # names - what are we comparing?
+        # obs_name - name of the meta data variable
+        # test_type - what statistic are we using - reference - the denomenator. or the condition we are comparing expressions values to
+        # comp_type - grpVref or grpVrest. rest is all other conditions
+        # logfoldchanges - log2(name/reference)
+        # scores - statistic score
+        # pvals - pvalues from the stats test. e.g. t-test
+        # pvals_adj - adjusted pvalue (Q)
+        # versus - label which we will choose in the browser
+        ### ADDED in filtered_de()
+        # significant
+        # point_color
 
 
         # TODO:  make this a function and move to fct_pg_vis_comp
         # volc <- pg_volc_ly(de=de_local , title = title_text)
         # return(volc)
         volc <- plot_ly(
-          x = de$logfoldchange,
+          x = de$logfoldchanges,
           y = -log10(de$pvals),
-          name = "FDR > 0.05",
+          name = "FDR > 0.01",
           type = "scatter",
           showlegend = FALSE,
           mode = "markers",
           # Hovertext
           text = paste(de$names,
-                       "</br></br>Beta: ",
+                       "</br></br>log2FC: ",
                        format( de$logfoldchanges, digits = 3, scientific = TRUE),
                        " (score: ",
                        format( de$scores, digits = 3, scientific = TRUE),
@@ -201,18 +211,18 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
           # It's hacky but it works better for animation and plotly_click purposes.
 
           # Blue/not significant
-          plotly::add_markers(x= 0.8, y = 6.5, color = I("#1F78B4"), showlegend = FALSE, hoverinfo = "skip") %>%
-          plotly::add_annotations(x=0.8, y=6.5, xref = "x", yref = "y", text = "FDR > 0.01",
+          plotly::add_markers(x=3.0, y = 9.5, color = I("#1F78B4"), showlegend = FALSE, hoverinfo = "skip") %>%
+          plotly::add_annotations(x=3.0, y=9.5, xref = "x", yref = "y", text = "FDR > 0.01",
                                   xanchor = 'left', showarrow = F, xshift = 10) %>%
           # Orange/significant
-          plotly::add_markers(x= 0.8, y = 7, color = I("#FF7F00"), showlegend = FALSE, hoverinfo = "skip") %>%
-          plotly::add_annotations(x=0.8, y=7, xref = "x", yref = "y", text = "FDR < 0.01",
+          plotly::add_markers(x=3.0, y = 9.0, color = I("#FF7F00"), showlegend = FALSE, hoverinfo = "skip") %>%
+          plotly::add_annotations(x=3.0, y=9.0, xref = "x", yref = "y", text = "FDR < 0.01",
                                   xanchor = 'left', showarrow = F, xshift = 10) %>%
 
           plotly::layout(
             title = title_text,
-            xaxis = list(title = "Effect (logFC)", range = c(-4, 4)),
-            yaxis = list(title = "-log10 p-value", range = c(-0.1, 10.25))
+            xaxis = list(title = "Effect (logFC)", range = c(-8, 8)),
+            yaxis = list(title = "-log10 p-value", range = c(-0.1, 60.25))
           ) %>%
           # Disable the legend click since our traces do not correspond to the
           # actual legend labels
@@ -227,14 +237,18 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
 
     ### Set up data for boxplots
     omic_by_subject <- reactive({
+      grouping_var <- filtered_de()$obs_name[1]
+
       selected <- event_data(event = "plotly_click")$pointNumber + 1
-      scaled_counts <- scale(rv_in$ad$X[,selected])
+      omic_name <- filtered_de()$names[selected]
+
+      data_vec <- active_layer_data$data[,omic_name]
+
       grouping_var <- filtered_de()$obs_name[1]
       omic_counts <- data.frame( rv_in$ad$obs_names,
-                                 scaled_counts,
+                                 data_vec,
                                  rv_in$ad$obs[[grouping_var]] )
       colnames(omic_counts) <- c("id", "val","grp")
-      #metab_counts$count <- log10(metab_counts$count)
       return(omic_counts)
     })
 
@@ -246,6 +260,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
           "Select a metabolite on the volcano plot above to view distribution among statuses."
         )
       )
+
       # TODO:  make this into a boxplot function
       plot_ly(
         data = omic_by_subject(),
@@ -254,14 +269,14 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
         type = "box",
         boxpoints = "all",
         pointpos = 0,
-        text = paste("Transformed Reading: ",
+        text = paste("Vals: ",
                      format(omic_by_subject()$val, digits = 3)),
         hoverinfo = list("median", "text"),
         colors = "Dark2"
       ) %>%
         plotly::layout(
           title = filtered_de()[event_data(event = "plotly_click")$pointNumber + 1,1],
-          yaxis = list(title = "Transformed Reading",
+          yaxis = list(title = "value",
                        hoverformat = ".2f"),
           showlegend = FALSE
         ) %>%
@@ -277,11 +292,28 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
           "Select an omic on the volcano plot above to view distribution among statuses."
         )
       )
-      # PUT rv_in$ad$obs... or something here
-      # om_name <- volcano_data()[event_data(event = "plotly_click")$pointNumber + 1, 1]
-      metab_name = "dummy"
-      paste(
-        "<b>Metabolite</b>: ", metab_name, "</br>"
+
+      selected <- event_data(event = "plotly_click")$pointNumber + 1
+      omic_name <- filtered_de()$names[selected]
+
+
+      omic_details <- rv_in$default$omic_details
+      annots <- rv_in$ad$var[omic_name,]
+
+      deet <- paste("<b> Name </b>: ", annots$omics_name, "</br>")
+
+      for (detail in omic_details) {
+        value <- annots[[detail]]
+        if (is.numeric(value) ) {
+          value <- format(value, digits=3,scientific=TRUE)
+        }
+        deet <- paste(deet, "<b>", detail, "</b>:", value, "</br> ")
+      }
+
+      deet
+
+    })
+
         # "<b>Super Pathway</b>: ", metab_meta$`Super Pathway`[metab_meta$Metabolite == metab_name], "</br>",
         # "<b>Sub Pathway:</b> ", metab_meta$`Sub Pathway`[metab_meta$Metabolite == metab_name],
         # # Link to HMDB, if ID is available
@@ -319,8 +351,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p){
         #     sep = ""),
         #   ""
         # )
-      )
-    })
+
 
 
   })
