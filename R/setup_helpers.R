@@ -24,9 +24,12 @@ write_config <- function(in_options, in_path=NULL) {
 }
 
 
+
+
+
 #' get_config: helper for reading the Config file containing information about the databases
 #'
-#' @param in_path where the config file lives. default getwd()
+#' @param in_path where the config file lives. default getwd() test
 #'
 #' @return
 #' @export get_config
