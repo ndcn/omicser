@@ -12,7 +12,7 @@
 mod_side_selector_ui <- function(id){
   ns <- NS(id)
 
-  quant_plot_types <- c("Volcano Plot"="volcano", "Dot Plot"="dotplot","Heat Map"="hmap","Box/violin Plot"="box")
+  quant_plot_types <- c("Dot Plot"="dotplot","Heat Map"="hmap","Box/violin Plot"="box")
   comp_plot_types <- c("Volcano Plot"="volcano", "Dot Plot"="dotplot","Heat Map"="hmap","Box/violin Plot"="box")
 
   selector_tags <- tagList(
@@ -22,84 +22,71 @@ mod_side_selector_ui <- function(id){
     #  hr(style = "border-top: 1px solid #000000;"),
     # #TODO:  change these to render prper HTML
 
-      htmlOutput( ns( "ui_curr_database" )),
-      uiOutput( ns( "ui_DIV_warn" )),
-      htmlOutput( ns( "ui_db_type" )),
+    htmlOutput( ns( "ui_curr_database" )),
+    uiOutput( ns( "ui_DIV_warn" )),
+    htmlOutput( ns( "ui_db_type" )),
 
     fluidRow(
       hr(style = "border-top: 1px solid #000000;"),
+      h4("Choose plotting variables-X & measure-Y"),
       column(
-        width=10,
-        offset=0,
-        h5("Sample/Omics- information select"),
-        # "Choose cells/samples, grouping/subsetting variables, observables, and omic features ",
-        "to visualize in the playground",
-        br(),br(),
-        selectizeInput(ns("SI_x_info"), "Annotation information (X-axis):", choices=NULL), # options = list(placeholder = ""))
-        #actionButton(ns("AB_tobble_obs_var"), "Toggle obs/var"), #TODO: change text when toggled
-        shinyjs::disabled(radioButtons( ns("RB_x_obs_var"), "variable type",
-                               choices = c("obs","var"),
-                               selected = "obs" ))
+        width=2,
+        "choose:"
+      ),
+      column(
+        width = 5,
+        offset = 0,
+        shinyjs::disabled(radioButtons( ns("RB_obs_X"), "X and Y from:",
+                                        choices = c("sample annot. (obs)"="obs",
+                                                    # "omic annot. (var)"="var",
+                                                    "data matrix (X)" = "X"),
+                                        selected = "obs" , inline = TRUE)
         )
       ),
-    fluidRow(
       column(
-        width=3,
-        offset=0,
-        br(),
-        "",
-        h5("Measures"),
-        h5("(Y-Axis)")
-        ),
+        width = 5,
+        offset = 0,
+        uiOutput(ns("ui_data_layer"))
+      )
+    ),
+    hr(style = "border-top: 1px solid #000000;"),
+
+    uiOutput(ns("ui_xy_select")),
+
+    hr(style = "border-top: 1px solid #000000;"),
+    mod_omic_selector_ui(ns("omic_selector_ui_1")),
+
+    hr(style = "border-top: 1px solid #000000;"),
+    uiOutput(ns("ui_obs_subset")),
+
+    hr(style = "border-top: 1px dashed grey;"),
+
+    fluidRow(
       column(
         width = 8,
-        offset = 0,
-        selectizeInput(ns("SI_obs_raw"), "Raw vals", choices=NULL)
-        )
-
+        h4("Omic annotation summary:")
       ),
-
-    fluidRow(
-      column(width = 5,
-        offset = 1,
-        #actionButton(ns("AB_subset_tog"), "Toggle subset observations"), #TODO: change text when toggled
-        shinyjs::disabled(selectizeInput(ns("SI_groupA"), "Obs information to subset:", "",
-                                         multiple = FALSE, options = list(placeholder = "choose dataset first"))),
+      column(
+        width=3,
+        offset=1,
+        checkboxInput( ns("CB_xy_var_select"), "show?",
+                       value = FALSE)
       )
     ),
-    fluidRow(
-      column(width = 10,
-        offset = 1,
-        uiOutput(ns("ui_subsetA"))
-        )
-      ),
-    fluidRow(
-      column(
-        width = 5,
-        offset = 1,
-        shinyjs::disabled(actionButton(ns("CB_sub_all"), "Select All", class = "btn btn-primary"))),
-      column(
-        width = 5,
-        offset=0,
-        shinyjs::disabled(actionButton(ns("CB_sub_none"), "Select None", class = "btn btn-primary") )
-        )
-      ),
-
-
-    fluidRow(
-      column(width = 10,
-             offset = 1,
-             uiOutput(ns("ui_groupB"))
-      )
-    ),
-
-
-    mod_omic_selector_ui(ns("omic_selector_ui_1")),
+    uiOutput(ns("ui_xy_var_select")),
+    hr(style = "border-top: 1px dashed grey;"),
 
     fluidRow(
       uiOutput(ns("ui_text_warn"), width = "100%"),
-        ) #fluidRow
+        ), #fluidRow
 
+    fluidRow(
+      column(
+        width = 10,
+        offset = 1,
+        uiOutput(ns("ui_groupB"))
+      )
+    )
 
   ) #taglist
 
@@ -114,51 +101,50 @@ mod_side_selector_server <- function(id, rv_in){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    ############################ +
-    ## reactive data structures
-    ## out_params:  generated here and shared out
-    ## rv_in:  input values shared by modules
-    ############################ +
+    ### Reactive expressions ============================================
     out_params <- reactiveValues(
 
+      data_source = NULL,
+      data_layer = NULL,
       #omics_names = NULL,
       omics_list = NULL,
 
+      plot_x = NULL,
+      plot_y = NULL,
+
+      group_action = NULL,
+      observ_group_by = NULL,
+      observ_subset = NULL,
+      observ_subsel = NULL,
+
       # aggregate obs
-      feat_grp = NULL,
-      feat_subsel = NULL,
+      feat_group_by = NULL,
 
-      observ_grpA = NULL,
-      observ_subselA = NULL,
-      observ_grpB = NULL,
-      observ_subselB = NULL,
-      observ_x = NULL,
-      observ_y_raw = NULL,
-      # observ_y_comp = NULL,
+      plot_var_x = NULL,
+      plot_var_y = NULL,
+      feat_subset = NULL,   # NOT ENABLEDj, using omics selector
+      feat_subsel = NULL,  # NOT ENABLED
+      # feature X & Y?
+      plot_feats = NULL,
 
-      # until this is set we don't actually plot ayhting.
-      measure_type = NULL, #"raw" or "comp"
       # TODO:  make this conditional on what kind of data is loaded.. and just a single plot type
       raw_plot_type = NULL,
-      comp_plot_type = NULL,
-
-      obs_type = NULL
+      comp_plot_type = NULL
     )
+    ### OMICS  =========================================================
 
-    # omics_for_selector <- reactive(rv_in$omics)
-    # omics_list <- mod_omic_selector_server("omic_selector_ui_1", omics_for_selector)
-    all_omics <- reactive( rv_in$omics )
-    # pass_trig <- reactive( rv_in$trigger)
-    # omics_list <- mod_omic_selector_server("omic_selector_ui_1", all_omics , pass_trig)
-    #
-    omics_list <- mod_omic_selector_server("omic_selector_ui_1", all_omics )
+    all_omics <- reactive( names(rv_in$omics) )
+    def_omics <- reactive( rv_in$default$omics)
+    new_db_trig <- reactive( rv_in$trigger )
+    omics_list <- mod_omic_selector_server("omic_selector_ui_1", all_omics ,def_omics,new_db_trig)
 
+    ### Outputs =========================================================
     output$ui_curr_database <- renderUI({
       if (is.null(rv_in$database_name)) {
         out_text <- "No data loaded"
-        } else {
-          out_text <- paste("Current dataset: ", rv_in$database_name)
-        }
+      } else {
+          out_text <- paste("Current databse: ", rv_in$database_name)
+      }
       out_text <- h4(out_text)
       return(out_text)
     })
@@ -177,173 +163,271 @@ mod_side_selector_server <- function(id, rv_in){
     output$ui_db_type <- renderUI({
       req(rv_in$omics_type)
       out_text <- paste("<h6>Data type: <i>", rv_in$omics_type, "</i>-omics</h6>")
-
       out_text <- HTML(out_text)
       return(out_text)
       })
 
 
-
-    ############################+
-    ## update factors if data just loaded
-    ############################+
-
     observeEvent(
       (rv_in$trigger>0),  #why does this happen twice?
       {
-        req(rv_in$config)  # set when database is chosen
-        req(rv_in$default)  # set when database is chosen
-
-        #rv_in$trigger  <-  0
-        shinyjs::enable("SI_groupA")
-        freezeReactiveValue(input, "SI_groupA")
-        updateSelectizeInput(session, "SI_groupA","Obs information to subset:",
-                             choices = rv_in$config[grp == TRUE]$UI,
-                             selected = rv_in$default$grp2,  server = TRUE)
-
-        shinyjs::enable("CB_sub_all")
-        shinyjs::enable("CB_sub_none")
-        shinyjs::enable("SI_obs_raw")
-        shinyjs::enable("RB_x_obs_var")
-
-        # update omics_out
+        req(rv_in$config,  # set when database is chosen
+            rv_in$default)
+        rv_in$trigger <- 0
+        # update full omics list
         all_omics <- rv_in$omics
-
-        raw_choices = rv_in$config[measure == TRUE]$UI
-        #TODO:  make the choices *named* paste0(rv_in$config$fID, fUI)
-        # dat_source = rv_in$config$mat[fID == rv_in$aux_raw]$ID
-        # paste(raw_choices, dat_sourcce)
-
-        if (length(raw_choices)>0) {
-          freezeReactiveValue(input, "SI_obs_raw")
-          updateSelectizeInput(session, "SI_obs_raw","Raw vals:",
-                               choices = raw_choices,
-                               selected = raw_choices[1],  server = TRUE)
-        } else {  #this should be impossible!
-          print("disabled raw observations ")
-          shinyjs::disable("SI_obs_raw")
-          # change back to placeholder??
-          freezeReactiveValue(input, "SI_obs_raw")
-          updateSelectizeInput(session, "SI_obs_raw", "Raw vals: ", "", options = list(placeholder = ""))
-        }
-
-        updateSelectizeInput(session, "SI_x_info", server = TRUE,
-                             choices = rv_in$config[grp == TRUE]$UI,
-                             selected = rv_in$default$obs_x[1])
-
+        shinyjs::enable("RB_obs_X")
       },
     ignoreNULL = TRUE,
     ignoreInit = TRUE
     ) #observe event
 
-    observe({
-      if (input$RB_x_obs_var == "obs") {
-        updateSelectizeInput(session, "SI_x_info", server = TRUE,
-                             choices = rv_in$config[grp == TRUE]$UI,
-                             selected = rv_in$default$obs_x[1])
-        out_params$obs_type <- input$RB_x_obs_var
+
+
+    ## dynamic subset UI group
+    output$ui_data_layer <- renderUI({
+      req(input$RB_obs_X,
+          rv_in$config)
+      choices <- rv_in$config[field=="layer"]$UI  # X, raw, or layers
+      # default data_source is obs
+      ret_tags <-  selectizeInput(ns("SI_data_layer"),
+                           "matrix data:",
+                           choices =  choices,
+                           selected = choices[1])
+
+      return(ret_tags)
+    })
+
+
+    ## dynamic subset UI group
+    output$ui_obs_subset <- renderUI({
+      req(input$RB_obs_X,
+          rv_in$config)
+
+        subs_label <- paste0("select ",isolate(input$SI_obs_subset),"s: ")
+        choices_obs_x <- rv_in$config[grp == TRUE & field=="obs"]$UI
+
+        ret_tags <- tagList(
+          fluidRow(
+          column(
+            width = 5,
+            selectizeInput(ns("SI_obs_subset"),
+                             "subset samples:",
+                           choices =  choices_obs_x,
+                           selected = rv_in$default$obs_x),
+            br(),
+              actionButton(ns("CB_obs_sub_none"), "NONE", class = "btn btn-primary" ),
+              actionButton(ns("CB_obs_sub_all"), "ALL", class = "btn btn-primary")
+          ),
+          column(width = 7,
+                 offset = 0,
+                 uiOutput(ns("ui_obs_subset_sel")),
+          ),
+
+        ) #fluidrow
+        ) #taglist
+
+        return(ret_tags)
+    })
+
+
+    ## dynamic subset selector checkboxes
+    output$ui_obs_subset_sel <- renderUI({
+      req(input$RB_obs_X,
+          input$SI_obs_subset,
+          rv_in$config)
+
+      cfg <- isolate(rv_in$config)
+
+      subs <- strsplit(cfg[UI == input$SI_obs_subset]$fID, "\\|")[[1]]
+      # sorting hack
+      subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
+      if (all(!is.na(subs2))){
+        names(subs2) <- seq_along(subs2)
+        subs <- subs[as.numeric(names(sort(subs2)))]
+      }
+      subs_label <- paste0("select ",isolate(input$SI_obs_subset),"s: ")
+
+      ret_tags <- tagList(
+          checkboxGroupInput( ns("CB_obs_subsel"),
+                              label = subs_label,
+                              inline = TRUE,
+                              choices = subs,
+                              selected = subs)
+      ) #taglist
+
+      return(ret_tags)
+
+    })
+
+    # dynamic x and y selector
+    output$ui_xy_select <- renderUI({
+      req(input$RB_obs_X,
+          rv_in$config) # do i need this?
+      # TODO:  add "NA" to group and subset options...
+
+      if (input$RB_obs_X == "obs") {
+        #render X and Y from obs
+        choices_x <- rv_in$config[grp == TRUE & field=="obs"]$UI
+        choices_y <- rv_in$config[measure == TRUE & field=="obs"]$UI
+
+        group_obs <- rv_in$config[grp == TRUE & field=="obs"]$UI # <- choices_x
+        group_var <- NA                                         #
+
+
+        def_x <- rv_in$default$obs_x
+        def_y <- rv_in$default$obs_y
+        def_grp_o <- rv_in$default$obs_subset
+        def_grp_v <- group_var[1]
+
+      } else { # X
+        # choices X and group_obs same?
+        choices_x <- rv_in$config[grp == TRUE & field=="obs"]$UI  # X, raw, or layers
+        choices_y <- rv_in$config[measure == TRUE & field=="var"]$UI# X, raw, or layers
+        #TODO: change this spot to toggle x and y?
+        choices_y <- c("<omic selector>",choices_y)
+
+        # add "omics" to group_var
+        group_obs <- rv_in$config[grp == TRUE & field=="obs"]$UI # subset for aggregating?
+        group_var <- rv_in$config[grp == TRUE & field=="var"]$UI # subset for aggregating
+
+        #x_is_obs_or_var = rv_in$config[measure == TRUE & field=="var"]$UI # are we grouping by obs or var?
+        def_x <- rv_in$default$obs_x
+        def_y <- rv_in$default$obs_y
+        def_grp_o <- rv_in$default$obs_subset
+        def_grp_v <- rv_in$default$var_subset
+      }
+
+
+      to_return <-  tagList(
+        fluidRow(
+          column(
+            width=2,
+            "Choose:",br(),
+            "X & Y",
+            "to viz"
+          ),
+          column(
+            width=5,
+            offset=0,
+            selectizeInput(ns("SI_x"),
+                           label = "variable (x-axis)",
+                           choices = choices_x,
+                           selected = def_x)
+          ),
+          column(
+            width = 5,
+            offset = 0,
+            selectizeInput(ns("SI_y"),
+                           label = "measure (y-axis):",
+                           choices = choices_y,
+                           selected = def_y)
+
+          )
+        ),
+        hr(style = "border-top: 1px dashed grey;"),
+        fluidRow(
+          column(
+            width=2,
+            offset=0,
+            radioButtons(ns("RB_none_or_grp"),
+                         label = "grouping",
+                         choices = c("none","group by"),
+                         selected = "none")
+          ),
+          column(
+            width=5,
+            offset=0,
+            shinyjs::disabled(
+              selectizeInput(ns("SI_group_obs"),
+                             label = "observ group (samples)",
+                             choices = group_obs,
+                             selected = def_grp_o)
+            )
+          ),
+          column(
+            width = 5,
+            offset = 0,
+            shinyjs::disabled(
+              selectizeInput(ns("SI_group_var"),
+                             label = "feature group (omics)",
+                             choices = group_var,
+                             selected = def_grp_v)
+            )
+          )
+        )#fluidRow
+      ) #tagList
+
+      return(to_return)
+
+    })
+
+    # dynamic x and y selector
+    output$ui_xy_var_select <- renderUI({
+      req(rv_in$config) # do i need this?
+
+
+
+      if (input$CB_xy_var_select) {
+
+        choices_x <- rv_in$config[grp == TRUE & field=="var"]$UI
+        choices_y <- rv_in$config[measure == TRUE & field=="var"]$UI
+        group_var <- c("<omic selector>",choices_x) # rv_in$config[grp == TRUE & field=="var"]$UI #
+
+
+        to_return <-  tagList(
+          fluidRow(
+            column(
+              width=2,
+              "Choose:",br(),
+              "group & meas"
+            ),
+            column(
+              width=5,
+              offset=0,
+              selectizeInput(ns("SI_var_x"),
+                             label = "omic group (x)",
+                             choices = choices_x,
+                             selected = choices_x[1])
+            ),
+            column(
+              width = 5,
+              offset = 0,
+              selectizeInput(ns("SI_var_y"),
+                             label = "measure (y):",
+                             choices = choices_y,
+                             selected = choices_y[1])
+
+            )
+          )
+        )
+
+        return(to_return)
       } else {
-       # TODP: try and set the choices to "var"
-        print("haven't implimented plotting omics annots yet")
-        # updateSelectizeInput(session, "SI_x_info", server = TRUE,
-        #                      choices = rv_in$config[grp == TRUE]$UI,
-        #                      selected = rv_in$default$obs_x[1])
-        # return_value$obs_type <- "var"
+
+        return(NULL)
 
       }
 
     })
 
-    # observe({
-    #   req(rv_in$config)
-    #   updateSelectizeInput(session, "SI_x_info", server = TRUE,
-    #                        choices = rv_in$config[grp == TRUE]$UI,
-    #                        selected = rv_in$default$obs_x[1])
-    # })
-    # observe({
-    #   req(rv_in$config)
-    #   raw_choices = rv_in$config[measure == TRUE]$UI
-    #   #TODO:  make the choices *named* paste0(rv_in$config$fID, fUI)
-    #   # dat_source = rv_in$config$mat[fID == rv_in$aux_raw]$ID
-    #   # paste(raw_choices, dat_sourcce)
-    #
-    #   if (length(raw_choices)>0) {
-    #     freezeReactiveValue(input, "SI_obs_raw")
-    #     updateSelectizeInput(session, "SI_obs_raw","Raw vals:",
-    #                          choices = raw_choices,
-    #                          selected = raw_choices[1],  server = TRUE)
-    #   } else {
-    #     print("disabled  raw observations ")
-    #     shinyjs::disable("SI_obs_raw")
-    #     # change back to placeholder??
-    #     freezeReactiveValue(input, "SI_obs_raw")
-    #     updateSelectizeInput(session, "SI_obs_raw", "Raw vals: ", "", options = list(placeholder = ""))
-    #   }
-    #
-    # })
-    #
 
+    ### observe s =========================================================
+    observeEvent(input$CB_obs_sub_all, {
+      req(rv_in$config)
+      cfg <- isolate(rv_in$config)
 
-    output$ui_subsetA <- renderUI({
-      #req(input$SI_groupA) # do i need this?
-      if (input$SI_groupA == ""){
-        print("loading....")
-        return()
+      subs <- strsplit(cfg[UI == input$SI_obs_subset]$fID, "\\|")[[1]]
+      subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
+      if (all(!is.na(subs2))){
+        names(subs2) <- seq_along(subs2)
+        subs <- subs[as.numeric(names(sort(subs2)))]
       }
-      cfg <- isolate(rv_in$config)
+      subs_label <- paste0("select ",isolate(input$SI_obs_subset),"s: ")
 
-      subs <- strsplit(cfg[UI == input$SI_groupA]$fID, "\\|")[[1]]
-      subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
-      names(subs2) <- seq_along(subs2)
-      subs <- subs[as.numeric(names(sort(subs2)))]
-
-      subs_label <- paste0("select ",isolate(input$SI_groupA),"s: ")
-
-      checkboxGroupInput( ns("CB_sub_innerA"),
-                         label = subs_label,
-                         inline = TRUE,
-                         choices = subs,
-                         selected = subs)
-    })
-
-
-    #
-    # output$ui_groupB <- renderUI({
-    #
-    #   cfg <- isolate(rv_in$config)
-    #
-    #   subs <- strsplit(cfg[UI == input$SI_groupA]$fID, "\\|")[[1]]
-    #   subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
-    #   names(subs2) <- seq_along(subs2)
-    #   subs <- subs[as.numeric(names(sort(subs2)))]
-    #
-    #   subs_label <- paste0("select ",isolate(input$SI_groupA),"s: ")
-    #
-    #   checkboxGroupInput( ns("CB_sub_innerA"),
-    #                       label = subs_label,
-    #                       inline = TRUE,
-    #                       choices = subs,
-    #                       selected = subs)
-    # })
-    #
-
-    observeEvent(input$CB_sub_all, {
-      #req(input$CB_sub_innerA) this makes the button useless if everything is deselected
-      req(rv_in$meta)
-      cfg <- isolate(rv_in$config)
-
-      subs <- strsplit(cfg[UI == input$SI_groupA]$fID, "\\|")[[1]]
-      subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
-      names(subs2) <- seq_along(subs2)
-      subs[as.numeric(names(sort(subs2)))]
-
-      subs_label <- paste0("select ",isolate(input$SI_groupA),"s: ")
-
-
-
-      freezeReactiveValue(input, "CB_sub_innerA")
+      freezeReactiveValue(input, "CB_obs_subsel")
       updateCheckboxGroupInput(session,
-                               inputId = "CB_sub_innerA",
+                               inputId = "CB_obs_subsel",
                                label = subs_label,
                                choices = subs,
                                selected = subs,
@@ -351,22 +435,25 @@ mod_side_selector_server <- function(id, rv_in){
     })
 
 
-    observeEvent(input$CB_sub_none, {
-      req(input$CB_sub_innerA) #short circuits if already de-selected
-      req(rv_in$meta)
+    observeEvent(input$CB_obs_sub_none, {
+      req(rv_in$config)
+
       cfg <- isolate(rv_in$config)
 
-      curr_sel <- isolate(input$CB_sub_innerA)
-      subs <- strsplit(cfg[UI == input$SI_groupA]$fID, "\\|")[[1]]
+      #curr_sel <- isolate(input$CB_obs_subsel)
+
+      subs <- strsplit(cfg[UI == input$SI_obs_subset]$fID, "\\|")[[1]]
       subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
-      names(subs2) <- seq_along(subs2)
-      subs[as.numeric(names(sort(subs2)))]
+      if (all(!is.na(subs2))){
+        names(subs2) <- seq_along(subs2)
+        subs <- subs[as.numeric(names(sort(subs2)))]
+      }
 
-      subs_label <- paste0("select ",isolate(input$SI_groupA),"s: ")
+      subs_label <- paste0("select ",isolate(input$SI_obs_subset),"s: ")
 
-      freezeReactiveValue(input, "CB_sub_innerA")
+      freezeReactiveValue(input, "CB_obs_subsel")
       updateCheckboxGroupInput(session,
-                               inputId = "CB_sub_innerA",
+                               inputId = "CB_obs_subsel",
                                label = subs_label,
                                choices = subs,
                                selected = character(0), # character(0), #, "" , NULL
@@ -374,59 +461,43 @@ mod_side_selector_server <- function(id, rv_in){
     })
 
 
-   #  observe({
-   #
-   #    req(rv_in$config)
-   #    comp_choices = rv_in$config[diff_exp == TRUE ]$UI
-   #
-   #
-   #    if (length(comp_choices)>0) {
-   #      freezeReactiveValue(input, "SI_obs_comp")
-   #      updateSelectizeInput(session, "SI_obs_comp","Comparatives:",
-   #                           choices = comp_choices,
-   #                           selected = comp_choices[1],  server = TRUE)
-   #    } else {
-   #      print("disabled  comparative observations ")
-   #      shinyjs::disable("SI_obs_comp")
-   #      freezeReactiveValue(input, "SI_obs_comp")
-   #      updateSelectizeInput(session, "SI_obs_comp", "Comparatives:", "",
-   #                      options = list(placeholder = "") )
-   #    }
-   #
-   #
-   # })
+    observe( {
+      req(input$RB_none_or_grp)
+      # toggle group selector
+      if ( input$RB_none_or_grp=="none" ) {
+        shinyjs::disable("SI_group_obs")
+        #shinyjs::disable("SI_group_var")
+      } else {
+        shinyjs::enable("SI_group_obs")
+        #shinyjs::enable("SI_group_var")
+      }
+    })
+
+    observe({
+      req(input$SI_y,
+          input$RB_obs_X)
+
+      if ( input$RB_obs_X=="X" ) {
+        shinyjs::disable("SI_y")
+      } else {
+        shinyjs::enable("SI_y")
+      }
+    })
 
 
+    observe({
+      req(rv_in$config)
 
+      choices_x <- rv_in$config[grp == TRUE & field=="var"]$UI
+      choices_y <- rv_in$config[measure == TRUE & field=="var"]$UI
 
+      if (isTruthy(choices_x) & isTruthy(choices_y) ) {
+        shinyjs::enable("CB_xy_var_select")
+      } else {
+        shinyjs::disable("CB_xy_var_select")
+      }
+    })
 
-    # raw2_choices = rv_in$config$mat[observ == TRUE & ID!="raw"]$fIDloc
-    # comp2_choices = rv_in$config$mat[comp == TRUE ]$fIDloc
-    #
-    # names(comp2_choices) <- comp2_choices
-    # names(raw2_choices) <- raw2_choices
-    #
-    # if (length(raw2_choices)<1){
-    #
-    #   if (length(comp2_choices)<1){
-    #     #no Y!!!
-    #     sel2 <- charachter(0)
-    #     sel2_choices <- raw2_choices #NULL
-    #
-    #   } else {
-    #     sel2 <- comp2_choices[1]
-    #     sel2_choices <- comp2_choices
-    #
-    #   }
-    # } else {
-    #   if (length(comp2_choices)<1){
-    #     sel2 <- raw2_choices[1]
-    #     sel2_choices <- raw2_choices
-    #   }  else {
-    #     sel2_choices <- list(raw=raw2_choices , comp=comp2_choices)
-    #     sel2 <- raw2_choices[1]
-    #   }
-    # }
 
     #TODO:  make the choices *named* paste0(rv_in$config$fID, fUI)
     # dat_source = rv_in$config$mat[fID == rv_in$aux_raw]$ID
@@ -442,48 +513,47 @@ mod_side_selector_server <- function(id, rv_in){
     #
     #
 
-
-
-
     observeEvent( omics_list$viz_now, {
       # route the chosen data type out...
-      req(input$CB_sub_innerA,
-          input$SI_groupA)
-      out_params$observ_grpA = input$SI_groupA
-      out_params$observ_subselA = input$CB_sub_innerA
+      req(input$CB_obs_subsel,
+          input$SI_obs_subset)
+      if (omics_list$viz_now) {
 
-      # # aggregate var
-      # out_params$feat_grp <- input$SI_feat_grp
-      # out_params$feat_subsel <- input$SI_feat_subsel
+        #TODO: add data_source to config values
+        out_params$data_source <- input$RB_obs_X
+        out_params$data_layer <- input$SI_data_layer
 
-      out_params$observ_x <- input$SI_x_info
-      out_params$observ_y_raw <- input$SI_obs_raw
-      # out_params$observ_y_rcomp <- input$SI_obs_comp
-      #
-      out_params$obs_type <- input$RB_x_obs_var
+        out_params$plot_x <- input$SI_x
+        out_params$plot_y <- input$SI_y
 
+        out_params$observ_subset <- input$SI_obs_subset
+        out_params$observ_subsel <- input$CB_obs_subsel
+
+        # group (plotting)
+        out_params$feat_group_by <- input$SI_group_var
+        out_params$observ_group_by <- input$SI_group_obs
+
+        out_params$group_action <- input$RB_none_or_grp
+
+        # # Disabled
+        out_params$feat_subset = NA # NOT ENABLEDj, using omics selector
+        out_params$feat_subsel = NA # NOT ENABLED
+
+        out_params$plot_var_x <- input$SI_var_x
+        out_params$plot_var_y <- input$SI_var_y
+        out_params$plot_feats <- input$CB_xy_var_select
+
+        out_params[["omics_list"]] <- omics_list  # value & viz_now
+        # do the subsetting here?  create a reactive "data blob"?
+
+      } else {
+        out_params$data_source <- NULL #blocks playground reactive from computing until we "submit" ($viz_now)
+      }
 
     })
 
-#
-#   observe(input$observ_y_raw)({
-#
-#     # TODO
-#     # set whether we are updating "raw" or "comp" data for visualization based on selected Y
-#
-#     out_params$measure_type <- c("raw")
-#
-#   })
 
-
-    # keep these updated
-    observe({
-      #out_params[["exp_fact"]] <- input$SI_exp_fact_select #NULL
-      out_params[["omics_list"]] <-    omics_list  # value & viz_now
-      # out_params[["raw_plot_type"]] <-    input$RB_raw_plot_type
-      # out_params[["comp_plot_type"]] <-    input$RB_comp_plot_type
-    })
-
+  ### RETURN =========================================================
   return(out_params)
 
   })
