@@ -55,6 +55,8 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     mod_side_info_server("side_info_ui_1")
+
+
   }
 
   ############################ +
@@ -67,22 +69,24 @@ app_server <- function(input, output, session) {
 
 
 
-  ############################ +
-  ## Module 5 : table
-  ##
-  ##
-  ############################ +
-  {
-    mod_pg_table_server("pg_table_ui_1")
-    # output$my_datatable_0 <- DT::renderDataTable({
-    #   DT::datatable(rv$data_table)
-    # })
-    #   Should we pass all the reactive values, or just the datatable?
-    #   currently returns a subtable of the datatable
-    # filtered_db <- mod_table_server("table_ui_1", dt = rv$data_table, p = vis_params)
-  }
-  # selected_db <- reactive_selection_function(db,params)
-  # mod_playground_server("playground_ui_1",db = data_table)
+  # ############################ +
+  # ## Module 5 : table
+  # ##
+  # ##
+  # ############################ +
+  # {
+  #   dt <- isolate(rv$obs)
+  #
+  #   mod_pg_table_server("pg_table_ui_1", dt=dt)
+  #   # output$my_datatable_0 <- DT::renderDataTable({
+  #   #   DT::datatable(rv$data_table)
+  #   # })
+  #   #   Should we pass all the reactive values, or just the datatable?
+  #   #   currently returns a subtable of the datatable
+  #   # filtered_db <- mod_table_server("table_ui_1", dt = rv$data_table, p = vis_params)
+  # }
+  # # selected_db <- reactive_selection_function(db,params)
+  # # mod_playground_server("playground_ui_1",db = data_table)
 
 
   ############################ +
@@ -102,14 +106,14 @@ app_server <- function(input, output, session) {
     mod_playground_server("playground_ui_1", rv_in = rv, p = p_vis)
   }
 
-  ############################ +
-  ## Module 7 : Export   ####
-  ##
-  ##
-  ############################ +
-  {
-    mod_export_server("export_ui_1", rv_in = rv, p = p_vis)
-  }
+  # ############################ +
+  # ## Module 7 : Export   ####
+  # ##
+  # ##
+  # ############################ +
+  # {
+  #   mod_export_server("export_ui_1", rv_in = rv, p = p_vis)
+  # }
 
   ############################ +
   ## Module 8 : Additional Info   ####

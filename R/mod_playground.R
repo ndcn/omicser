@@ -30,7 +30,7 @@ mod_playground_ui <- function(id){
       # table tab
       tabPanel(
         title = "Table", value='table',
-        mod_pg_table_ui(id=ns("pg_table_ui_2"))
+        mod_pg_tables_tab_ui(id=ns("pg_tables_tab_ui_1"))
       ),
       # QC tab
       tabPanel(
@@ -51,7 +51,7 @@ mod_playground_server <- function(id ,rv_in, p) {
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    mod_pg_table_server("pg_table_ui_2",rv_in, p)
+    mod_pg_tables_tab_server("pg_tables_tab_ui_1",rv_in, p)
     mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_in, p,heat_data,box_data,varbox_data)
     mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_in, p, active_layer_data)
     mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_in, p)
