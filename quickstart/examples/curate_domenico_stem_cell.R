@@ -13,7 +13,7 @@ golem::document_and_reload()
 
 # BOOTSTRAP the options we have already set up...
 # NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
-omxr_options <- omicser::get_config(in_path="quickstart")
+omxr_options <- omicser::get_config()
 
 
 CONDA_ENV <- omxr_options$conda_environment
@@ -117,18 +117,18 @@ process_DIA_annot_de <- function( annot_de_file_path ){
                                                  versus = gsub(" / ", " vs. ", Comparison..group1.group2.) )
 
   ###
-  ###  the differential expression table has these fields:
-  ###  group - the comparison   {names}V{reference}
-  ###  names - what are we comparing?
-  ###  obs_name  - name of the meta data variable
-  ###  test_type - what statistic are we using
-  ###  reference - the denomenator. or the condition we are comparing expressions values to
-  ###  comp_type - grpVref or grpVrest. rest is all other conditions
-  ###  logfoldchange - log2(name/reference)
-  ###  scores - statistic score
-  ###  pvals - pvalues from the stats test. e.g. t-test
-  ###  pvals_adj - adjusted pvalue (Q)
-  ###  versus - label which we will choose in the browser
+   # the differential expression table has these fields:
+   # group - the comparison   {names}V{reference}
+   # names - what are we comparing?
+   # obs_name  - name of the meta data variable
+   # test_type - what statistic are we using
+   # reference - the denomenator. or the condition we are comparing expressions values to
+   # comp_type - grpVref or grpVrest. rest is all other conditions
+   # logfoldchanges - log2(name/reference)
+   # scores - statistic score
+   # pvals - pvalues from the stats test. e.g. t-test
+   # pvals_adj - adjusted pvalue (Q)
+   # versus - label which we will choose in the browser
   ###
 
   feat_annots <- unique(de_annot_data[, c("UniProtIds",
