@@ -26,7 +26,9 @@ golem::document_and_reload()
 
 # BOOTSTRAP the options we have already set up...
 # NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
-omxr_options <- omicser::get_config(in_path="quickstart")
+#omxr_options <- omicser::get_config(in_path="quickstart")
+setwd("quickstart")
+omxr_options <- omicser::get_config()
 
 
 CONDA_ENV <- omxr_options$conda_environment
@@ -55,7 +57,7 @@ db_meta <- list(
 )
 
 
-write_db_meta(DB_NAME, db_root = DB_ROOT_PATH)
+write_db_meta(db_meta,DB_NAME, db_root = DB_ROOT_PATH)
 
 
 
@@ -110,17 +112,21 @@ raw <- ad$raw$copy()
 #outvals <- sc$pp$filter_cells(ad, min_genes=200, inplace=FALSE)
 
 sc$pp$filter_cells(ad, min_genes=200)
-sc$pp$filter_genes(ad, min_cells=3)
+sc$pp$filter_genes(ad, min_cells=20)
 
+
+rawX <- raw$X
 
 # FIX RAW
-colnames(raw$X) <- raw$var_names
-rownames(raw$X) <- raw$obs_names
+colnames(rawX) <- raw$var_names
 
-raw <- raw[(raw$obs_names %in% ad$obs_names),(raw$var_names %in% ad$var_names)]
+rawX <- rawX[which(raw$obs_names %in% ad$obs_names),(raw$var_names %in% ad$var_names)]
+raw$obs_names <- raw$obs_names[which(raw$obs_names %in% ad$obs_names)]
 
-#
-
+newraw <- anndata::AnnData(
+  X=rawX,
+  var=colnames(rawX)
+)
 
 # to conform with cellXgene scheme gene filtering is tricky.
 #
@@ -134,15 +140,20 @@ sc$pp$log1p(ad)  # already logg-ed?
 sc$pp$highly_variable_genes(ad, min_mean=0.0125, max_mean=3, min_disp=0.5  )
 #sc$pp$regress_out(ad_tmp, 'n_counts' )
 
-sc$pp$highly_variable_genes(ad,n_top_genes=40)
+#sc$pp$highly_variable_genes(ad,n_top_genes=40)
 
-ad$raw <- raw
+ad$raw <- newraw
 
 #  don't know how to make this work....
 #sc$pp$highly_variable_genes(ad,n_top_genes=40)
-ad$var$var_rank <- order(ad$var$expr_var)
+ad$var$var_rank <- order(ad$var$sct.residual_variance)
 # choose top 40 genes by variance across dataset as our "targets"
 target_omics <- ad$var_names[which(ad$var$var_rank <= 40)]
+
+
+ad$var$decile <- dplyr::ntile(ad$var$sct.residual_variance, 10)
+
+
 
 # save an intermediate file (incase we want to revert...)
 ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
@@ -162,34 +173,32 @@ sc$tl$leiden(ad)
 sc$tl$umap(ad)
 #ad_tmp$layers <- list(non_regressed=ad$X) #list('count'=layers)
 
-ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_plus_dr.h5ad"))
+ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 
 
 #==== 6. differential expression =========================================================================
 
 sc <- import("scanpy")
-helper_function<-('data-raw/compute_de_table.R')
-source(helper_function)
 
 test_types <- c('wilcoxon','t-test_overestim_var')
 
 
 comp_types <- c("grpVrest")
 obs_names <- c('disease','cell_type')
-diff_exp <- compute_de_table(ad,comp_types, test_types, obs_names)
+diff_exp <- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
 
 
 comp_types <- c("Mild_Cognitive_ImpairmentVAlzheimer_Disease",
                 "Mild_Cognitive_ImpairmentVTemporal_Lobe_Epilepsy",
                 "Alzheimer_DiseaseVTemporal_Lobe_Epilepsy")
 obs_names <- c('disease')
-diff_exp2 <- compute_de_table(ad,comp_types, test_types, obs_names)
+diff_exp2 <- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
 
 diff_exp <- dplyr::bind_rows(diff_exp, diff_exp2)
+#diff_exp <- rbind(diff_exp,diff_exp2)
 
-
-ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_with_de.h5ad"))
-saveRDS(diff_exp, file = file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
+ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_with_de.h5ad"))
+saveRDS(diff_exp, file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
 #==== 7. create configs =========================================================================
 DB_NAME = "vilas_microglia_sceasy"
@@ -197,7 +206,7 @@ DB_NAME = "vilas_microglia_sceasy"
 ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"normalized_data.h5ad"))
 
 ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"norm_data_with_de.h5ad"))
-diff_exp <- readRDS( file = file.path("data-raw",DB_NAME, "diff_expr_table.rds"))
+diff_exp <- readRDS( file = file.path("data-raw",DB_NAME, "db_de_table.rds"))
 
 
 # differentials  #if we care we need to explicitly state. defaults will be the order...
@@ -207,11 +216,11 @@ conf_list <- list(
   obs_groupby = c("tissue", "disease", "cell_type", "sex", "leiden"),
   obs_subset = c("tissue", "disease", "cell_type", "sex", "leiden"),
 
-  x_var = c("highly_variable"),
+  x_var = c("highly_variable","decile"),
   y_var = c("sct.detection_rate", "sct.gmean", "sct.variance","sct.residual_mean","sct.residual_variance", "sct.variable",
             "n_cells",  "means" , "dispersions", "dispersions_norm" ),
-  var_groupby = c("highly_variable"),
-  var_subset = c("highly_variable"),  # NOTE:  <omic selector> is NOT in the data object so its not actually going to load
+  var_groupby = c("highly_variable","decile"),
+  var_subset = c("highly_variable","decile"),  # NOTE:  <omic selector> is NOT in the data object so its not actually going to load
 
   layers = c("X","raw","counts"),
 
@@ -228,21 +237,22 @@ conf_list <- list(
   # what ad$obs do we want to make default values for...
   # # should just pack according to UI?
   default_factors = c("cell_type","disease","tissue"),
-  target_omics = ad$var_names[1:40]
+  target_omics = target_omics,
+  omic_details = c("highly_variable",
+                   "decile",
+                   "sct.detection_rate",
+                   "sct.gmean",
+                   "sct.variance",
+                   "sct.residual_variance",
+                   "sct.variable",
+                   "n_cells")
+
 )
 
-configr::write.config(config.dat = conf_list, file.path = file.path("data-raw",DB_NAME,"config.yml" ),
-                      write.type = "yaml", indent = 4)
-
+omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
 
 #==== 8. write data file to load  =========================================================================
-ad$write_h5ad(filename=file.path("data-raw",DB_NAME,"omxr_data.h5ad"))
+
+ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
 
 
-
-
-#==== DONE- =========================================================================
-
-
-ad <- read_h5ad(filename=file.path("data-raw",DB_NAME,"omxr_data.h5ad"))
-conf_list_out <- configr::read.config( file.path("data-raw",DB_NAME,"config.yml" ) )
