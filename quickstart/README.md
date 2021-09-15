@@ -1,74 +1,312 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# omicser
+# Quickstart: NDCN -Omics Browser
 
-<!-- badges: start -->
+## Overview
 
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-<!-- badges: end -->
+These *quickstart* materials are intended to quickly help a user /
+curator get the NDCN Omics browser up and running. Contained in this
+directory are a sequence of vignettes which detail each step of:
 
-NDCN -Omics Browser (omicser TBC) CZI, NDCN -Omics Browser Data
-exploration playground for general -omics sharing. Developed as part of
-the NDCN Open Science initiative Data Science Pilot March-Sept 202.
+1.  Environment Setup
+2.  Installation
+3.  Data Curation
+4.  Configuration
+5.  Browsing
 
-# Introduction
+There is also a subdirectory of `examples/` which have some R-scripts
+used to curate and execute example datasets, and *stubs* to some
+directories holding the curated *DATABASE* examples and configuration
+files (`omicser_options.yml`)
 
-The goal is to make a shiny app which contains a simple omics data
-browser. A variety of data formats can be configured to browse. Check
-the `Quickstart` guide.
+Below the entire cycle of vignettes is copied into a single tutorial.
 
-# Installation
+## Quickstart Tutorial
 
-This shiny app is build inside an R package and can be installed with
-`devtools::install_github("ergonyc/omicser")`. It is crucial to set up a
-python environment for reticulate which includes scanpy.
+### Environment Setup
 
-# Usage
+This package has been developed with a recent (4.1.0) version of R,
+shiny 1.6.0, and RStudio v1.4.1717.
 
-## Locally
+``` bash
+R --version
+```
 
-You can use it locally from RStudio by:
+In addition to a recently fresh R we will also need a few more things:
 
-    library(omicser)
-    launchApp()
+1.  python 3.9, which we will leverage via the `reticulate` R package.
+2.  R `devtools`, so we can install the `omicser` and additional
+    dependencies, such as `reticulate`
 
-## Shiny server
+#### conda python
 
-To run it from a shiny server you have to make sure the package is
-installed and then you only have to create a file called `app.R` in the
-folder where you want to run it from. The file `app.R` should only
-contain:
+The current version of the app looks for a conda environment so we need
+to have miniconda or anaconda installed. For example for MacOS we can
+install miniconda like this:
 
-    omicser::launchApp()
+``` bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
+bash ~/miniconda.sh -b -p $HOME/miniconda
+```
 
-# Example data
+Now we can use conda to install a python 3.9 environment to use with
+`reticulate`. I like to use a command line to create the environmenbt,
+but if you prefer you can also use R. (I’ll illustrate this below) For
+this example we’ve called the environment `omxr`, and installed `scanpy`
+and `leidenalg` which will make sure we have everything we need on the
+python side.
 
-I added 2 files (positive and negative mode) as example data. After
-installing the package you can find them in the folder `extdata`. In the
-repository you can find them in `inst/extdata`.
+``` bash
+conda create --name omxr python=3.9 scanpy                                                                             
+conda install -c conda-forge leidenalg                                                                                  
+conda activate omxr
+```
 
-## Installation
+#### R packages
 
-You can install the current version of omicser from giuthub with:
-
-`devtools::install_github("omicser")`
-
-but first run this::
+For the sake of simplicity and clarity lets just install `devtools`, and
+`reticulate`. When we install the `omicser` browser package we can
+leverage the dependencies to get everything else we might need.
 
 ``` r
 install.packages("devtools")
-install.packages("BiocManager")
-BiocManager::install("SingleCellExperiment")
-
 install.packages("reticulate")
+```
 
+Now if you want to use R to create your environment we just need to use
+the following `reticulate` calls:
+
+``` r
+YOUR_CONDA_ENV <- "omxr"
 require(reticulate)
-reticulate::install_miniconda()
-reticulate::conda_create("omxr",python_version = 3.9)
-reticulate::conda_install(envname = "omxr", packages = "scanpy")
-reticulate::conda_install(envname="omxr",
+reticulate::install_miniconda() 
+reticulate::conda_create(YOUR_CONDA_ENV,python_version = 3.9)
+reticulate::conda_install(envname = YOUR_CONDA_ENV, packages = "scanpy")
+reticulate::conda_install(envname= YOUR_CONDA_ENV,
                           channel = "conda-forge",
                           packages = c("leidenalg") )
 ```
+
+And we are now reatdy for Installation.
+
+### NDCN Browser Installation
+
+Now that we’ve set up our enviroment, installing the NDCN browser with
+`devtools::install_github` is easy.
+
+``` r
+devtools::install_github("ergonyc/omicser")
+```
+
+Thats it! Now comes the crucial (and fun!) part: curating your data.
+
+### Data curation and preparation
+
+We set up our environment and installed the `omicser` package, and now
+we are getting into the most cruical step: DATA CURATION
+
+The setup of the browser is 5 steps:
+
+1.  Environment Setup: underlying tools/packages from R and pyhon
+    &lt;quickstart/01\_environment\_setup.Rmd&gt;
+2.  Install: creates the browser and curation functions as an R package
+    from github &lt;quickstart/02\_install.Rmd&gt;
+3.  Data Curation: the *-omics* data curated into a *database*
+    &lt;quickstart/03\_data\_curation.Rmd&gt;
+4.  Configuration: connecting the *-omics database* to the browser app
+    &lt;quickstart/04\_configurationn.Rmd&gt;
+5.  Browse: explore the data! &lt;quickstart/05\_browse.Rmd&gt;
+
+The most crucial step is *curating* your data into a database that can
+be loaded by the browser. As the *curator* you will have the
+responsibility to make some choices about what and how the data can be
+seen.  
+This process results in specifying the location of the data, and
+creating files which are formatted for the browser.
+
+As an example there is the `curate_domenico_stem_cell.R` script in the
+/examples subdirectory, which illustrates the steps and some of the
+choices required to curate your data into a browsable *database*.
+
+The process as illustrated in the example can be broken into the
+following steps:
+
+1.  provenance & meta data setup - define the meta-data and context for
+    the dataset
+2.  raw data ingest - translate the outputs of your QC to our database
+    format 3a. define helper function - any helpers you need to read and
+    process the outputs of your QC 3b. load the raw data
+3.  pack into the browser data format - pack into the anndata structure
+    (scanpy/python)
+4.  post-processing - compute relavent marginal quantities, define
+    additional annotation and grouping variables, etc. 5a. dimension
+    reduction - compute and cluster if needed
+5.  differential expression tables - compute and/or formate existing
+    tables
+6.  write database - write the files to the database location
+
+#### database path
+
+The first step will be to make a folder to contain your data. We will
+call this folder and contents the *DATABASE* . Each *DATABASE* folder
+that one might want to load into the browser should be in the same path.
+e.g. the with the repositories `quickstart/` path there is a `test_db`
+folder which contains several sub-folder *DATABASES*
+
+#### `anndata` Schema
+
+The anndata scheme requires us to define three pieces of data:
+
+1.  DATA: a matrix - e.g. transcriptomics - count matrix of cells X
+    genes.
+2.  FEATURE METADATA - a table of `omic` annotation - e.g. gene/protein
+    names, families, “highly variable genes”, “is marker gene”
+3.  SAMPLE METADATA: a table of sample annotations - e.g. cell types,
+    sample \#, batch ID sex, experiemntal condition, etc.
+
+More info here
+<https://cran.r-project.org/web/packages/anndata/readme/README.html>
+
+![Anndata
+scheme](/Users/ahenrie/Projects/NDCN_dev/omicser/inst/anndata_for_r.png)
+
+#### Loading the data
+
+In addition to these three pieces differential expression tables need to
+be pre-computed.
+
+Here are some of the key helper functions and he section they fall into.
+
+Here is an example of loading three data files and then pakaging them
+with a “helper function” (defined in section \#2 of the example curation
+script) into the `data_list` which will be used by the next stage.
+
+#### `setup_database()`
+
+The `omicser::setup_database()` function packages the separate tables –
+DATA matrix, omic FEATURE METADATA annotations, and SAMPLE METADATA –
+into the anndata object. This function can also take the name of a
+seurat object file.
+
+``` r
+ad <- omicser::setup_database(database_name=DB_NAME,
+                              db_path=DS_ROOT_PATH,
+                              data_in=data_list,
+                              db_meta=NULL ,
+                              re_pack=TRUE)
+```
+
+Once we have packed the data into the `anndata` object we can leverage
+`scanpy` and the `reticulate` python backend to do dimension reduction
+and clustering. Although this stage is not nescessary, it demonstrates
+the bridge to `cellxgene`.
+
+``` r
+#==== 5-a. dimension reduction - PCA / umap ========================================================
+sc <- import("scanpy")
+# scanpy pre-processing - sc$pp
+sc$pp$pca(ad)
+sc$pp$neighbors(ad)
+sc$tl$leiden(ad)
+sc$tl$umap(ad)
+```
+
+#### Differential Expression Tables
+
+This is probably the trickiest part of the curation Fortunately we have
+some helper functions to help us compute them. Often – especially for
+*prote-* omic databases – differential expressions are computed as the
+output of the instrumentataion by a commercial software. These
+algorithms leverage bespoke statistics, so it will be best to reformat
+those tables.
+
+##### DE Table Schema
+
+Most proteomic, metabelomic and lipidomic data will have differential
+calculations at the output of the instrumentation (which leverages know
+statastical assumptions of the quantifications) we can also use scanpys
+tools to compute differential expression. The diff\_exp tables will be
+needed for volcano plots either way.
+
+The differential expression table has these fields:
+
+-   group - the comparison {names}V{reference}
+-   names - what are we comparing?
+-   obs\_name - name of the meta data variable
+-   test\_type - what statistic are we using
+-   reference - the denomenator. or the condition we are comparing
+    expressions values to
+-   comp\_type - grpVref or grpVrest. rest is all other conditions
+-   logfoldchanges - log2(name/reference)
+-   scores - statistic score
+-   pvals - pvalues from the stats test. e.g. t-test
+-   pvals\_adj - adjusted pvalue (Q)
+-   versus - label which we will choose in the browser
+
+##### omicser::compute\_de\_table()
+
+In `R/pre_process_helpers.R` theres a function which leverages `scanpy`
+and the `anndata` format we have packed to do differential expression.
+We just need to pass a few quantites and it returns a properly formatted
+differential expression table.
+
+parameters:
+
+-   `ad` - the anndata object
+-   `comp_types` - what kind of comparisons? there are two types
+    -   “allVrest” which takes each of our experimental conditions in
+        turn and compares against the “rest” of the data.
+    -   “{a}V{b}” or “firstgroupVsecondgroup” which compares the
+        experimental condition “firstgroup” against “secondgroup”
+-   `test_types` - statistical tests. See the examples or `scanpy`
+    documentation for which test types are available.
+-   `obs_names` -name of the ad$obs column defining the comparision
+    groups
+-   `sc` - the scanpy data object we imported with `reticulate`
+
+Here’s an example which computes a differential expression with a
+`wilcoxon` test of significance for each *disease* with respect to the
+rest of the distease states, AND for each *cell\_type* with-respect-to
+the “rest of” the *cell\_type* s.
+
+``` r
+sc <- reticulate::import("scanpy")
+test_types <- c('wilcoxon')
+comp_types <- c('allVrest')
+obs_names <- c('disease','cell_type')
+diff_exp <- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
+```
+
+#### Save the data to the *DATABASE*
+
+Finally we write this the anndata data object to our
+*database\_DATABASE* folder. In the examples contained in the
+`quickstart/` folder we defined `DS_ROOT_PATH <- "test_db"`, and
+`DB_NAME <- "domenico_stem_cell"` .
+
+``` r
+ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"db_data.h5ad"))
+```
+
+In the end each DATABASE folder should now these three files: 1.
+`db_data.h5ad` - the anndata object  
+2. `db_de_table.rds` - differntial expression table 3, `db_meta.yml` -
+list of database ‘meta’ information
+
+You might also want to save some *intermediate* files such as in the
+examples which also generate:
+`normalized_data.h5ad`,`core_data.h5ad`,and `norm_data_plus_dr.h5ad`.
+
+We are almost there. In the next section we will cover the configuration
+which will add a `db_config.yml` files to the *DATABASE* directory, and
+create an `omicser_options.yml` in the directory where the app will be
+executed.
+
+### Configuration
+
+#### WIP
+
+### Browsing
+
+#### WIP
