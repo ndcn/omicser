@@ -2,6 +2,23 @@
 
 
 
+# Function to extract legend
+g_legend <- function(a.gplot){
+  tmp <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  legend
+}
+
+# # Get omic list
+# get_omic_list <- function(omic, full_omics){
+#   omic_list = data.table(omic = omic,present=TRUE)# unique(trimws(strsplit(inp, ",|;|")[[1]])),
+#
+#   omic_list[!omic %in% (full_omics)]$present = FALSE
+#   return(omic_list)
+# }
+
+
 # Plot theme
 sctheme <- function(base_size = 24, XYval = TRUE, Xang = 0, XjusH = 0.5){
   oupTheme = ggplot2::theme(

@@ -57,31 +57,24 @@ app_ui <- function(request) {
             tabPanel(
               title = "Playground", value = "playground",
               mod_playground_ui(id = "playground_ui_1")
-              # >> playground houses
-              #  pg_table?
-              #  pg_vis_comp
-              #     - volcanos + heatmaps + ?
-              #  pg_vis_raw
-              #     - dotplots + heatmaps +??
-              #
             ),
             # Additional Info tab
             tabPanel(
               title = "Additional Info", value = "add_info",
               mod_additional_info_ui(id = "additional_info_ui_1")
             ),
-            # Export tab
-            tabPanel(
-              title = "Export", value = "export",
-              # copy the landing module for now
-              mod_export_ui(id = "export_ui_1")
-            ),
-            # table tab
-            tabPanel(
-              title = "Data Table", value = "table",
-              # DT::dataTableOutput("my_datatable_0")
-              mod_pg_table_ui(id = "pg_table_ui_1")
-            ),
+            # # Export tab
+            # tabPanel(
+            #   title = "Export", value = "export",
+            #   # copy the landing module for now
+            #   mod_export_ui(id = "export_ui_1")
+            # ),
+            # # table tab
+            # tabPanel(
+            #   title = "Data Table", value = "table",
+            #   # DT::dataTableOutput("my_datatable_0")
+            #   mod_pg_table_ui(id = "pg_table_ui_1")
+            # ),
             # Etc tab
             tabPanel(
               title = "Etc", value = "etc",
@@ -113,10 +106,9 @@ app_ui <- function(request) {
               <hr>
               <div>
               <a href="https://chanzuckerberg.com/ndcn/" target="_blank">CZI NDCN</a>
-              <br>
-              Follow me on <a href="https://twitter.com/ergonyc" target="_blank">Twitter</a>
-              <br>
-              Shiny App credits: Andy Henrie
+
+              Shiny App credits: NDCN, DTI, Andy Henrie <a href="https://github.com/ergonyc/omicser" target="_blank">ergonyc/omicser@github</a>
+
               </div>
               </body>
               '),

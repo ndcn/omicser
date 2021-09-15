@@ -7,7 +7,7 @@
 get_config(in_path = NULL, is_running = FALSE)
 }
 \arguments{
-\item{in_path}{where the config file lives. default getwd()}
+\item{in_path}{where the config file lives. default getwd() test}
 }
 \value{
 
