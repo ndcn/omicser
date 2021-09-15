@@ -4,18 +4,19 @@ Title: NDCN Omics Browser
 Version: 0.0.0.9000
 Author: Andy Henrie
 Description: Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 2021.
-License: GPL (>= 3)
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
     anndata,
-    BiocManager,
     broom,
     configr,
+    data.table,
     dplyr,
     DT,
     ggdendro,
     ggplot2,
+    golem,
     gridExtra,
     magrittr,
     Matrix,
@@ -25,8 +26,9 @@ Imports:
     shinydashboardPlus,
     shinyjs,
     shinyWidgets,
-    SingleCellExperiment,
     thinkr,
     tidyr
 Authors@R: person('Andy', 'Henrie', email = 'henrie@datatecnica.com', role = c('cre', 'aut'))
 RoxygenNote: 7.1.1
+URL: https://github.com/ergonyc/omicser
+BugReports: https://github.com/ergonyc/omicser/issues

@@ -15,7 +15,9 @@
 usethis::use_pipe()
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
-usethis::use_package( "thinkr" )
+#usethis::use_package( "thinkr" )
+usethis::use_package( "golem" )
+
 # add more?
 usethis::use_package("shiny")
 usethis::use_package("shinyjs")
@@ -24,6 +26,7 @@ usethis::use_package("shinyWidgets")
 usethis::use_package("shinydashboard")
 usethis::use_package("shinydashboardPlus")
 
+usethis::use_package("data.table")
 usethis::use_package("ggplot2")
 usethis::use_package("gridExtra")
 usethis::use_package("ggdendro")
