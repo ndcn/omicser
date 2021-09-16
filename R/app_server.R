@@ -22,7 +22,8 @@ app_server <- function(input, output, session) {
 
   reticulate::use_condaenv(
     required = TRUE,
-    condaenv =  CONDA_ENV
+    condaenv =  CONDA_ENV,
+     conda = "auto"
   )
 
   ############################ +
