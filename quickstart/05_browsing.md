@@ -10,9 +10,7 @@ output:
     variant: markdown_github
 ---
 
-```{r, setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 
 
@@ -21,7 +19,8 @@ knitr::opts_chunk$set(echo = TRUE)
 # _-omic_ browsing with the NDCN Browser
 
 From your R-prompt make sure you are in the working directory with the `omicser_options.yml` spawn the app:
-```{r, 4-browse-1, eval=FALSE}
+
+```r
 omicser::run_app(options = list(launch.browser = TRUE))
 ```
 

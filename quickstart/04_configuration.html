@@ -181,6 +181,23 @@ pre code {
 </ul>
 </div>
 
+<pre class="r"><code># Now move to the directory where you want to execute the omicser
+# and make the omicser_options.yml
+
+OMICSER_RUN_DIR &lt;- &quot;full/path/to/where/omicser_options.yml/goes&quot;
+
+db_root_path &lt;- &quot;full/path/to/folder/where/DATABASES/go&quot;
+
+database_names &lt;- list(
+  &quot;hello database&quot; = &quot;hello_database&quot;
+)
+
+conda_environment = &#39;omxr&#39;
+omicser_options &lt;- list(database_names=database_names,
+                        db_root_path=db_root_path,
+                        conda_environment=conda_environment)
+
+omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )</code></pre>
 <div id="work-in-progress-not-written" class="section level1">
 <h1>WORK IN PROGRESS: NOT written</h1>
 <div id="overview" class="section level2">
@@ -243,15 +260,12 @@ conf_list &lt;- list(
 
 )
 configr::write.config(config.dat = conf_list, file.path = file.path(DS_ROOT_PATH,DB_NAME,&quot;config.yml&quot; ),
-                      write.type = &quot;yaml&quot;, indent = 4)
-</code></pre>
+                      write.type = &quot;yaml&quot;, indent = 4)</code></pre>
 </div>
 <div id="browse" class="section level2">
 <h2>Browse!!</h2>
 <p>Assuming you have already loaded the omicser package, once the .yml files have been generated and teh data placed in the right directories you are good to browse!</p>
-<pre class="r"><code>
-run_app(options = list(launch.browser = TRUE))
-</code></pre>
+<pre class="r"><code>run_app(options = list(launch.browser = TRUE))</code></pre>
 <p>Note, that if you are using a development setup, you might want to run the run_dev script which will handle unloading / re-loading for you.</p>
 </div>
 </div>
