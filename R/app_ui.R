@@ -69,12 +69,12 @@ app_ui <- function(request) {
             #   # copy the landing module for now
             #   mod_export_ui(id = "export_ui_1")
             # ),
-            # # table tab
-            # tabPanel(
-            #   title = "Data Table", value = "table",
-            #   # DT::dataTableOutput("my_datatable_0")
-            #   mod_pg_table_ui(id = "pg_table_ui_1")
-            # ),
+            # table tab
+            tabPanel(
+              title = "Data Table", value = "table",
+              # DT::dataTableOutput("my_datatable_0")
+              mod_table_ui(id = "pg_table_ui_1")
+            ),
             # Etc tab
             tabPanel(
               title = "Etc", value = "etc",

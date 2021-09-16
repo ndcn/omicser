@@ -18,17 +18,17 @@ mod_pg_vis_raw_ui <- function(id){
     fluidRow(
       column(
         3, style = "border-right: 2px solid black",
-        radioButtons(ns("RB_dist_plot_type"), "Plot type:",
+        radioButtons(ns("RB_dist_plot_type"), "plot type:",
                      choices = c("violin", "boxplot"),
                      selected = "violin", inline = TRUE),
         checkboxInput(ns("CB_show_data_points"), "Show data points", value = FALSE),
                br()
         # actionButton("Van_c1tog", "Toggle graphics controls"),
-        # conditionalPanel(
+        # conditionalpanel(
         #   condition = "input.Van_c1tog % 2 == 1",
         #   sliderInput("Van_c1siz", "Data point size:",
         #               min = 0, max = 4, value = 1.25, step = 0.25),
-        #   radioButtons("Van_c1psz", "Plot size:",
+        #   radioButtons("Van_c1psz", "plot size:",
         #                choices = c("Small", "Medium", "Large"),
         #                selected = "Medium", inline = TRUE),
         #   radioButtons("Van_c1fsz", "Font size:",
@@ -37,13 +37,13 @@ mod_pg_vis_raw_ui <- function(id){
       ), # End of column (6 space)
       column(9,
              uiOutput(ns("UI_box_output")#,
-             # downloadButton("Van_c1oup.pdf", "Download PDF"),
-             # downloadButton("Van_c1oup.png", "Download PNG"), br(),
+             # downloadButton("Van_c1oup.pdf", "Download pDF"),
+             # downloadButton("Van_c1oup.png", "Download pNG"), br(),
              # div(style="display:inline-block",
-             #     numericInput("Van_c1oup.h", "PDF / PNG height:", width = "138px",
+             #     numericInput("Van_c1oup.h", "pDF / pNG height:", width = "138px",
              #                  min = 4, max = 20, value = 8, step = 0.5)),
              # div(style="display:inline-block",
-             #     numericInput("Van_c1oup.w", "PDF / PNG width:", width = "138px",
+             #     numericInput("Van_c1oup.w", "pDF / pNG width:", width = "138px",
              #                  min = 4, max = 20, value = 10, step = 0.5))
       )  # End of column (6 space)
     )    # End of fluidRow (4 space)
@@ -59,7 +59,7 @@ mod_pg_vis_raw_ui <- function(id){
    fluidRow(
      column(
        3, style="border-right: 2px solid black",
-       radioButtons(ns("RB_heat_plot_type"), "Plot type:",
+       radioButtons(ns("RB_heat_plot_type"), "plot type:",
                     choices = c("Bubbleplot", "Heatmap"),
                     selected = "Bubbleplot", inline = TRUE),
        checkboxInput(ns("CB_scale"), "Scale omic expression", value = TRUE),
@@ -71,13 +71,13 @@ mod_pg_vis_raw_ui <- function(id){
      column(9,
             h4(htmlOutput("HTML_header")),
             uiOutput(ns("UI_heatmap"))
-            # downloadButton("Van_d1oup.pdf", "Download PDF"),
-            # downloadButton("Van_d1oup.png", "Download PNG"), br(),
+            # downloadButton("Van_d1oup.pdf", "Download pDF"),
+            # downloadButton("Van_d1oup.png", "Download pNG"), br(),
             # div(style="display:inline-block",
-            #     numericInput("Van_d1oup.h", "PDF / PNG height:", width = "138px",
+            #     numericInput("Van_d1oup.h", "pDF / pNG height:", width = "138px",
             #                  min = 4, max = 20, value = 10, step = 0.5)),
             # div(style="display:inline-block",
-            #     numericInput("Van_d1oup.w", "PDF / PNG width:", width = "138px",
+            #     numericInput("Van_d1oup.w", "pDF / pNG width:", width = "138px",
             #                  min = 4, max = 20, value = 10, step = 0.5))
      )  # End of column (6 space)
    ),    # End of fluidRow (4 space)
@@ -88,7 +88,7 @@ mod_pg_vis_raw_ui <- function(id){
    fluidRow(
      column(
        3, style = "border-right: 2px solid black",
-       radioButtons(ns("RB_dist_plot_type2"), "Plot type:",
+       radioButtons(ns("RB_dist_plot_type2"), "plot type:",
                     choices = c("violin", "boxplot"),
                     selected = "violin", inline = TRUE),
        checkboxInput(ns("CB_show_data_points2"), "Show data points", value = FALSE),
@@ -98,13 +98,13 @@ mod_pg_vis_raw_ui <- function(id){
      ), # End of column (6 space)
      column(9,
             uiOutput(ns("UI_var_box_output")#,
-                     # downloadButton("Van_c1oup.pdf", "Download PDF"),
-                     # downloadButton("Van_c1oup.png", "Download PNG"), br(),
+                     # downloadButton("Van_c1oup.pdf", "Download pDF"),
+                     # downloadButton("Van_c1oup.png", "Download pNG"), br(),
                      # div(style="display:inline-block",
-                     #     numericInput("Van_c1oup.h", "PDF / PNG height:", width = "138px",
+                     #     numericInput("Van_c1oup.h", "pDF / pNG height:", width = "138px",
                      #                  min = 4, max = 20, value = 8, step = 0.5)),
                      # div(style="display:inline-block",
-                     #     numericInput("Van_c1oup.w", "PDF / PNG width:", width = "138px",
+                     #     numericInput("Van_c1oup.w", "pDF / pNG width:", width = "138px",
                      #                  min = 4, max = 20, value = 10, step = 0.5))
             )  # End of column (6 space)
      )    # End of fluidRow (4 space)
@@ -118,8 +118,15 @@ mod_pg_vis_raw_ui <- function(id){
 
 #' pg_vis_raw Server Functions
 #'
+#' @param id
+#' @param rv_data
+#' @param rv_selections
+#' @param heat_data
+#' @param box_data
+#' @param varbox_data
+#'
 #' @noRd
-mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data){
+mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, box_data, varbox_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -127,13 +134,13 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
     data_point_sz = .65
     plot_size = "Small"
     font_size = "Small"
-    color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+    color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
     color_scheme = color_schemes[2]
 
-    #go_signal <- reactive( p$omics_list$viz )
+    #go_signal <- reactive( rv_selections$omics_list$viz )
     output$plot_box_out <- renderPlot({
-      #req(rv_in$ad)
-      req( p$omics_list,
+      #req(rv_data$ad)
+      req( rv_selections$omics_list,
            box_data$data)
 
       plot_type <- input$RB_dist_plot_type
@@ -143,7 +150,7 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
       data_point_sz = .65
       plot_size = "Small"
       font_size = "Small"
-      grp <- ifelse(p$group_action=="none",FALSE,TRUE)
+      grp <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
 
       vplot <- violin_box(box_data$data, box_data$x_name,box_data$y_name,
                           box_data$colors,
@@ -159,7 +166,7 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
       # data_point_sz = .65
       # plot_size = "Small"
       # font_size = "Small"
-      # color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+      # color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
       # color_scheme = color_schemes[2]
       # in_quant <- dat_key #(maybe) just observ_y
       # pg_violin_box(in_conf, in_meta, in_fact, in_quant,
@@ -171,8 +178,8 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
 
 
     output$plot_varbox_out <- renderPlot({
-      #req(rv_in$ad)
-      req(p$omics_list,
+      #req(rv_data$ad)
+      req(rv_selections$omics_list,
           varbox_data$data)
 
       plot_type <- input$RB_dist_plot_type2
@@ -182,7 +189,7 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
       data_point_sz = .65
       plot_size = "Small"
       font_size = "Small"
-      grp <- ifelse(p$group_action=="none",FALSE,TRUE)
+      grp <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
 
       vplot <- violin_box(varbox_data$data, varbox_data$x_name, varbox_data$y_name,
                           varbox_data$colors,
@@ -198,7 +205,7 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
       # data_point_sz = .65
       # plot_size = "Small"
       # font_size = "Small"
-      # color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+      # color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
       # color_scheme = color_schemes[2]
       # in_quant <- dat_key #(maybe) just observ_y
       # pg_violin_box(in_conf, in_meta, in_fact, in_quant,
@@ -209,13 +216,13 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
     })
 
     output$UI_box_output <- renderUI({
-      #if (p$omics_list$viz_now) {
+      #if (rv_selections$omics_list$viz_now) {
         plotOutput(ns("plot_box_out"), height = pList2[plot_size])
       #}
     })
 
     output$UI_var_box_output <- renderUI({
-      #if (p$omics_list$viz_now) {
+      #if (rv_selections$omics_list$viz_now) {
       plotOutput(ns("plot_varbox_out"), height = pList2[plot_size])
       #}
     })
@@ -236,10 +243,10 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
       in_clust_col <- input$CB_cluster_cols
 
       plot_size = "Small"
-      color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+      color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
       color_scheme = color_schemes[2]
 
-      grp <- ifelse(p$group_action=="none",FALSE,TRUE)
+      grp <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
 
       hmap <- bubble_heatmap(input_data, x_names, y_names, plot_type,
                                  in_do_scale, in_clust_row, in_clust_col,
@@ -251,7 +258,7 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
     })
 
     output$UI_heatmap <- renderUI({
-      #if (p$omics_list$viz_now) {
+      #if (rv_selections$omics_list$viz_now) {
         plotOutput(ns("plot_heatmap_out"), height = pList3[plot_size])
 
     })
@@ -259,9 +266,9 @@ mod_pg_vis_raw_server <- function(id, rv_in, p, heat_data, box_data, varbox_data
 
     output$HTML_header <- renderUI({
 
-      omic_list = p$omics_list$value
+      omic_list = rv_selections$omics_list$value
       if(nrow(omic_list) > 50){
-        HTML("More than 50 input omics! Please reduce the omic list!")
+        HTML("More than 50 input omics! please reduce the omic list!")
       } else {
         oup = paste0(nrow(omic_list[present == TRUE]), " omic OK and will be plotted")
         if(nrow(omic_list[present == FALSE]) > 0){

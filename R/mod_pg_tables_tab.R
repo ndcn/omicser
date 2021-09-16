@@ -45,25 +45,28 @@ mod_pg_tables_tab_ui <- function(id){
 
 #' pg_tables_tab Server Functions
 #'
+#' @param id
+#' @param rv_data
+#' @param rv_selections
+#'
 #' @noRd
-mod_pg_tables_tab_server <- function(id,rv_in, p){
+mod_pg_tables_tab_server <- function(id,rv_data, rv_selections){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-
     dt_obs <- reactive({
-      req(rv_in$ad)
-        rv_in$ad$obs
+      req(rv_data$ad)
+        rv_data$ad$obs
     })
 
     dt_var <- reactive({
-      req(rv_in$ad)
-      rv_in$ad$var
+      req(rv_data$ad)
+      rv_data$ad$var
     })
 
     dt_de <- reactive({
-      req(rv_in)
-      rv_in$de
+      req(rv_data)
+      rv_data$de
     })
 
 

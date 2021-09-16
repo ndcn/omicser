@@ -17,7 +17,7 @@ mod_pg_vis_qc_ui <- function(id){
 #' pg_vis_qc Server Functions
 #'
 #' @noRd
-mod_pg_vis_qc_server <- function(id,rv_in, p){
+mod_pg_vis_qc_server <- function(id,rv_data, rv_selections){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
