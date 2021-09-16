@@ -97,12 +97,12 @@ mod_side_selector_ui <- function(id){
 #' side_selector Server Functions
 #'
 #' @noRd
-mod_side_selector_server <- function(id, rv_in){
+mod_side_selector_server <- function(id, rv_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     ### Reactive expressions ============================================
-    out_params <- reactiveValues(
+    rv_selections <- reactiveValues(
 
       data_source = NULL,
       data_layer = NULL,
@@ -133,17 +133,17 @@ mod_side_selector_server <- function(id, rv_in){
     )
     ### OMICS  =========================================================
 
-    all_omics <- reactive( names(rv_in$omics) )
-    def_omics <- reactive( rv_in$default$omics)
-    new_db_trig <- reactive( rv_in$trigger )
+    all_omics <- reactive( names(rv_data$omics) )
+    def_omics <- reactive( rv_data$default$omics)
+    new_db_trig <- reactive( rv_data$trigger )
     omics_list <- mod_omic_selector_server("omic_selector_ui_1", all_omics ,def_omics,new_db_trig)
 
     ### Outputs =========================================================
     output$ui_curr_database <- renderUI({
-      if (is.null(rv_in$database_name)) {
+      if (is.null(rv_data$database_name)) {
         out_text <- "No data loaded"
       } else {
-          out_text <- paste("Current databse: ", rv_in$database_name)
+          out_text <- paste("Current databse: ", rv_data$database_name)
       }
       out_text <- h4(out_text)
       return(out_text)
@@ -151,7 +151,7 @@ mod_side_selector_server <- function(id, rv_in){
 
     # Warning if no data loaded
     output$ui_DIV_warn <- renderUI( {
-      if (is.null(rv_in$database_name)) {
+      if (is.null(rv_data$database_name)) {
         div(
           tags$br(),
           span(class = "warn", "No dataset loaded")
@@ -161,21 +161,21 @@ mod_side_selector_server <- function(id, rv_in){
 
     # show the factors that have been loaded
     output$ui_db_type <- renderUI({
-      req(rv_in$omics_type)
-      out_text <- paste("<h6>Data type: <i>", rv_in$omics_type, "</i>-omics</h6>")
+      req(rv_data$omics_type)
+      out_text <- paste("<h6>Data type: <i>", rv_data$omics_type, "</i>-omics</h6>")
       out_text <- HTML(out_text)
       return(out_text)
       })
 
 
     observeEvent(
-      (rv_in$trigger>0),  #why does this happen twice?
+      (rv_data$trigger>0),  #why does this happen twice?
       {
-        req(rv_in$config,  # set when database is chosen
-            rv_in$default)
-        rv_in$trigger <- 0
+        req(rv_data$config,  # set when database is chosen
+            rv_data$default)
+        rv_data$trigger <- 0
         # update full omics list
-        all_omics <- rv_in$omics
+        all_omics <- rv_data$omics
         shinyjs::enable("RB_obs_X")
       },
     ignoreNULL = TRUE,
@@ -187,8 +187,8 @@ mod_side_selector_server <- function(id, rv_in){
     ## dynamic subset UI group
     output$ui_data_layer <- renderUI({
       req(input$RB_obs_X,
-          rv_in$config)
-      choices <- rv_in$config[field=="layer"]$UI  # X, raw, or layers
+          rv_data$config)
+      choices <- rv_data$config[field=="layer"]$UI  # X, raw, or layers
       # default data_source is obs
       ret_tags <-  selectizeInput(ns("SI_data_layer"),
                            "matrix data:",
@@ -202,10 +202,10 @@ mod_side_selector_server <- function(id, rv_in){
     ## dynamic subset UI group
     output$ui_obs_subset <- renderUI({
       req(input$RB_obs_X,
-          rv_in$config)
+          rv_data$config)
 
         subs_label <- paste0("select ",isolate(input$SI_obs_subset),"s: ")
-        choices_obs_x <- rv_in$config[grp == TRUE & field=="obs"]$UI
+        choices_obs_x <- rv_data$config[grp == TRUE & field=="obs"]$UI
 
         ret_tags <- tagList(
           fluidRow(
@@ -214,7 +214,7 @@ mod_side_selector_server <- function(id, rv_in){
             selectizeInput(ns("SI_obs_subset"),
                              "subset samples:",
                            choices =  choices_obs_x,
-                           selected = rv_in$default$obs_x),
+                           selected = rv_data$default$obs_x),
             br(),
               actionButton(ns("CB_obs_sub_none"), "NONE", class = "btn btn-primary" ),
               actionButton(ns("CB_obs_sub_all"), "ALL", class = "btn btn-primary")
@@ -235,9 +235,9 @@ mod_side_selector_server <- function(id, rv_in){
     output$ui_obs_subset_sel <- renderUI({
       req(input$RB_obs_X,
           input$SI_obs_subset,
-          rv_in$config)
+          rv_data$config)
 
-      cfg <- isolate(rv_in$config)
+      cfg <- isolate(rv_data$config)
 
       subs <- strsplit(cfg[UI == input$SI_obs_subset]$fID, "\\|")[[1]]
       # sorting hack
@@ -263,39 +263,39 @@ mod_side_selector_server <- function(id, rv_in){
     # dynamic x and y selector
     output$ui_xy_select <- renderUI({
       req(input$RB_obs_X,
-          rv_in$config) # do i need this?
+          rv_data$config) # do i need this?
       # TODO:  add "NA" to group and subset options...
 
       if (input$RB_obs_X == "obs") {
         #render X and Y from obs
-        choices_x <- rv_in$config[grp == TRUE & field=="obs"]$UI
-        choices_y <- rv_in$config[measure == TRUE & field=="obs"]$UI
+        choices_x <- rv_data$config[grp == TRUE & field=="obs"]$UI
+        choices_y <- rv_data$config[measure == TRUE & field=="obs"]$UI
 
-        group_obs <- rv_in$config[grp == TRUE & field=="obs"]$UI # <- choices_x
+        group_obs <- rv_data$config[grp == TRUE & field=="obs"]$UI # <- choices_x
         group_var <- NA                                         #
 
 
-        def_x <- rv_in$default$obs_x
-        def_y <- rv_in$default$obs_y
-        def_grp_o <- rv_in$default$obs_subset
+        def_x <- rv_data$default$obs_x
+        def_y <- rv_data$default$obs_y
+        def_grp_o <- rv_data$default$obs_subset
         def_grp_v <- group_var[1]
 
       } else { # X
         # choices X and group_obs same?
-        choices_x <- rv_in$config[grp == TRUE & field=="obs"]$UI  # X, raw, or layers
-        choices_y <- rv_in$config[measure == TRUE & field=="var"]$UI# X, raw, or layers
+        choices_x <- rv_data$config[grp == TRUE & field=="obs"]$UI  # X, raw, or layers
+        choices_y <- rv_data$config[measure == TRUE & field=="var"]$UI# X, raw, or layers
         #TODO: change this spot to toggle x and y?
         choices_y <- c("<omic selector>",choices_y)
 
         # add "omics" to group_var
-        group_obs <- rv_in$config[grp == TRUE & field=="obs"]$UI # subset for aggregating?
-        group_var <- rv_in$config[grp == TRUE & field=="var"]$UI # subset for aggregating
+        group_obs <- rv_data$config[grp == TRUE & field=="obs"]$UI # subset for aggregating?
+        group_var <- rv_data$config[grp == TRUE & field=="var"]$UI # subset for aggregating
 
-        #x_is_obs_or_var = rv_in$config[measure == TRUE & field=="var"]$UI # are we grouping by obs or var?
-        def_x <- rv_in$default$obs_x
-        def_y <- rv_in$default$obs_y
-        def_grp_o <- rv_in$default$obs_subset
-        def_grp_v <- rv_in$default$var_subset
+        #x_is_obs_or_var = rv_data$config[measure == TRUE & field=="var"]$UI # are we grouping by obs or var?
+        def_x <- rv_data$default$obs_x
+        def_y <- rv_data$default$obs_y
+        def_grp_o <- rv_data$default$obs_subset
+        def_grp_v <- rv_data$default$var_subset
       }
 
 
@@ -364,15 +364,15 @@ mod_side_selector_server <- function(id, rv_in){
 
     # dynamic x and y selector
     output$ui_xy_var_select <- renderUI({
-      req(rv_in$config) # do i need this?
+      req(rv_data$config) # do i need this?
 
 
 
       if (input$CB_xy_var_select) {
 
-        choices_x <- rv_in$config[grp == TRUE & field=="var"]$UI
-        choices_y <- rv_in$config[measure == TRUE & field=="var"]$UI
-        group_var <- c("<omic selector>",choices_x) # rv_in$config[grp == TRUE & field=="var"]$UI #
+        choices_x <- rv_data$config[grp == TRUE & field=="var"]$UI
+        choices_y <- rv_data$config[measure == TRUE & field=="var"]$UI
+        group_var <- c("<omic selector>",choices_x) # rv_data$config[grp == TRUE & field=="var"]$UI #
 
 
         to_return <-  tagList(
@@ -414,8 +414,8 @@ mod_side_selector_server <- function(id, rv_in){
 
     ### observe s =========================================================
     observeEvent(input$CB_obs_sub_all, {
-      req(rv_in$config)
-      cfg <- isolate(rv_in$config)
+      req(rv_data$config)
+      cfg <- isolate(rv_data$config)
 
       subs <- strsplit(cfg[UI == input$SI_obs_subset]$fID, "\\|")[[1]]
       subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
@@ -436,9 +436,9 @@ mod_side_selector_server <- function(id, rv_in){
 
 
     observeEvent(input$CB_obs_sub_none, {
-      req(rv_in$config)
+      req(rv_data$config)
 
-      cfg <- isolate(rv_in$config)
+      cfg <- isolate(rv_data$config)
 
       #curr_sel <- isolate(input$CB_obs_subsel)
 
@@ -486,10 +486,10 @@ mod_side_selector_server <- function(id, rv_in){
 
 
     observe({
-      req(rv_in$config)
+      req(rv_data$config)
 
-      choices_x <- rv_in$config[grp == TRUE & field=="var"]$UI
-      choices_y <- rv_in$config[measure == TRUE & field=="var"]$UI
+      choices_x <- rv_data$config[grp == TRUE & field=="var"]$UI
+      choices_y <- rv_data$config[measure == TRUE & field=="var"]$UI
 
       if (isTruthy(choices_x) & isTruthy(choices_y) ) {
         shinyjs::enable("CB_xy_var_select")
@@ -499,8 +499,8 @@ mod_side_selector_server <- function(id, rv_in){
     })
 
 
-    #TODO:  make the choices *named* paste0(rv_in$config$fID, fUI)
-    # dat_source = rv_in$config$mat[fID == rv_in$aux_raw]$ID
+    #TODO:  make the choices *named* paste0(rv_data$config$fID, fUI)
+    # dat_source = rv_data$config$mat[fID == rv_data$aux_raw]$ID
     # paste(raw_choices, dat_sourcce)
     #{ option_create: function(data,escape) {return('<div class=\"create\"><strong>' + '</strong></div>');} }"
 
@@ -520,41 +520,41 @@ mod_side_selector_server <- function(id, rv_in){
       if (omics_list$viz_now) {
 
         #TODO: add data_source to config values
-        out_params$data_source <- input$RB_obs_X
-        out_params$data_layer <- input$SI_data_layer
+        rv_selections$data_source <- input$RB_obs_X
+        rv_selections$data_layer <- input$SI_data_layer
 
-        out_params$plot_x <- input$SI_x
-        out_params$plot_y <- input$SI_y
+        rv_selections$plot_x <- input$SI_x
+        rv_selections$plot_y <- input$SI_y
 
-        out_params$observ_subset <- input$SI_obs_subset
-        out_params$observ_subsel <- input$CB_obs_subsel
+        rv_selections$observ_subset <- input$SI_obs_subset
+        rv_selections$observ_subsel <- input$CB_obs_subsel
 
         # group (plotting)
-        out_params$feat_group_by <- input$SI_group_var
-        out_params$observ_group_by <- input$SI_group_obs
+        rv_selections$feat_group_by <- input$SI_group_var
+        rv_selections$observ_group_by <- input$SI_group_obs
 
-        out_params$group_action <- input$RB_none_or_grp
+        rv_selections$group_action <- input$RB_none_or_grp
 
         # # Disabled
-        out_params$feat_subset = NA # NOT ENABLEDj, using omics selector
-        out_params$feat_subsel = NA # NOT ENABLED
+        rv_selections$feat_subset = NA # NOT ENABLEDj, using omics selector
+        rv_selections$feat_subsel = NA # NOT ENABLED
 
-        out_params$plot_var_x <- input$SI_var_x
-        out_params$plot_var_y <- input$SI_var_y
-        out_params$plot_feats <- input$CB_xy_var_select
+        rv_selections$plot_var_x <- input$SI_var_x
+        rv_selections$plot_var_y <- input$SI_var_y
+        rv_selections$plot_feats <- input$CB_xy_var_select
 
-        out_params[["omics_list"]] <- omics_list  # value & viz_now
+        rv_selections[["omics_list"]] <- omics_list  # value & viz_now
         # do the subsetting here?  create a reactive "data blob"?
 
       } else {
-        out_params$data_source <- NULL #blocks playground reactive from computing until we "submit" ($viz_now)
+        rv_selections$data_source <- NULL #blocks playground reactive from computing until we "submit" ($viz_now)
       }
 
     })
 
 
   ### RETURN =========================================================
-  return(out_params)
+  return(rv_selections)
 
   })
 }

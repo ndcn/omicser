@@ -32,8 +32,8 @@ app_server <- function(input, output, session) {
   ##
   ############################ +
   {
-    # Call module "ingest"
-    rv <- mod_ingestor_server("ingestor_ui_1", DB_NAMES, DB_ROOT_PATH)
+    # Call module "ingest" - returns reactive data values
+    rv_data <- mod_ingestor_server("ingestor_ui_1", DB_NAMES, DB_ROOT_PATH)
 
   }
 
@@ -46,7 +46,7 @@ app_server <- function(input, output, session) {
   ##
   ############################ +
   {
-    p_vis <- mod_side_selector_server("side_selector_ui_1", rv_in = rv)
+    rv_selections <- mod_side_selector_server("side_selector_ui_1", rv_data = rv_data)
 
   }
 
@@ -70,24 +70,23 @@ app_server <- function(input, output, session) {
 
 
 
-  # ############################ +
-  # ## Module 5 : table
-  # ##
-  # ##
-  # ############################ +
-  # {
-  #   dt <- isolate(rv$obs)
-  #
-  #   mod_pg_table_server("pg_table_ui_1", dt=dt)
-  #   # output$my_datatable_0 <- DT::renderDataTable({
-  #   #   DT::datatable(rv$data_table)
-  #   # })
-  #   #   Should we pass all the reactive values, or just the datatable?
-  #   #   currently returns a subtable of the datatable
-  #   # filtered_db <- mod_table_server("table_ui_1", dt = rv$data_table, p = vis_params)
-  # }
-  # # selected_db <- reactive_selection_function(db,params)
-  # # mod_playground_server("playground_ui_1",db = data_table)
+  ############################ +
+  ## Module 5 : table
+  ##
+  ##
+  ############################ +
+  {
+
+    mod_table_server("table_ui_1", rv_data = rv_data, rv_selections = rv_selections)
+    # output$my_datatable_0 <- DT::renderDataTable({
+    #   DT::datatable(rv$data_table)
+    # })
+    #   Should we pass all the reactive values, or just the datatable?
+    #   currently returns a subtable of the datatable
+    # filtered_db <- mod_table_server("table_ui_1", dt = rv$data_table, p = vis_params)
+  }
+  # selected_db <- reactive_selection_function(db,params)
+  # mod_playground_server("playground_ui_1",db = data_table)
 
 
   ############################ +
@@ -104,7 +103,7 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     # mod_playground_server("playground_ui_1", rvs = rv, p = vis_params  )
-    mod_playground_server("playground_ui_1", rv_in = rv, p = p_vis)
+    mod_playground_server("playground_ui_1", rv_data = rv_data, rv_selections = rv_selections)
   }
 
   # ############################ +

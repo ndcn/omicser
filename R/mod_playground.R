@@ -47,23 +47,23 @@ mod_playground_ui <- function(id){
 #' playground Server Functions
 #'
 #' @noRd
-mod_playground_server <- function(id ,rv_in, p) {
+mod_playground_server <- function(id ,rv_data, rv_selections) {
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    mod_pg_tables_tab_server("pg_tables_tab_ui_1",rv_in, p)
-    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_in, p,heat_data,box_data,varbox_data)
-    mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_in, p, active_layer_data)
-    mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_in, p)
+    mod_pg_tables_tab_server("pg_tables_tab_ui_1",rv_data, rv_selections)
+    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections,heat_data,box_data,varbox_data)
+    mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_data, rv_selections, active_layer_data)
+    mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_data, rv_selections)
 
 
 
 
     # observe({
-    #   req(p$omics_list)
+    #   req(rv_selections$omics_list)
     #   print("---> viz?? ")
     #   if (heat_data$ready) {
-    #     p$omics_list$viz_now <- FALSE  # reset it here...
+    #     rv_selections$omics_list$viz_now <- FALSE  # reset it here...
     #   }
     # })
 
@@ -108,27 +108,27 @@ mod_playground_server <- function(id ,rv_in, p) {
 
 
     observe({
-      req(rv_in$ad,
-          p$data_layer)
+      req(rv_data$ad,
+          rv_selections$data_layer)
 
-      layer <- p$data_layer
+      layer <- rv_selections$data_layer
       if (layer=="X") {
-        X_data <- isolate(rv_in$ad$X) #isolate
+        X_data <- isolate(rv_data$ad$X) #isolate
       } else if (layer == "raw") {
-        X_data <- isolate(rv_in$ad$raw$X)#isolate
+        X_data <- isolate(rv_data$ad$raw$X)#isolate
       } else { #} if (dat_loc == "layers") { #must be a layer
-        is_layer <- any(layer %in% rv_in$ad$layers$keys())
-        #is_layer <- any(rv_in$ad$layers$keys()==dat_loc)
+        is_layer <- any(layer %in% rv_data$ad$layers$keys())
+        #is_layer <- any(rv_data$ad$layers$keys()==dat_loc)
         if (is_layer) {
-          #X_data <- isolate(rv_in$ad$layers[[dat_loc]]) #isolate
-          X_data <- isolate(rv_in$ad$layers$get(dat_loc) )
+          #X_data <- isolate(rv_data$ad$layers[[dat_loc]]) #isolate
+          X_data <- isolate(rv_data$ad$layers$get(dat_loc) )
         } else {
           print("data not found")
           return(ret_vals)
         }
       }
       if(is.null(dimnames(X_data)[[1]])){
-        dimnames(X_data) <- list(rv_in$ad$obs_names,rv_in$ad$var_names)
+        dimnames(X_data) <- list(rv_data$ad$obs_names,rv_data$ad$var_names)
       }
 
       active_layer_data$layer <- layer
@@ -139,8 +139,8 @@ mod_playground_server <- function(id ,rv_in, p) {
 
     # send this to the "raw" tab
     observe({
-      req(rv_in$ad,
-          p$data_source,
+      req(rv_data$ad,
+          rv_selections$data_source,
           active_layer_data$data)
 
       # need: data, x_name,y_name,
@@ -162,43 +162,43 @@ print("in reactive: hm_data (playground)")
         #   ready = FALSE
         # )
 
-      in_conf <- rv_in$config
-      in_meta <- as.data.table(rv_in$ad$obs)
-      row.names(in_meta) <- rv_in$ad$obs_names
+      in_conf <- rv_data$config
+      in_meta <- as.data.table(rv_data$ad$obs)
+      row.names(in_meta) <- rv_data$ad$obs_names
 
-      dat_source <- p$data_source
+      dat_source <- rv_selections$data_source
 
-      group_action <- p$group_action
+      group_action <- rv_selections$group_action
 
       print("---> reset viz?? ")
       #   if (heat_data$ready) {
-      p$omics_list$viz_now <- FALSE
+      rv_selections$omics_list$viz_now <- FALSE
       # HEATMAP DATA ======================
       # ---------- : prep data_matrix for heat_map/bubble
       # TODO: make an "x_is" oaram in side_selector
       x_is <- "obs" #haven't implimented visualizing by var yet...
-      X_fact <- p$plot_x #in_fact <- p$observ_grpA
+      X_fact <- rv_selections$plot_x #in_fact <- rv_selections$observ_grpA
 
 
-      # dat_loc <- p$data_layer
+      # dat_loc <- rv_selections$data_layer
       #
       # if (dat_loc=="X") {
-      #   X_data <- isolate(rv_in$ad$X) #isolate
+      #   X_data <- isolate(rv_data$ad$X) #isolate
       # } else if (dat_loc == "raw") {
-      #   X_data <- isolate(rv_in$ad$raw$X)#isolate
+      #   X_data <- isolate(rv_data$ad$raw$X)#isolate
       # } else { #} if (dat_loc == "layers") { #must be a layer
-      #   is_layer <- any(dat_loc %in% rv_in$ad$layers$keys())
-      #   #is_layer <- any(rv_in$ad$layers$keys()==dat_loc)
+      #   is_layer <- any(dat_loc %in% rv_data$ad$layers$keys())
+      #   #is_layer <- any(rv_data$ad$layers$keys()==dat_loc)
       #   if (is_layer) {
-      #     #X_data <- isolate(rv_in$ad$layers[[dat_loc]]) #isolate
-      #     X_data <- isolate(rv_in$ad$layers$get(dat_loc) )
+      #     #X_data <- isolate(rv_data$ad$layers[[dat_loc]]) #isolate
+      #     X_data <- isolate(rv_data$ad$layers$get(dat_loc) )
       #   } else {
       #     print("data not found")
       #     return(ret_vals)
       #   }
       # }
       # if(is.null(dimnames(X_data)[[1]])){
-      #   dimnames(X_data) <- list(rv_in$ad$obs_names,rv_in$ad$var_names)
+      #   dimnames(X_data) <- list(rv_data$ad$obs_names,rv_data$ad$var_names)
       # }
       #
 
@@ -206,46 +206,46 @@ print("in reactive: hm_data (playground)")
       ## AGGREGATE along x-axis
       # if (x_is == "obs"){
 
-        dat_j_grp <-p$feat_subset
+        dat_j_grp <-rv_selections$feat_subset
         # subset var (omics)
         if (!is.na( dat_j_grp ) ) {  #maybe don't need this check?
-          dat_js <- p$feat_subsel #index by number
-          dat_js_set <- rv_in$ad$var[[ dat_j_grp ]]
-          omic_js <- rv_in$ad$var_names[ dat_js_set %in% dat_js ]
-          #X_data <- X_data[,dat_js_set %in% p$feat_subsel ]
+          dat_js <- rv_selections$feat_subsel #index by number
+          dat_js_set <- rv_data$ad$var[[ dat_j_grp ]]
+          omic_js <- rv_data$ad$var_names[ dat_js_set %in% dat_js ]
+          #X_data <- X_data[,dat_js_set %in% rv_selections$feat_subsel ]
         } else { #subset to omics_list
-          dat_js <- p$omics_list$value
-          dat_js_set <- rv_in$ad$var_names
-          omic_js <-  dat_js  # dat_js_set[rv_in$ad$var_names %in% dat_js]
+          dat_js <- rv_selections$omics_list$value
+          dat_js_set <- rv_data$ad$var_names
+          omic_js <-  dat_js  # dat_js_set[rv_data$ad$var_names %in% dat_js]
         }
 
 
 
-        tmp_meta <- as.data.table(rv_in$ad$obs) # can probably just acces ad$obs directly since we don' tneed it to be a data_table?
-        row.names(tmp_meta) <- rv_in$ad$obs_names
+        tmp_meta <- as.data.table(rv_data$ad$obs) # can probably just acces ad$obs directly since we don' tneed it to be a data_table?
+        row.names(tmp_meta) <- rv_data$ad$obs_names
 
-        if (is.na(p$observ_subset)) {
-          in_subset <-  p$plot_x# don't try and subset at the end...
+        if (is.na(rv_selections$observ_subset)) {
+          in_subset <-  rv_selections$plot_x# don't try and subset at the end...
           in_subsel <- character(0)
         } else {
-          in_subset <-  p$observ_subset
-          in_subsel <- p$observ_subsel
+          in_subset <-  rv_selections$observ_subset
+          in_subsel <- rv_selections$observ_subsel
         }
 
-        if (group_action == "none" | p$observ_group_by=="NA") {
+        if (group_action == "none" | rv_selections$observ_group_by=="NA") {
           # group along the plotting variable
-          grp_x <- p$plot_x
+          grp_x <- rv_selections$plot_x
         } else {
-          grp_x <- p$observ_group_by
+          grp_x <- rv_selections$observ_group_by
         }
 
-        grp_y <- p$feat_group_by # NOTE: could be "omics" from selector
+        grp_y <- rv_selections$feat_group_by # NOTE: could be "omics" from selector
         if ((grp_y == "NA") | (grp_y == "")) {
           grp_ys <- dat_js
         } else {
-          grp_ys <- rv_in$ad$var[[ grp_y ]][which( dat_js_set %in% dat_js )]
+          grp_ys <- rv_data$ad$var[[ grp_y ]][which( dat_js_set %in% dat_js )]
         }
-        #group_ys <- rv_in$ad$var[[ grp_by$y ]] [which( dat_js_set %in% dat_js )]
+        #group_ys <- rv_data$ad$var[[ grp_by$y ]] [which( dat_js_set %in% dat_js )]
         names(grp_ys) <- dat_js
 
         X_ID = "sample_ID"
@@ -296,11 +296,11 @@ print("in reactive: hm_data (playground)")
 
 
     # box_data <- reactive({
-    #   req(rv_in$ad,
-    #         p$data_source)
+    #   req(rv_data$ad,
+    #         rv_selections$data_source)
       observe({
-        req(rv_in$ad,
-            p$data_source)
+        req(rv_data$ad,
+            rv_selections$data_source)
 
         # hm_data <- list(
         #   x_names = X_fact,
@@ -316,32 +316,32 @@ print("in reactive: hm_data (playground)")
         # )
       print("in reactive: box_data (playground)")
 
-      in_conf <- rv_in$config
-      in_meta <- as.data.table(rv_in$ad$obs)
-      row.names(in_meta) <- rv_in$ad$obs_names
+      in_conf <- rv_data$config
+      in_meta <- as.data.table(rv_data$ad$obs)
+      row.names(in_meta) <- rv_data$ad$obs_names
 
-      dat_source <- p$data_source
+      dat_source <- rv_selections$data_source
       # use X_data for in_data below??
       # Already ahve tmp_meta, in)fact, etc...
       # BOX/VIOLIN DATA ======================
       # if (dat_source != "X") {
         if (dat_source == "obs") {
-          in_fact <- p$plot_x #in_fact <- p$observ_grpA
-          dat_key <- p$plot_y
-          in_data <- isolate(rv_in$ad$obs[[dat_key]])
-          names(in_data) <- rv_in$ad$obs_names
-          grp_by <- p$observ_group_by
+          in_fact <- rv_selections$plot_x #in_fact <- rv_selections$observ_grpA
+          dat_key <- rv_selections$plot_y
+          in_data <- isolate(rv_data$ad$obs[[dat_key]])
+          names(in_data) <- rv_data$ad$obs_names
+          grp_by <- rv_selections$observ_group_by
 
-          if (is.na(p$observ_subset)) {
+          if (is.na(rv_selections$observ_subset)) {
             in_subset <-  character(0) # NOTE: disabled set to NA
             in_subsel <- character(0)  # NOTE: disabled set to NA
           } else {
-            in_subset <-  p$observ_subset
-            in_subsel <- p$observ_subsel
+            in_subset <-  rv_selections$observ_subset
+            in_subsel <- rv_selections$observ_subsel
           }
 
-          tmp_meta <- as.data.table(isolate(rv_in$ad$obs))
-          row.names(tmp_meta) <- rv_in$ad$obs_names
+          tmp_meta <- as.data.table(isolate(rv_data$ad$obs))
+          row.names(tmp_meta) <- rv_data$ad$obs_names
 
           x_is <- "obs"
 
@@ -381,7 +381,7 @@ print("in reactive: hm_data (playground)")
           viz_noise <- rnorm(length(in_data)) * diff(range(in_data)) / 1000 # part per thousand  "visualization jitter"
           in_data <- in_data + viz_noise
 
-          in_fact <- p$plot_x
+          in_fact <- rv_selections$plot_x
 
           # copy these from heat_data
           in_subset <- heat_data$subset
@@ -426,12 +426,12 @@ print("in reactive: hm_data (playground)")
 
 
       # box_data <- reactive({
-      #   req(rv_in$ad,
-      #         p$data_source)
+      #   req(rv_data$ad,
+      #         rv_selections$data_source)
       observe({
-        req(rv_in$ad,
-            p$data_source,
-            p$plot_feats)
+        req(rv_data$ad,
+            rv_selections$data_source,
+            rv_selections$plot_feats)
 
         # hm_data <- list(
         #   x_names = X_fact,
@@ -446,34 +446,34 @@ print("in reactive: hm_data (playground)")
         #   ready = TRUE
         # )
         print("in reactive: varbox_data (playground)")
-        group_action <- p$group_action
+        group_action <- rv_selections$group_action
 
-        in_conf <- rv_in$config
-        in_meta <- as.data.table(rv_in$ad$obs)
-        row.names(in_meta) <- rv_in$ad$obs_names
+        in_conf <- rv_data$config
+        in_meta <- as.data.table(rv_data$ad$obs)
+        row.names(in_meta) <- rv_data$ad$obs_names
 
-        in_fact <- p$plot_var_x #in_fact <- p$observ_grpA
-        dat_key <- p$plot_var_y
-        in_data <- isolate(rv_in$ad$var[[dat_key]])
-        names(in_data) <- isolate(rv_in$ad$var_names)
+        in_fact <- rv_selections$plot_var_x #in_fact <- rv_selections$observ_grpA
+        dat_key <- rv_selections$plot_var_y
+        in_data <- isolate(rv_data$ad$var[[dat_key]])
+        names(in_data) <- isolate(rv_data$ad$var_names)
 
-        if (group_action == "none" | p$feat_group_by=="NA") {
+        if (group_action == "none" | rv_selections$feat_group_by=="NA") {
           # group along the plotting variable
           grp_by <- in_fact
         } else {
-          grp_by <- p$feat_group_by
+          grp_by <- rv_selections$feat_group_by
         }
 
-        if (is.na(p$feat_subset)) {
+        if (is.na(rv_selections$feat_subset)) {
           in_subset <-  in_fact     # NOTE: disabled set to NA
           in_subsel <- character(0)  # NOTE: disabled set to NA
         } else {
-          in_subset <-  p$feat_subset
-          in_subsel <- p$feat_subsel
+          in_subset <-  rv_selections$feat_subset
+          in_subsel <- rv_selections$feat_subsel
         }
 
-        tmp_meta <- as.data.table(isolate(rv_in$ad$var))
-        row.names(tmp_meta) <- rv_in$ad$var_names
+        tmp_meta <- as.data.table(isolate(rv_data$ad$var))
+        row.names(tmp_meta) <- rv_data$ad$var_names
 
         x_is <- "var"
 
@@ -516,7 +516,7 @@ print("in reactive: hm_data (playground)")
         varbox_data$x_name <- in_fact
         varbox_data$y_name <- dat_key
         varbox_data$colors <- grp_colors
-        varbox_data$dat_source  <- p$data_source
+        varbox_data$dat_source  <- rv_selections$data_source
         varbox_data$data <- bx_data
 
       }

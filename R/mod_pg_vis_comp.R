@@ -18,7 +18,7 @@ mod_pg_vis_comp_ui <- function(id){
     HTML("Volcano plot"),
     h4("Relative expression of omics between two conditions"),
     "In this tab, users can visualise comparative measures of omic-expression in our data",
-    "(e.g. logFC vs p-value).",
+    "(e.g. logFC vs rv_selections-value).",
     br(),br(),
     fluidRow(
       column(
@@ -56,12 +56,16 @@ mod_pg_vis_comp_ui <- function(id){
 }
 #' pg_vis_comp Server Functions
 #'
+#' @param id
+#' @param rv_data
+#' @param rv_selections
+#' @param active_layer_data
+#'
 #' @noRd
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
-mod_pg_vis_comp_server <- function(id,rv_in, p, active_layer_data){
+mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
-
 
     data_point_sz = .65
     plot_size = "Small"
@@ -74,11 +78,11 @@ mod_pg_vis_comp_server <- function(id,rv_in, p, active_layer_data){
     #### TODO: change name to diff_exp_filter or something since we are no longer testing here
     ####    change to use dtdplyr for speed... and remove magrittr dependency
     filtered_de <- reactive({
-      req(rv_in$de,
+      req(rv_data$de,
           input$SI_comp_fact,
           input$RB_select_test)
 
-      diff_exp <- isolate(rv_in$de)
+      diff_exp <- isolate(rv_data$de)
       # TODO: change to data.frame
       # filter according to current "cases"
       de <- diff_exp %>%
@@ -96,28 +100,28 @@ mod_pg_vis_comp_server <- function(id,rv_in, p, active_layer_data){
 
     # create some ui output
     output$UI_comp_group_selection <- renderUI({
-      req(rv_in$config,
-          rv_in$default,
-          rv_in$de)
+      req(rv_data$config,
+          rv_data$default,
+          rv_data$de)
 
-      cfg <- isolate(rv_in$config)
-      test_choices <- levels(factor(isolate(rv_in$de$test_type)))
+      cfg <- isolate(rv_data$config)
+      test_choices <- levels(factor(isolate(rv_data$de$test_type)))
 
 
       to_return <-  tagList(
         radioButtons(inputId = ns("RB_select_test"),
                      label = "sig test:",
                      choices = test_choices,
-                     selected = rv_in$default$test[1]),
+                     selected = rv_data$default$test[1]),
         selectInput(inputId = ns("SI_comp_fact"),
                     label = "compare: ",
                     choices =  strsplit(cfg[ID=="diff_exp_comps"]$fID, "\\|")[[1]],
-                    selected = rv_in$default$comp_fact),
+                    selected = rv_data$default$comp_fact),
 
         shinyjs::disabled(selectInput(inputId = ns("SI_color_grp"),
                     label = "Color by:",
-                    choices = rv_in$config[grp == TRUE]$UI,
-                    selected = rv_in$default$color_grp)
+                    choices = rv_data$config[grp == TRUE]$UI,
+                    selected = rv_data$default$color_grp)
         ),
         checkboxInput(inputId = ns("CB_drop_bottom"),
                                label = "drop non-sigs?:",
@@ -131,10 +135,10 @@ mod_pg_vis_comp_server <- function(id,rv_in, p, active_layer_data){
 
 
     observeEvent(input$SI_comp_type, {
-      req(rv_in$config,
-          rv_in$default)
+      req(rv_data$config,
+          rv_data$default)
       # get the groups
-      cfg <- isolate(rv_in$config)
+      cfg <- isolate(rv_data$config)
       subs <- strsplit(cfg[UI == "diff_exp_comps"]$fID, "\\|")[[1]]
       subs <- sort(subs)
 
@@ -148,7 +152,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p, active_layer_data){
       updateSelectInput(inputId = "SI_comp_fact",
                         label = "compare :",
                         choices = subs,
-                        selected = rv_in$default$comp_fact[1])
+                        selected = rv_data$default$comp_fact[1])
 
 
     })
@@ -222,7 +226,7 @@ mod_pg_vis_comp_server <- function(id,rv_in, p, active_layer_data){
           plotly::layout(
             title = title_text,
             xaxis = list(title = "Effect (logFC)", range = c(-8, 8)),
-            yaxis = list(title = "-log10 p-value", range = c(-0.1, 60.25))
+            yaxis = list(title = "-log10 rv_selections-value", range = c(-0.1, 60.25))
           ) %>%
           # Disable the legend click since our traces do not correspond to the
           # actual legend labels
@@ -245,9 +249,9 @@ mod_pg_vis_comp_server <- function(id,rv_in, p, active_layer_data){
       data_vec <- active_layer_data$data[,omic_name]
 
       grouping_var <- filtered_de()$obs_name[1]
-      omic_counts <- data.frame( rv_in$ad$obs_names,
+      omic_counts <- data.frame( rv_data$ad$obs_names,
                                  data_vec,
-                                 rv_in$ad$obs[[grouping_var]] )
+                                 rv_data$ad$obs[[grouping_var]] )
       colnames(omic_counts) <- c("id", "val","grp")
       return(omic_counts)
     })
@@ -297,8 +301,8 @@ mod_pg_vis_comp_server <- function(id,rv_in, p, active_layer_data){
       omic_name <- filtered_de()$names[selected]
 
 
-      omic_details <- rv_in$default$omic_details
-      annots <- rv_in$ad$var[omic_name,]
+      omic_details <- rv_data$default$omic_details
+      annots <- rv_data$ad$var[omic_name,]
 
       deet <- paste("<b> Name </b>: ", annots$omics_name, "</br>")
 
