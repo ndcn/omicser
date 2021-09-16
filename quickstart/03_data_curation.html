@@ -230,7 +230,7 @@ This process results in specifying the location of the data, and creating files 
 <h2>anndata schema</h2>
 <p>The anndata scheme requires us to define three pieces of data:</p>
 <ol style="list-style-type: decimal">
-<li>DATA: a matrix - e.g. transcriptomics - count matrix of cells X genes.</li>
+<li>DATA: a matrix - e.g. transcriptomics - count matrix of cells X genes. (WARNING: make sure its a proper matrix, e.g.: <code>as.matrix(data)</code>)</li>
 <li>FEATURE METADATA - a table of <code>omic</code> annotation - e.g. gene/protein names, families, “highly variable genes”, “is marker gene”</li>
 <li>SAMPLE METADATA: a table of sample annotations - e.g. cell types, sample #, batch ID sex, experiemntal condition, etc.</li>
 </ol>
@@ -261,8 +261,7 @@ sc &lt;- import(&quot;scanpy&quot;)
 sc$pp$pca(ad)
 sc$pp$neighbors(ad)
 sc$tl$leiden(ad)
-sc$tl$umap(ad)
-</code></pre>
+sc$tl$umap(ad)</code></pre>
 </div>
 </div>
 <div id="differential-expression-tables" class="section level2">
@@ -306,8 +305,7 @@ sc$tl$umap(ad)
 test_types &lt;- c(&#39;wilcoxon&#39;)
 comp_types &lt;- c(&#39;allVrest&#39;)
 obs_names &lt;- c(&#39;disease&#39;,&#39;cell_type&#39;)
-diff_exp &lt;- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
-</code></pre>
+diff_exp &lt;- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)</code></pre>
 </div>
 </div>
 <div id="save-the-data-to-the-database" class="section level2">

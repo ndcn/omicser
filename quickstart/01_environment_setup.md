@@ -10,15 +10,14 @@ output:
     variant: markdown_github
 ---
 
-```{r, setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 
 # Environment Setup
 
 This package has been developed with a recent (4.1.0) version of R, shiny 1.6.0, and RStudio v1.4.1717.  
-```{bash, 01-env-Rver-01, eval = FALSE} 
+
+```bash
 R --version
 ```
 
@@ -34,14 +33,16 @@ In addition to a recently fresh R we will also need a few more things:
 
 The current version of the app looks for a conda environment so we need to have miniconda or anaconda installed.   For example for MacOS we can install miniconda like this:
 
-```{bash, conda_inst, eval = FALSE}
+
+```bash
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
 bash ~/miniconda.sh -b -p $HOME/miniconda
 ```
 
 Now we can use conda to install a python 3.9 environment to use with `reticulate`.   I like to use a command line to create the environmenbt, but if you prefer you can also use R. (I'll illustrate this below) 
 For this example we've called the environment `omxr`, and installed `scanpy` and `leidenalg` which will make sure we have everything we need on the python side.
-```{bash, conda_env, eval = FALSE}
+
+```bash
 conda create --name omxr python=3.9 scanpy                                                                             
 conda install -c conda-forge leidenalg                                                                                  
 conda activate omxr
@@ -52,15 +53,16 @@ conda activate omxr
 For the sake of simplicity and clarity lets just install `devtools`, and `reticulate`.  When we install the `omicser` browser package we can leverage the dependencies to get everything else we might need.
 
 
-```{r, 01-install-0, eval=FALSE}
 
+```r
 install.packages("devtools")
 install.packages("reticulate")
 ```
 
 Now if you want to use R to create your environment we just need to use the following `reticulate` calls:
 
-```{r r_env, eval=FALSE}
+
+```r
 YOUR_CONDA_ENV <- "omxr"
 require(reticulate)
 reticulate::install_miniconda() 
