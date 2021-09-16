@@ -30,7 +30,7 @@ mod_pg_tables_tab_ui <- function(id){
       tabPanel(
         title = "diff expr", value='de',
         mod_pg_table_ui(ns("pg_table_de"))
-      ),
+      )
 
       # tabPanel(
       #   title = "Data Matrix",value = 'X',
