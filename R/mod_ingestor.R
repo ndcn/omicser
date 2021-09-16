@@ -124,7 +124,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
     ############################ +
     observeEvent(input$SI_database, {
       req(input$SI_database)
-browser()
+
       db_name <- (input$SI_database)
       # ad <- anndata::read_h5ad(filename=paste0("data-raw/",db_name,"/omxr_data.h5ad"))
       # diff_exp = readRDS(file = paste0("data-raw/",db_name,"/diff_expr_table.rds"))
