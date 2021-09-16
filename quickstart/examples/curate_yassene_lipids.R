@@ -7,22 +7,37 @@
 #  formely `yassene_A` (conc and compos)
 
 #==== 0. preamble/setup ==================================================
-# assume we are in the [omicser_path]
-# getwd()
-# pkgload::load_all('.')
-require(golem)
-golem::document_and_reload()
 
+DEV_OMICSER <- TRUE
+
+
+if (DEV_OMICSER){
+  # this should be a full path... e.g. ~/Projects/NDCN_dev/omicser
+  # but for github, we will set relative to the repo BASE
+  REPO_PATH <- "/Users/ahenrie/Projects/NDCN_dev/omicser"
+  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
+  golem::document_and_reload(pkg = REPO_PATH)
+} else {
+
+  require(omicser)
+  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
+
+}
 
 # BOOTSTRAP the options we have already set up...
 # NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
-omxr_options <- omicser::get_config()
+omicser_options <- omicser::get_config(in_path = OMICSER_RUN_DIR)
 
 
-CONDA_ENV <- omxr_options$conda_environment
-DB_NAME <- omxr_options$database_names[4] #yassene_lipid
-DB_ROOT_PATH <- omxr_options$db_root_path
+CONDA_ENV <- omicser_options$conda_environment
+DB_ROOT_PATH <- omicser_options$db_root_path
 
+DB_NAME <-  list("Yassene Lipid concentraions & compositions" ="yassene_lipid")
+
+if (! (DB_NAME %in% omicser_options$database_names)){
+  omicser_options$database_names <- c(omicser_options$database_names,DB_NAME)
+  omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
+}
 
 
 #DB_NAME = "yassene_lipid"
@@ -114,7 +129,7 @@ prep_lipidizer_files <- function(data_file,path_root){
 
 #==== 3. load data -========================================================================================
 
-RAW_DIR <- "raw_data/Yassene_A"
+RAW_DIR <- file.path(OMICSER_RUN_DIR,"raw_data", "Yassene_A")
 
 
 # a. load concentration data --------------------
@@ -253,7 +268,7 @@ saveRDS(diff_exp, file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 #==== 7. create configs =========================================================================
 # what ad$obs do we want to make default values for...
 
-conf_list <- list(
+config_list <- list(
   x_obs = c('Group','leiden' ),
   y_obs = c('var', 'mean'), #MEASURES
   obs_groupby = c('Group','leiden'),

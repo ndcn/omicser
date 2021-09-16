@@ -15,6 +15,29 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+
+```{r, setup-1, eval=FALSE}
+
+# Now move to the directory where you want to execute the omicser
+# and make the omicser_options.yml
+
+OMICSER_RUN_DIR <- "full/path/to/where/omicser_options.yml/goes"
+
+db_root_path <- "full/path/to/folder/where/DATABASES/go"
+
+database_names <- list(
+  "hello database" = "hello_database"
+)
+
+conda_environment = 'omxr'
+omicser_options <- list(database_names=database_names,
+                        db_root_path=db_root_path,
+                        conda_environment=conda_environment)
+
+omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
+
+```
+
 # WORK IN PROGRESS:  NOT written
 
 ## Overview

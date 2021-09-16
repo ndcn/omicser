@@ -16,32 +16,43 @@
 #
 #
 
+
 #==== 0. preamble/setup ==================================================
-# assume we are in the [omicser_path]
-# getwd()
-# pkgload::load_all('.')
-require(golem)
-golem::document_and_reload()
+DEV_OMICSER <- TRUE
 
 
-# BOOTSTRAP the options we have already set up...
-# NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
-#omxr_options <- omicser::get_config(in_path="quickstart")
-setwd("quickstart")
-omxr_options <- omicser::get_config()
+if (DEV_OMICSER){
+  # this should be a full path... e.g. ~/Projects/NDCN_dev/omicser
+  # but for github, we will set relative to the repo BASE
+  REPO_PATH <- "/Users/ahenrie/Projects/NDCN_dev/omicser"
+  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
+  golem::document_and_reload(pkg = REPO_PATH)
+} else {
+
+  require(omicser)
+  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
+
+}
+
+CONDA_ENV <- omicser_options$conda_environment
+DB_ROOT_PATH <- omicser_options$db_root_path
 
 
-CONDA_ENV <- omxr_options$conda_environment
-DB_NAME <- omxr_options$database_names[3]
-DB_ROOT_PATH <- omxr_options$db_root_path
+DB_NAME <-  list("Vilas Microglia (sceasy)" = "vilas_microglia_sceasy")
+
+if (! (DB_NAME %in% omicser_options$database_names)){
+  omicser_options$database_names <- c(omicser_options$database_names,DB_NAME)
+  omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
+}
 
 
-
-#DB_NAME = "vilas_microglia_sceasy"
+#DB_NAME = "yassene_lipid"
 DB_DIR = file.path(DB_ROOT_PATH,DB_NAME)
 if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
 }
+
+
 
 #==== 1. documentation / provenance =========================================================================
 
@@ -65,7 +76,7 @@ write_db_meta(db_meta,DB_NAME, db_root = DB_ROOT_PATH)
 # "helper" functions to prep your "raw" data go here or should be sourced here...
 
 #==== 3. load data =========================================================================
-RAW_DIR <- "raw_data/Vilas_B"
+RAW_DIR <- file.path(OMICSER_RUN_DIR,"raw_data", "Vilas_B")
 
 # load the og. Seurat Data object
 raw_data_file <- "microglia_data_with_counts_RNA_SCT.rda"
@@ -88,7 +99,6 @@ saveRDS(microglia_data_updated,
 
 
 #==== 4. pack into anndata =========================================================================
-microglia_data_updated <- readRDS(file = file.path(RAW_DIR, "microglia_data_seu_new.rds"))
 
 data_list <- list(object=file.path(RAW_DIR, "microglia_data_seu_new.rds"))
 
@@ -125,8 +135,11 @@ raw$obs_names <- raw$obs_names[which(raw$obs_names %in% ad$obs_names)]
 
 newraw <- anndata::AnnData(
   X=rawX,
-  var=colnames(rawX)
+  var = data.frame(names=colnames(rawX)),
+  obs = data.frame(sampleID=rownames(ad$X))
+
 )
+ad$raw <- newraw
 
 # to conform with cellXgene scheme gene filtering is tricky.
 #
@@ -142,7 +155,6 @@ sc$pp$highly_variable_genes(ad, min_mean=0.0125, max_mean=3, min_disp=0.5  )
 
 #sc$pp$highly_variable_genes(ad,n_top_genes=40)
 
-ad$raw <- newraw
 
 #  don't know how to make this work....
 #sc$pp$highly_variable_genes(ad,n_top_genes=40)
@@ -210,7 +222,7 @@ diff_exp <- readRDS( file = file.path("data-raw",DB_NAME, "db_de_table.rds"))
 
 
 # differentials  #if we care we need to explicitly state. defaults will be the order...
-conf_list <- list(
+config_list <- list(
   x_obs = c("tissue", "disease", "cell_type", "sex", "leiden"),
   y_obs = c("nCount_RNA","nFeature_RNA","nCount_SCT","nFeature_SCT", "n_genes","n_counts"), #MEASURES
   obs_groupby = c("tissue", "disease", "cell_type", "sex", "leiden"),

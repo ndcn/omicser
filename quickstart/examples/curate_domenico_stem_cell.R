@@ -3,26 +3,39 @@
 ##  Muscle Stem Cell Proteomics
 ##  - DIA DATASET developed from "wRapper_example" script
 
-#==== 0. preamble/setup ==================================================
-# assume we are in the [omicser_path]
-# getwd()
-# pkgload::load_all('.')
-require(golem)
-golem::document_and_reload()
 
+#==== 0. preamble/setup ==================================================
+DEV_OMICSER <- TRUE
+
+if (DEV_OMICSER){
+  # this should be a full path... e.g. ~/Projects/NDCN_dev/omicser
+  # but for github, we will set relative to the repo BASE
+  REPO_PATH <- "/Users/ahenrie/Projects/NDCN_dev/omicser"
+  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
+  golem::document_and_reload(pkg = REPO_PATH)
+} else {
+
+  require(omicser)
+  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
+
+}
 
 # BOOTSTRAP the options we have already set up...
 # NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
-omxr_options <- omicser::get_config()
+omicser_options <- omicser::get_config(in_path = OMICSER_RUN_DIR)
+CONDA_ENV <- omicser_options$conda_environment
+DB_ROOT_PATH <- omicser_options$db_root_path
 
 
-CONDA_ENV <- omxr_options$conda_environment
-DB_NAME <- omxr_options$database_names[1]
-DB_ROOT_PATH <- omxr_options$db_root_path
+DB_NAME <-  list("Domenico DIA" = "domenico_stem_cell")
+
+if (! (DB_NAME %in% omicser_options$database_names)){
+  omicser_options$database_names <- c(omicser_options$database_names,DB_NAME)
+  omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
+}
 
 
-
-#DB_NAME = "domenico_stem_cell"
+#DB_NAME = "yassene_lipid"
 DB_DIR = file.path(DB_ROOT_PATH,DB_NAME)
 if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
@@ -207,7 +220,7 @@ prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,
 
 #==== 3. load data -========================================================================================
 
-RAW_DIR <- "raw_data/Domenico_A"
+RAW_DIR <- file.path(OMICSER_RUN_DIR,"raw_data", "Domenico_A")
 
 # report table
 matrix_data_file <- "20210524_093609_170805_aging_against_SC_merged_all_lib_2_Report.xls"
