@@ -1,7 +1,7 @@
 Package: omicser
 Type: Package
 Title: NDCN Omics Browser
-Version: 0.0.0.9000
+Version: 0.0.9.17092021
 Author: Andy Henrie
 Description: Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 2021.
 License: MIT + file LICENSE
