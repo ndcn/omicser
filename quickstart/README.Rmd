@@ -54,7 +54,7 @@ In addition to a recently fresh R we will also need a few more things:
 
 #### Conda Python 
 
-The browser app looks for a conda environment so first we need to have miniconda or anaconda installed. (Please file a bug or a pull request to begin the process of supporting other python environments.)  If you don't already have anaconda or mini-conda, its easy to  [install](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
+The browser app looks for a conda environment so first we need to have miniconda or anaconda installed. (Please file an issue/bugo/pull req to begin the process of supporting other python environments.)  If you don't already have anaconda or mini-conda, its easy to  [install](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
 Or, if you prefer to do everything in R, it can be installed via `reticulate`. 
 
