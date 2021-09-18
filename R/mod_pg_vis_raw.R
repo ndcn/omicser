@@ -118,12 +118,12 @@ mod_pg_vis_raw_ui <- function(id){
 
 #' pg_vis_raw Server Functions
 #'
-#' @param id
-#' @param rv_data
-#' @param rv_selections
-#' @param heat_data
-#' @param box_data
-#' @param varbox_data
+#' @param id shiny internal
+#' @param rv_data reactives from ingest
+#' @param rv_selections reactives from side selector
+#' @param heat_data heatmap data
+#' @param box_data boxplot data
+#' @param varbox_data var boxplot data
 #'
 #' @noRd
 mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, box_data, varbox_data){

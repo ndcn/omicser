@@ -120,7 +120,7 @@ process_DIA_annot_de <- function( annot_de_file_path ){
   diff_exp <- de_annot_data %>% dplyr::transmute(group = gsub(" / ", "V", Comparison..group1.group2.),
                                                  names = Group,
                                                  obs_name = "Condition",
-                                                 test_type = "unknown",
+                                                 test_type = "unknown-test",
                                                  reference = Condition.Denominator,
                                                  comp_type = 'grpVref',
                                                  logfoldchanges = AVG.Log2.Ratio,

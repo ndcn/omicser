@@ -167,7 +167,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
       }
     })
 
-
+# TODO: clean up these renderPrint...
     output$ui_obs_exp <- renderPrint({
       obs_choices <- isolate(to_return$ad$obs_keys())
       if (is.null(obs_choices)) {

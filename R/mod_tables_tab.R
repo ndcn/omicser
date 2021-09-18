@@ -1,4 +1,4 @@
-#' pg_tables_tab UI Function
+#' tables_tab UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_pg_tables_tab_ui <- function(id){
+mod_tables_tab_ui <- function(id){
   ns <- NS(id)
   tagList(
 
@@ -19,17 +19,17 @@ mod_pg_tables_tab_ui <- function(id){
 
       tabPanel(
         title = "Omic Meta", value = 'var',
-        mod_pg_table_ui(ns("pg_table_var"))
+        mod_table_ui(ns("pg_table_var"))
       ),
 
       tabPanel(
         title = "Sample Meta",value = 'obs',
-        mod_pg_table_ui(ns("pg_table_obs"))
+        mod_table_ui(ns("pg_table_obs"))
       ),
 
       tabPanel(
         title = "diff expr", value='de',
-        mod_pg_table_ui(ns("pg_table_de"))
+        mod_table_ui(ns("pg_table_de"))
       )
 
       # tabPanel(
@@ -43,14 +43,14 @@ mod_pg_tables_tab_ui <- function(id){
   )
 }
 
-#' pg_tables_tab Server Functions
+#' tables_tab Server Functions
 #'
-#' @param id
-#' @param rv_data
-#' @param rv_selections
+#' @param id shiny internal
+#' @param rv_data reactive data
+#' @param rv_selections side selector reactives
 #'
 #' @noRd
-mod_pg_tables_tab_server <- function(id,rv_data, rv_selections){
+mod_tables_tab_server <- function(id,rv_data, rv_selections){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -70,16 +70,16 @@ mod_pg_tables_tab_server <- function(id,rv_data, rv_selections){
     })
 
 
-    mod_pg_table_server("pg_table_obs",dt_obs)
-    mod_pg_table_server("pg_table_var",dt_var)
-    mod_pg_table_server("pg_table_de",dt_de)
+    mod_table_server("pg_table_obs",dt_obs)
+    mod_table_server("pg_table_var",dt_var)
+    mod_table_server("pg_table_de",dt_de)
 
 
   })
 }
 
 ## To be copied in the UI
-# mod_pg_tables_tab_ui("pg_tables_tab_ui_1")
+# mod_tables_tab_ui("tables_tab_ui_1")
 
 ## To be copied in the server
-# mod_pg_tables_tab_server("pg_tables_tab_ui_1")
+# mod_tables_tab_server("tables_tab_ui_1")
