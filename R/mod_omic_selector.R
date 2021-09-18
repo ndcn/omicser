@@ -68,6 +68,11 @@ mod_omic_selector_ui <- function(id){
 
 #' omic_selector Server Functions
 #'
+#' @param id id for module
+#' @param all_omics complete list
+#' @param def_omics default (target omics)
+#' @param new_db_trig signal that we have a new database loaded
+#'
 #' @noRd
 mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
   moduleServer( id, function(input, output, session) {

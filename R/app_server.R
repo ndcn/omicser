@@ -12,8 +12,9 @@ app_server <- function(input, output, session) {
   # for now we have NOT added these config options to the golem-config.yml
   #CONFIG <- configr::read.config( "./omxr_options.yml" )
   #
-  CONFIG <- omicser::get_config()
 
+
+  CONFIG <- omicser::get_config()
   # CONFIG <- configr::read.config(system.file('omicser_options.yml', package = "omicser"))
 
   DB_NAMES <- CONFIG$database_names
@@ -33,12 +34,9 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     # Call module "ingest" - returns reactive data values
-    rv_data <- mod_ingestor_server("ingestor_ui_1", DB_NAMES, DB_ROOT_PATH)
+    rv_data <- mod_ingestor_server("ingestor_ui_1", DB_NAMES=DB_NAMES, DB_ROOT_PATH=DB_ROOT_PATH)
 
   }
-
-
-
 
   ############################ +
   ## Module 1 : SIDESELECT   ####
@@ -69,7 +67,6 @@ app_server <- function(input, output, session) {
   }
 
 
-
   ############################ +
   ## Module 5 : table
   ##
@@ -77,7 +74,7 @@ app_server <- function(input, output, session) {
   ############################ +
   {
 
-    mod_table_server("table_ui_1", rv_data = rv_data, rv_selections = rv_selections)
+    mod_tables_tab_server("tables_tab_ui_1", rv_data = rv_data, rv_selections = rv_selections)
     # output$my_datatable_0 <- DT::renderDataTable({
     #   DT::datatable(rv$data_table)
     # })
@@ -121,6 +118,6 @@ app_server <- function(input, output, session) {
   ##
   ############################ +
   {
-    mod_additional_info_server("additional_info_ui_1")
+    mod_additional_info_server("additional_info_ui_1", rv_data= rv_data, DB_ROOT_PATH = DB_ROOT_PATH)
   }
 }

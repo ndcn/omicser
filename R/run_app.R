@@ -33,7 +33,7 @@ run_app <- function(
 #' @return
 #' @export
 #'
-#' @examples
+#' @examples TODO
 run_in_browser <- function(){
   run_app(options = list(launch.browser = TRUE)) #with = "shinyAppDir"
 }

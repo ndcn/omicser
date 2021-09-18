@@ -56,10 +56,10 @@ mod_pg_vis_comp_ui <- function(id){
 }
 #' pg_vis_comp Server Functions
 #'
-#' @param id
-#' @param rv_data
-#' @param rv_selections
-#' @param active_layer_data
+#' @param id shiny internal
+#' @param rv_data reactive from ingest
+#' @param rv_selections reactives from side select
+#' @param active_layer_data current data matrix
 #'
 #' @noRd
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
@@ -113,6 +113,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
                      label = "sig test:",
                      choices = test_choices,
                      selected = rv_data$default$test[1]),
+
         selectInput(inputId = ns("SI_comp_fact"),
                     label = "compare: ",
                     choices =  strsplit(cfg[ID=="diff_exp_comps"]$fID, "\\|")[[1]],
@@ -233,6 +234,8 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
           htmlwidgets::onRender("function(el,x){el.on('plotly_legendclick', function(){ return false; })}") %>%
           plotly::config(displayModeBar = FALSE)
 
+      } else {
+        volc <- NULL
       }
 
       return(volc)
@@ -240,6 +243,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
     })
 
     ### Set up data for boxplots
+    ### # TODO: rename e.g. omic_expr_values (in mod_table)
     omic_by_subject <- reactive({
       grouping_var <- filtered_de()$obs_name[1]
 

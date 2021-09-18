@@ -237,6 +237,14 @@ mod_side_selector_server <- function(id, rv_data){
           input$SI_obs_subset,
           rv_data$config)
 
+
+      # check to see if we have the input$SI_obs_subset in our config
+      # if not return andwait for the SI_obs_subset to be updated
+      if ( !(input$SI_obs_subset %in% rv_data$config$UI) ) {
+        print("input$SI_obs_subset no yet updated")
+        return(NULL)
+      }
+
       cfg <- isolate(rv_data$config)
 
       subs <- strsplit(cfg[UI == input$SI_obs_subset]$fID, "\\|")[[1]]
@@ -440,8 +448,6 @@ mod_side_selector_server <- function(id, rv_data){
 
       cfg <- isolate(rv_data$config)
 
-      #curr_sel <- isolate(input$CB_obs_subsel)
-
       subs <- strsplit(cfg[UI == input$SI_obs_subset]$fID, "\\|")[[1]]
       subs2 <- as.numeric(gsub("[^[:digit:]]", "", subs))
       if (all(!is.na(subs2))){
@@ -543,7 +549,7 @@ mod_side_selector_server <- function(id, rv_data){
         rv_selections$plot_var_y <- input$SI_var_y
         rv_selections$plot_feats <- input$CB_xy_var_select
 
-        rv_selections[["omics_list"]] <- omics_list  # value & viz_now
+        rv_selections$omics_list <- omics_list  # value & viz_now
         # do the subsetting here?  create a reactive "data blob"?
 
       } else {

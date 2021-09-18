@@ -30,11 +30,11 @@ app_ui <- function(request) {
           sidebarPanel(
             width = 4,
             conditionalPanel(
-              ' input.top_tab === "welcome" || input.top_tab === "add_info" || input.top_tab === "etc" ',
+              ' input.top_tab === "welcome" || input.top_tab === "add_info" ', #
               mod_side_info_ui("side_info_ui_1")
             ),
             conditionalPanel(
-              ' input.top_tab === "playground" || input.top_tab === "table" || input.top_tab === "ingest" || input.top_tab === "export" ',
+              ' input.top_tab === "playground" || input.top_tab === "table" || input.top_tab === "ingest" ',
               mod_side_selector_ui("side_selector_ui_1")
             )
           ) # sidebarpanel
@@ -73,14 +73,10 @@ app_ui <- function(request) {
             tabPanel(
               title = "Data Table", value = "table",
               # DT::dataTableOutput("my_datatable_0")
-              mod_table_ui(id = "pg_table_ui_1")
-            ),
-            # Etc tab
-            tabPanel(
-              title = "Etc", value = "etc",
-              # copy the landing module for now
-              mod_additional_info_ui(id = "additional_info_ui_1")
+              mod_tables_tab_ui("tables_tab_ui_1")
+
             )
+
           ) # tabsetpanel
         ) # mainpanel
       ), # end sidebarlayout

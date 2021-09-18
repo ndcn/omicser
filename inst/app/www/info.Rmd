@@ -2,26 +2,30 @@
 title: "Quick Start"
 output: html_document
 ---
-### Instructions
+## Instructions
 
-#### 1. Ingest data
-* choose database
-* upload
-+ preloaded
+### 1. Ingest 
+* In the Ingest tab - choose database
+* Click "Load Database"
 
-#### 2. understand context
-* read the landing
-  - whate else
-* info tab
-  - metadata
+### 2. Consider the Context
+* read the welcom message
+* click the "Additional Info" tab for more info about the loaded database
+  - i.e. metadata
   
-#### 3. visualize
-* You can generate 5 types of plots:
-  - volcano
-  - dotplot
-  - `boxplot` 
-  - etc
-  - etc
+### 3. Play and Explore
+* Using the  selector on the left sidebar you can choose what variables and measures you would like to visualize.  
+  * e.g. choosing a bunch of "target omics" 
+* There are a variety of plots in the "Playground"
+  - Quantities 
+    * box/violin plots for marginal statistics
+    * heatmap / dot-plot for visualizing the aggregated measures for chosen -omics
+  - Differential plots
+    * volcano plots of differential expression 
+    * plus interactive auxuilary distributions and meta 
+  - Table browsing
+  - (FUTURE) a pre-computed QC report of the data
+
   
-© 2021 DataTecnica, Inc.
+© 2021 DataTecnica, Inc., CZI, NDCN, 
 
