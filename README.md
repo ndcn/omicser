@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# omicser
+# NDCN -Omics Browser (name TBC)
 
 <!-- badges: start -->
 
@@ -9,66 +9,83 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-NDCN -Omics Browser (omicser TBC) CZI, NDCN -Omics Browser Data
-exploration playground for general -omics sharing. Developed as part of
-the NDCN Open Science initiative Data Science Pilot March-Sept 202.
+## Introduction
 
-# Introduction
+This package allows creation of a browser app for exploring a variety of
+*post-QC* -omics data. Support for *transcript*-omics, *prote*-omics,
+*metabol*-omics and *lipid*-omics has been tested.
 
-The goal is to make a shiny app which contains a simple omics data
-browser. A variety of data formats can be configured to browse. Check
-the `Quickstart` guide.
+The goal is to create a “playground” for exploring -omics data, with an
+aim towards sharing. Primary development was initiated as part of the
+NDCN Open Science initiative Data Science Pilot March-Sept 2021, with
+hopes of formenting ongoing open-source developmnet.
 
-# Installation
+There are two types of “users” mode for this package. First, a “curator”
+scientist who must prepare their dataset for browsing and perform some
+configuration so the app can access teh data. Second, in “browser” mode
+the curated database(s) can be explored with the intention of developing
+intuition about the data and developing hypothesis to pose for the next
+steps of analysis.
 
-This shiny app is build inside an R package and can be installed with
-`devtools::install_github("ergonyc/omicser")`. It is crucial to set up a
-python environment for reticulate which includes scanpy.
+\*Note: although the NDCN browser is not yet officially named, there are
+references to the browser/package as `omicser` or `omxr`.
 
-# Usage
-
-## Locally
-
-You can use it locally from RStudio by:
-
-    library(omicser)
-    launchApp()
-
-## Shiny server
-
-To run it from a shiny server you have to make sure the package is
-installed and then you only have to create a file called `app.R` in the
-folder where you want to run it from. The file `app.R` should only
-contain:
-
-    omicser::launchApp()
-
-# Example data
-
-I added 2 files (positive and negative mode) as example data. After
-installing the package you can find them in the folder `extdata`. In the
-repository you can find them in `inst/extdata`.
-
-## Installation
-
-You can install the current version of omicser from giuthub with:
-
-`devtools::install_github("omicser")`
-
-but first run this::
+## Installing this package
 
 ``` r
-install.packages("devtools")
-install.packages("BiocManager")
-BiocManager::install("SingleCellExperiment")
-
-install.packages("reticulate")
-
-require(reticulate)
-reticulate::install_miniconda()
-reticulate::conda_create("omxr",python_version = 3.9)
-reticulate::conda_install(envname = "omxr", packages = "scanpy")
-reticulate::conda_install(envname="omxr",
-                          channel = "conda-forge",
-                          packages = c("leidenalg") )
+devtools::install_github("ergonyc/omicser")
 ```
+
+## Usage
+
+Once installed two more steps are nescessary: 1. [Data
+Curation](quickstart/03_data_curation.md) 2. [Browser
+Configuration](quickstart/04_configuration.md)
+
+The app is launched from R as:
+
+``` r
+    library(omicser)
+    omicser::launchApp()
+```
+
+## Quickstart
+
+A set of examples scripts and a quickstart guide are available in the
+[`quickstart/`](quickstart/) directory of the repo. The [Quickstart
+Guide](quickstart/README.md) will outline the flow from installation
+through data exploration. i.e.
+
+1.  Environment Setup: underlying tools/packages from R and python.
+    [link](quickstart/01_environment_setup.md)
+2.  Install: creates the browser and curation functions as an R package
+    from github [link](quickstart/02_install.md)
+3.  Data Curation: the *-omics* data curated into a *database*
+    [link](quickstart/03_data_curation.md)
+4.  Configuration: connecting the *-omics database* to the browser app
+    [link](quickstart/04_configuration.md)
+5.  Browsing: explore the data! [link](quickstart/05_browsing.md)
+6.  Share: just a couple extra curation steps to share the data with
+    others [link](quickstart/06_sharing.Rmd) The setup of the browser is
+    5 steps:
+
+## Background
+
+The NDCN Browser (`Omicser`) was developing using
+[`{golem}`](https://github.com/ThinkR-open/golem): “an opinionated
+framework for building production-grade shiny applications.”
+
+## ETC. Caveats
+
+Several “big” updates are planned.
+
+-   data table visualizaiton
+-   QC report tab
+-   Consistent `roxygen2` headers. Currently importing functions
+    (e.g. `require(“package”)`) or using the `package::function` syntax
+    is inconsistent.  
+-   Migrate all dplyr:: tidyverse table manipulation to data.frame
+    syntax and/or dtdplyr.  
+    (test speed improvements on mac, with caveat of apple disabled
+    multithreading)
+-   migration to the NDCN github: `ndcn/omicser`.

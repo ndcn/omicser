@@ -172,67 +172,35 @@ pre code {
 
 <div id="TOC">
 <ul>
-<li><a href="#data-curation-and-preparation">Data curation and preparation</a>
-<ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#data-curation-and-preparation-1">Data curation and preparation</a></li>
-<li><a href="#database-path">database path</a></li>
-<li><a href="#anndata-schema">anndata schema</a></li>
-<li><a href="#loading-the-data">loading the data</a>
-<ul>
-<li><a href="#setup_database"><code>setup_database()</code></a></li>
-</ul></li>
-<li><a href="#differential-expression-tables">Differential Expression Tables</a>
-<ul>
-<li><a href="#de-table-schema">DE Table Schema</a></li>
-<li><a href="#omicsercompute_de_table">omicser::compute_de_table()</a></li>
-</ul></li>
-<li><a href="#save-the-data-to-the-database">Save the data to the <em>DATABASE</em></a></li>
-<li><a href="#next---configure">Next -&gt; “configure”</a></li>
-</ul></li>
+<li><a href="#data-curation-and-preparation">Data Curation and Preparation</a></li>
 </ul>
 </div>
 
-<div id="data-curation-and-preparation" class="section level1">
-<h1>Data curation and preparation</h1>
-<p>We set up our environment and installed the <code>omicser</code> package, and now we are getting into the most cruical step: DATA CURATION</p>
-<div id="overview" class="section level2">
-<h2>Overview</h2>
-<p>The setup of the browser is 5 steps:</p>
-<ol style="list-style-type: decimal">
-<li>Environment Setup: underlying tools/packages from R and pyhon &lt;quickstart/01_environment_setup.Rmd&gt;</li>
-<li>Install: creates the browser and curation functions as an R package from github &lt;quickstart/02_install.Rmd&gt;</li>
-<li>Data Curation: the <em>-omics</em> data curated into a <em>database</em> &lt;quickstart/03_data_curation.Rmd&gt;</li>
-<li>Configuration: connecting the <em>-omics database</em> to the browser app &lt;quickstart/04_configurationn.Rmd&gt;</li>
-<li>Browse: explore the data! &lt;quickstart/05_browse.Rmd&gt;</li>
-</ol>
-</div>
-<div id="data-curation-and-preparation-1" class="section level2">
-<h2>Data curation and preparation</h2>
+<div id="data-curation-and-preparation" class="section level3">
+<h3>Data Curation and Preparation</h3>
 <p>The most crucial step is <em>curating</em> your data into a database that can be loaded by the browser. As the <em>curator</em> you will have the responsibility to make some choices about what and how the data can be seen.<br />
 This process results in specifying the location of the data, and creating files which are formatted for the browser.</p>
-<p>As an example there is the <code>curate_domenico_stem_cell.R</code> script in the /examples subdirectory, which illustrates the steps and some of the choices required to curate your data into a browsable <em>database</em>.</p>
+<p>As an example there is the <a href="examples/curate_domenico_stem_cell.R"><code>curate_domenico_stem_cell.R</code></a> script in the /examples subdirectory, which illustrates the steps and some of the choices required to curate your data into a browsable <em>database</em>.</p>
 <p>The process as illustrated in the example can be broken into the following steps:</p>
 <ol style="list-style-type: decimal">
-<li>provenance &amp; meta data setup - define the meta-data and context for the dataset</li>
-<li>raw data ingest - translate the outputs of your QC to our database format 3a. define helper function - any helpers you need to read and process the outputs of your QC 3b. load the raw data</li>
-<li>pack into the browser data format - pack into the anndata structure (scanpy/python)</li>
-<li>post-processing - compute relavent marginal quantities, define additional annotation and grouping variables, etc. 5a. dimension reduction - compute and cluster if needed</li>
-<li>differential expression tables - compute and/or formate existing tables</li>
-<li>write database - write the files to the database location</li>
+<li><em>provenance &amp; meta data setup</em> - define the meta-data and context for the dataset</li>
+<li><em>raw data ingest</em> - translate the outputs of your QC to our database format 3a. <em>define helper function</em> - any helpers you need to read and process the outputs of your QC 3b.<em>load the raw data</em></li>
+<li><em>pack into the browser data format</em> - pack into the anndata structure (scanpy/python)</li>
+<li><em>post-processing</em> - compute relavent marginal quantities, define additional annotation and grouping variables, etc. 5a. <em>dimension reduction</em> - compute and cluster if needed</li>
+<li><em>differential expression tables</em> - compute and/or formate existing tables</li>
+<li><em>write database </em>- write the files to the database location</li>
 </ol>
-</div>
-<div id="database-path" class="section level2">
-<h2>database path</h2>
+<div id="database-path" class="section level4">
+<h4>Database Path</h4>
 <p>The first step will be to make a folder to contain your data. We will call this folder and contents the <em>DATABASE</em> . Each <em>DATABASE</em> folder that one might want to load into the browser should be in the same path. e.g. the with the repositories <code>quickstart/</code> path there is a <code>test_db</code> folder which contains several sub-folder <em>DATABASES</em></p>
 </div>
-<div id="anndata-schema" class="section level2">
-<h2>anndata schema</h2>
-<p>The anndata scheme requires us to define three pieces of data:</p>
+<div id="anndata-schema" class="section level4">
+<h4><code>AnnData</code> Schema</h4>
+<p>The AnnData scheme requires us to define three pieces of data:</p>
 <ol style="list-style-type: decimal">
-<li>DATA: a matrix - e.g. transcriptomics - count matrix of cells X genes. (WARNING: make sure its a proper matrix, e.g.: <code>as.matrix(data)</code>)</li>
-<li>FEATURE METADATA - a table of <code>omic</code> annotation - e.g. gene/protein names, families, “highly variable genes”, “is marker gene”</li>
-<li>SAMPLE METADATA: a table of sample annotations - e.g. cell types, sample #, batch ID sex, experiemntal condition, etc.</li>
+<li><em>DATA</em>: a matrix e.g. transcriptomics - count matrix of cells X genes.</li>
+<li><em><em>FEATURE</em> METADATA</em>: a table of <code>omic</code> annotation - e.g. gene/protein names, families, “highly variable genes”, “is marker gene”</li>
+<li><em><em>SAMPLE</em> METADATA:</em> a table of sample annotations - e.g. cell types, sample #, batch ID sex, experiemntal condition, etc.</li>
 </ol>
 <p>More info here <a href="https://cran.r-project.org/web/packages/anndata/readme/README.html" class="uri">https://cran.r-project.org/web/packages/anndata/readme/README.html</a></p>
 <div class="figure">
@@ -240,16 +208,16 @@ This process results in specifying the location of the data, and creating files 
 <p class="caption">Anndata scheme</p>
 </div>
 </div>
-<div id="loading-the-data" class="section level2">
-<h2>loading the data</h2>
+<div id="loading-the-data" class="section level4">
+<h4>Loading the data</h4>
 <p>In addition to these three pieces differential expression tables need to be pre-computed.</p>
 <p>Here are some of the key helper functions and he section they fall into.</p>
 <p>Here is an example of loading three data files and then pakaging them with a “helper function” (defined in section #2 of the example curation script) into the <code>data_list</code> which will be used by the next stage.</p>
-<div id="setup_database" class="section level3">
-<h3><code>setup_database()</code></h3>
+</div>
+<div id="setup_database" class="section level4">
+<h4><code>setup_database()</code></h4>
 <p>The <code>omicser::setup_database()</code> function packages the separate tables – DATA matrix, omic FEATURE METADATA annotations, and SAMPLE METADATA – into the anndata object. This function can also take the name of a seurat object file.</p>
-<pre class="r"><code>#==== 4. pack into anndata =========================================================================
-ad &lt;- omicser::setup_database(database_name=DB_NAME,
+<pre class="r"><code>ad &lt;- omicser::setup_database(database_name=DB_NAME,
                               db_path=DS_ROOT_PATH,
                               data_in=data_list,
                               db_meta=NULL ,
@@ -261,33 +229,33 @@ sc &lt;- import(&quot;scanpy&quot;)
 sc$pp$pca(ad)
 sc$pp$neighbors(ad)
 sc$tl$leiden(ad)
-sc$tl$umap(ad)</code></pre>
+sc$tl$umap(ad)
+</code></pre>
 </div>
-</div>
-<div id="differential-expression-tables" class="section level2">
-<h2>Differential Expression Tables</h2>
+<div id="differential-expression-tables" class="section level4">
+<h4>Differential Expression Tables</h4>
 <p>This is probably the trickiest part of the curation Fortunately we have some helper functions to help us compute them. Often – especially for <em>prote-</em> omic databases – differential expressions are computed as the output of the instrumentataion by a commercial software. These algorithms leverage bespoke statistics, so it will be best to reformat those tables.</p>
-<div id="de-table-schema" class="section level3">
-<h3>DE Table Schema</h3>
+<div id="de-table-schema" class="section level5">
+<h5>DE Table Schema</h5>
 <p>Most proteomic, metabelomic and lipidomic data will have differential calculations at the output of the instrumentation (which leverages know statastical assumptions of the quantifications) we can also use scanpys tools to compute differential expression. The diff_exp tables will be needed for volcano plots either way.</p>
 <p>The differential expression table has these fields:</p>
 <ul>
-<li>group - the comparison {names}V{reference}</li>
-<li>names - what are we comparing?</li>
-<li>obs_name - name of the meta data variable</li>
-<li>test_type - what statistic are we using</li>
-<li>reference - the denomenator. or the condition we are comparing expressions values to</li>
-<li>comp_type - grpVref or grpVrest. rest is all other conditions</li>
-<li>logfoldchanges - log2(name/reference)</li>
-<li>scores - statistic score</li>
-<li>pvals - pvalues from the stats test. e.g. t-test</li>
-<li>pvals_adj - adjusted pvalue (Q)</li>
-<li>versus - label which we will choose in the browser</li>
+<li><code>group</code> - the comparison {names}V{reference}</li>
+<li><code>names</code> - what are we comparing?</li>
+<li><code>obs_name</code> - name of the meta data variable</li>
+<li><code>test_type</code> - what statistic are we using</li>
+<li><code>reference</code> - the denomenator. or the condition we are comparing expressions values to</li>
+<li><code>comp_type</code> - grpVref or grpVrest. rest is all other conditions</li>
+<li><code>logfoldchanges</code> - log2(name/reference)</li>
+<li><code>scores</code> - statistic score</li>
+<li><code>pvals</code> - pvalues from the stats test. e.g. t-test</li>
+<li><code>pvals_adj</code> - adjusted pvalue (Q)</li>
+<li><code>versus</code> - label which we will choose in the browser</li>
 </ul>
 </div>
-<div id="omicsercompute_de_table" class="section level3">
-<h3>omicser::compute_de_table()</h3>
-<p>In <code>R/pre_process_helpers.R</code> theres a function which leverages <code>scanpy</code> and the <code>anndata</code> format we have packed to do differential expression. We just need to pass a few quantites and it returns a properly formatted differential expression table.</p>
+<div id="omicsercompute_de_table" class="section level5">
+<h5>omicser::compute_de_table()</h5>
+<p>In <a href="../R/pre_process_helpers.R"><code>R/pre_process_helpers.R</code></a> theres a function which leverages <code>scanpy</code> and the <code>anndata</code> format we have packed to do differential expression. We just need to pass a few quantites and it returns a properly formatted differential expression table.</p>
 <p>parameters:</p>
 <ul>
 <li><code>ad</code> - the anndata object</li>
@@ -305,22 +273,19 @@ sc$tl$umap(ad)</code></pre>
 test_types &lt;- c(&#39;wilcoxon&#39;)
 comp_types &lt;- c(&#39;allVrest&#39;)
 obs_names &lt;- c(&#39;disease&#39;,&#39;cell_type&#39;)
-diff_exp &lt;- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)</code></pre>
+diff_exp &lt;- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
+</code></pre>
 </div>
 </div>
-<div id="save-the-data-to-the-database" class="section level2">
-<h2>Save the data to the <em>DATABASE</em></h2>
+<div id="save-the-data-to-the-database" class="section level4">
+<h4>Save the data to the <em>DATABASE</em></h4>
 <p>Finally we write this the anndata data object to our <em>database_DATABASE</em> folder. In the examples contained in the <code>quickstart/</code> folder we defined <code>DS_ROOT_PATH &lt;- &quot;test_db&quot;</code>, and <code>DB_NAME &lt;- &quot;domenico_stem_cell&quot;</code> .</p>
-<pre class="r"><code>#==== 8. write data file to load  =========================================================================
-ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,&quot;db_data.h5ad&quot;))</code></pre>
+<pre class="r"><code>ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,&quot;db_data.h5ad&quot;))</code></pre>
 <p>In the end each DATABASE folder should now these three files: 1. <code>db_data.h5ad</code> - the anndata object<br />
 2. <code>db_de_table.rds</code> - differntial expression table 3, <code>db_meta.yml</code> - list of database ‘meta’ information</p>
-<p>You might also want to save some <em>intermediate</em> files such as in the examples which also generate: <code>normalized_data.h5ad</code>,<code>core_data.h5ad</code>,and <code>norm_data_plus_dr.h5ad</code>.</p>
-</div>
-<div id="next---configure" class="section level2">
-<h2>Next -&gt; “configure”</h2>
-<p>We are almost there. In the next section we will cover the configuration which will add a <code>db_config.yml</code> files to the <em>DATABASE</em> directory, and create an <code>omicser_options.yml</code> in the directory where the app will be executed.</p>
-<p>&lt;LINK TO 04_configuration.Rmd&gt;</p>
+<p>You might also want to save some <em>intermediate</em> files such as in the <a href="examples/curate_pbmc3k.R">examples</a> which also generate: <code>normalized_data.h5ad</code>,<code>core_data.h5ad</code>,and <code>norm_data_plus_dr.h5ad</code>.</p>
+<p>We are almost there. In the next section we will cover the configuration which will add a <code>db_config.yml</code> files to the <em>DATABASE</em> directory, and create an <a href="omicser_options.yml"><code>omicser_options.yml</code></a> in the directory where the app will be executed.</p>
+<p>On to <a href="04_configuration.md">CONFIGURATION</a></p>
 </div>
 </div>
 

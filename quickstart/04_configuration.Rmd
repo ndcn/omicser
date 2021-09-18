@@ -40,40 +40,6 @@ omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
 
 # WORK IN PROGRESS:  NOT written
 
-## Overview
-Now we just need to create some configuraiton files that will tell the NDCN `omicser` browser how to find the _DATABASES_ and what variables belong to which widgets.
-
-In order to use the NDCN ‘omics’ browser we need to set a few things up.  This should be four simple steps:
-
-1. Setup the environment: The underlying tools/packages from R and python
-2. Create the browser itself: which is an R package available on github
-3. Curate a _database_ of ‘omics’ data for browsing
-4. Configure the _database_ for the browser, and finally
-5. Run the browser!
-
-The following materials should provide a simple set of steps to accomplish this and start browsing ‘omics’!
-This document assumes software installation and environment configuration documented in the README.  
-    
-## Data curation and preparation
-
-The most crucial step is _curating_ your data into a database that can be loaded by the browser.  As the _curator_ you will have the responsibility to make some choices about what and how the data can be seen.  
-This process results in specifying the location of the data, and creating files which are formatted for the browser.
-
-As an example there is the `curate_domenico_stem_cell.R` script in the /examples subdirectory, which illustrates the steps and some of the choices required to curate your data into a browsable _database_. 
-
-The process as illustrated in the example can be broken into the following steps:
-
-1. provenance & meta data setup - define the meta-data and context for the dataset
-2. helper function definition - any helpers you need
-3. raw data ingest - load the raw data from whatever format they live in
-4. pack into the browser data format - pack into the anndata structure (scanpy/python)
-5. post-processing - compute relavent marginal quantities, define additional annotation and grouping variables, etc.
-  5a. dimension reduction - compute and cluster if needed
-6. differential expression tables - compute and/or formate existing tables
-7. write database - write the files to the database location
-
-
-
 
 ``` {r, 3-config-1, eval=FALSE}
 #==== 7. create configs =========================================================================
@@ -113,15 +79,5 @@ configr::write.config(config.dat = conf_list, file.path = file.path(DS_ROOT_PATH
 
 ```
 
-## Browse!!
 
-Assuming you have already loaded the omicser package, once the .yml files have been generated and teh data placed in the right directories you are good to browse!
-
-```{r, 4-browse-1, eval=FALSE}
-
-run_app(options = list(launch.browser = TRUE))
-
-```
-
-Note, that if you are using a development setup, you might want to run the run_dev script which will handle unloading / re-loading for you.
 

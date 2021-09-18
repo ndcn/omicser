@@ -172,16 +172,12 @@ pre code {
 
 <div id="TOC">
 <ul>
-<li><a href="#work-in-progress-not-written">WORK IN PROGRESS: NOT written</a>
-<ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#data-curation-and-preparation">Data curation and preparation</a></li>
-<li><a href="#browse">Browse!!</a></li>
-</ul></li>
+<li><a href="#work-in-progress-not-written">WORK IN PROGRESS: NOT written</a></li>
 </ul>
 </div>
 
-<pre class="r"><code># Now move to the directory where you want to execute the omicser
+<pre class="r"><code>
+# Now move to the directory where you want to execute the omicser
 # and make the omicser_options.yml
 
 OMICSER_RUN_DIR &lt;- &quot;full/path/to/where/omicser_options.yml/goes&quot;
@@ -197,37 +193,10 @@ omicser_options &lt;- list(database_names=database_names,
                         db_root_path=db_root_path,
                         conda_environment=conda_environment)
 
-omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )</code></pre>
+omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
+</code></pre>
 <div id="work-in-progress-not-written" class="section level1">
 <h1>WORK IN PROGRESS: NOT written</h1>
-<div id="overview" class="section level2">
-<h2>Overview</h2>
-<p>Now we just need to create some configuraiton files that will tell the NDCN <code>omicser</code> browser how to find the <em>DATABASES</em> and what variables belong to which widgets.</p>
-<p>In order to use the NDCN ‘omics’ browser we need to set a few things up. This should be four simple steps:</p>
-<ol style="list-style-type: decimal">
-<li>Setup the environment: The underlying tools/packages from R and python</li>
-<li>Create the browser itself: which is an R package available on github</li>
-<li>Curate a <em>database</em> of ‘omics’ data for browsing</li>
-<li>Configure the <em>database</em> for the browser, and finally</li>
-<li>Run the browser!</li>
-</ol>
-<p>The following materials should provide a simple set of steps to accomplish this and start browsing ‘omics’! This document assumes software installation and environment configuration documented in the README.</p>
-</div>
-<div id="data-curation-and-preparation" class="section level2">
-<h2>Data curation and preparation</h2>
-<p>The most crucial step is <em>curating</em> your data into a database that can be loaded by the browser. As the <em>curator</em> you will have the responsibility to make some choices about what and how the data can be seen.<br />
-This process results in specifying the location of the data, and creating files which are formatted for the browser.</p>
-<p>As an example there is the <code>curate_domenico_stem_cell.R</code> script in the /examples subdirectory, which illustrates the steps and some of the choices required to curate your data into a browsable <em>database</em>.</p>
-<p>The process as illustrated in the example can be broken into the following steps:</p>
-<ol style="list-style-type: decimal">
-<li>provenance &amp; meta data setup - define the meta-data and context for the dataset</li>
-<li>helper function definition - any helpers you need</li>
-<li>raw data ingest - load the raw data from whatever format they live in</li>
-<li>pack into the browser data format - pack into the anndata structure (scanpy/python)</li>
-<li>post-processing - compute relavent marginal quantities, define additional annotation and grouping variables, etc. 5a. dimension reduction - compute and cluster if needed</li>
-<li>differential expression tables - compute and/or formate existing tables</li>
-<li>write database - write the files to the database location</li>
-</ol>
 <pre class="r"><code>#==== 7. create configs =========================================================================
 # differentials  #if we care we need to explicitly state. defaults will be the order...
 conf_list &lt;- list(
@@ -260,14 +229,8 @@ conf_list &lt;- list(
 
 )
 configr::write.config(config.dat = conf_list, file.path = file.path(DS_ROOT_PATH,DB_NAME,&quot;config.yml&quot; ),
-                      write.type = &quot;yaml&quot;, indent = 4)</code></pre>
-</div>
-<div id="browse" class="section level2">
-<h2>Browse!!</h2>
-<p>Assuming you have already loaded the omicser package, once the .yml files have been generated and teh data placed in the right directories you are good to browse!</p>
-<pre class="r"><code>run_app(options = list(launch.browser = TRUE))</code></pre>
-<p>Note, that if you are using a development setup, you might want to run the run_dev script which will handle unloading / re-loading for you.</p>
-</div>
+                      write.type = &quot;yaml&quot;, indent = 4)
+</code></pre>
 </div>
 
 

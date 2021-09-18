@@ -3,22 +3,26 @@
 
 # Quickstart: NDCN -Omics Browser
 
+# TODO:
+
+-   add links between teh headings and to the files referenced.
+
 ## Overview
 
 These *quickstart* materials are intended to quickly help a user /
 curator get the NDCN Omics browser up and running. Contained in this
 directory are a sequence of vignettes which detail each step of:
 
-1.  Environment Setup
-2.  Installation
-3.  Data Curation
-4.  Configuration
-5.  Browsing
+1.  [Environment Setup](01_environment_setup.md)
+2.  [Installation](02_install.md)
+3.  [Data Curation](03_data_curation.md)
+4.  [Configuration](04_configuration.md)
+5.  [Browsing](05_browsing.md)
 
-There is also a subdirectory of `examples/` which have some R-scripts
-used to curate and execute example datasets, and *stubs* to some
-directories holding the curated *DATABASE* examples and configuration
-files (`omicser_options.yml`)
+There is also a subdirectory of [`examples/`](examples/) which have some
+R-scripts used to curate and execute example datasets, and *stubs* to
+some directories holding the curated *DATABASE* examples and
+configuration files (e.g. [`omicser_options.yml`](omicser_options.yml))
 
 Below the entire cycle of vignettes is copied into a single tutorial.
 
@@ -101,22 +105,7 @@ devtools::install_github("ergonyc/omicser")
 
 Thats it! Now comes the crucial (and fun!) part: curating your data.
 
-### Data curation and preparation
-
-We set up our environment and installed the `omicser` package, and now
-we are getting into the most cruical step: DATA CURATION
-
-The setup of the browser is 5 steps:
-
-1.  Environment Setup: underlying tools/packages from R and pyhon
-    &lt;quickstart/01\_environment\_setup.Rmd&gt;
-2.  Install: creates the browser and curation functions as an R package
-    from github &lt;quickstart/02\_install.Rmd&gt;
-3.  Data Curation: the *-omics* data curated into a *database*
-    &lt;quickstart/03\_data\_curation.Rmd&gt;
-4.  Configuration: connecting the *-omics database* to the browser app
-    &lt;quickstart/04\_configurationn.Rmd&gt;
-5.  Browse: explore the data! &lt;quickstart/05\_browse.Rmd&gt;
+### Data Curation and Preparation
 
 The most crucial step is *curating* your data into a database that can
 be loaded by the browser. As the *curator* you will have the
@@ -168,8 +157,7 @@ The anndata scheme requires us to define three pieces of data:
 More info here
 <https://cran.r-project.org/web/packages/anndata/readme/README.html>
 
-![Anndata
-scheme](/Users/ahenrie/Projects/NDCN_dev/omicser/inst/anndata_for_r.png)
+![Anndata scheme](../inst/anndata_for_r.png)
 
 #### Loading the data
 
@@ -231,25 +219,26 @@ needed for volcano plots either way.
 
 The differential expression table has these fields:
 
--   group - the comparison {names}V{reference}
--   names - what are we comparing?
--   obs\_name - name of the meta data variable
--   test\_type - what statistic are we using
--   reference - the denomenator. or the condition we are comparing
+-   `group` - the comparison {names}V{reference}
+-   `names` - what are we comparing?
+-   `obs_name` - name of the meta data variable
+-   `test_type` - what statistic are we using
+-   `reference` - the denomenator. or the condition we are comparing
     expressions values to
--   comp\_type - grpVref or grpVrest. rest is all other conditions
--   logfoldchanges - log2(name/reference)
--   scores - statistic score
--   pvals - pvalues from the stats test. e.g. t-test
--   pvals\_adj - adjusted pvalue (Q)
--   versus - label which we will choose in the browser
+-   `comp_type` - grpVref or grpVrest. rest is all other conditions
+-   `logfoldchanges` - log2(name/reference)
+-   `scores` - statistic score
+-   `pvals` - pvalues from the stats test. e.g. t-test
+-   `pvals_adj` - adjusted pvalue (Q)
+-   `versus` - label which we will choose in the browser
 
 ##### omicser::compute\_de\_table()
 
-In `R/pre_process_helpers.R` theres a function which leverages `scanpy`
-and the `anndata` format we have packed to do differential expression.
-We just need to pass a few quantites and it returns a properly formatted
-differential expression table.
+In [`R/pre_process_helpers.R`](../R/pre_process_helpers.R) theres a
+function which leverages `scanpy` and the `anndata` format we have
+packed to do differential expression. We just need to pass a few
+quantites and it returns a properly formatted differential expression
+table.
 
 parameters:
 
@@ -295,18 +284,22 @@ In the end each DATABASE folder should now these three files: 1.
 list of database ‘meta’ information
 
 You might also want to save some *intermediate* files such as in the
-examples which also generate:
+[examples](examples/curate_pbmc3k.R) which also generate:
 `normalized_data.h5ad`,`core_data.h5ad`,and `norm_data_plus_dr.h5ad`.
 
 We are almost there. In the next section we will cover the configuration
 which will add a `db_config.yml` files to the *DATABASE* directory, and
-create an `omicser_options.yml` in the directory where the app will be
-executed.
+create an [`omicser_options.yml`](omicser_options.yml) in the directory
+where the app will be executed.
 
 ### Configuration
 
 #### WIP
 
 ### Browsing
+
+#### WIP
+
+### Sharing
 
 #### WIP

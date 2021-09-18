@@ -32,37 +32,39 @@ There are two types of "users" mode for this package.  First, a "curator" scient
 
 ## Installing this package
 
-```{r, plug_mode, eval=FALSE}
+```{r, 00-install, eval=FALSE}
 devtools::install_github("ergonyc/omicser")
 ```
 
 ## Usage
 
 Once installed two more steps are nescessary:
-1. Data Curation <quickstart/03_data_curation.Rmd>
-2. Browser Configuration  <quickstart/04_configurationn.Rmd>
+1. [Data Curation](quickstart/03_data_curation.md)
+2. [Browser Configuration](quickstart/04_configuration.md)  
 
-After configuration the app is launched from R as:
+The app is launched from R as:
 
-```{r, plug_mode, eval=FALSE}
+```{r, 01-launch, eval=FALSE}
     library(omicser)
     omicser::launchApp()
 ```
 
 ## Quickstart
 
-A set of examples scripts and a quickstart guide are available in the `quickstart/` directory of the repo.  The Quickstart Guide will outline the flow from installation through data exploration.  i.e.
+A set of examples scripts and a quickstart guide are available in the [`quickstart/`](quickstart/) directory of the repo.  The [Quickstart Guide](quickstart/README.md) will outline the flow from installation through data exploration.  i.e.
 
-1. Environment Setup: underlying tools/packages from R and pyhon <quickstart/01_environment_setup.Rmd>
-2. Install: creates the browser and curation functions as an R package from github <quickstart/02_install.Rmd>
-3. Data Curation: the _-omics_ data curated into a _database_  <quickstart/03_data_curation.Rmd>
-4. Configuration: connecting the _-omics database_ to the browser app <quickstart/04_configurationn.Rmd>
-5. Browse: explore the data!  <quickstart/05_browse.Rmd>
+1. Environment Setup: underlying tools/packages from R and python. [link](quickstart/01_environment_setup.md)
+2. Install: creates the browser and curation functions as an R package from github [link](quickstart/02_install.md)
+3. Data Curation: the _-omics_ data curated into a _database_ [link](quickstart/03_data_curation.md)
+4. Configuration: connecting the _-omics database_ to the browser app [link](quickstart/04_configuration.md)
+5. Browsing: explore the data!  [link](quickstart/05_browsing.md)
+6. Share: just a couple extra curation steps to share the data with others [link](quickstart/06_sharing.Rmd)
+The setup of the browser is 5 steps:
 
 
 ## Background
 
-The NDCN Browser (`Omicser`) was developing using `{golem}`: "an opinionated framework for building production-grade shiny applications." - https://github.com/ThinkR-open/golem
+The NDCN Browser (`Omicser`) was developing using [`{golem}`](https://github.com/ThinkR-open/golem): "an opinionated framework for building production-grade shiny applications." 
 
 ## ETC. Caveats
 Several “big” updates are planned.
@@ -75,12 +77,13 @@ Several “big” updates are planned.
 + migration to the NDCN github: `ndcn/omicser`.
 
 
-```{r, render-quickstart1-5, eval=TRUE, include = FALSE}
+```{r, render-quickstart1-6, eval=TRUE, include = FALSE}
 rmarkdown::render("quickstart/01_environment_setup.Rmd")
 rmarkdown::render("quickstart/02_install.Rmd")
 rmarkdown::render("quickstart/03_data_curation.Rmd")
 rmarkdown::render("quickstart/04_configuration.Rmd")
 rmarkdown::render("quickstart/05_browsing.Rmd")
+rmarkdown::render("quickstart/06_sharing.Rmd")
 ```
 
 
