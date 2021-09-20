@@ -237,7 +237,6 @@ mod_side_selector_server <- function(id, rv_data){
           input$SI_obs_subset,
           rv_data$config)
 
-
       # check to see if we have the input$SI_obs_subset in our config
       # if not return andwait for the SI_obs_subset to be updated
       if ( !(input$SI_obs_subset %in% rv_data$config$UI) ) {

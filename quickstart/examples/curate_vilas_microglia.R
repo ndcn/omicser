@@ -20,7 +20,6 @@
 #==== 0. preamble/setup ==================================================
 DEV_OMICSER <- TRUE
 
-
 if (DEV_OMICSER){
   # this should be a full path... e.g. ~/Projects/NDCN_dev/omicser
   # but for github, we will set relative to the repo BASE
@@ -33,11 +32,15 @@ if (DEV_OMICSER){
   OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
 
 }
-
+setwd(OMICSER_RUN_DIR) # incase we have relative dir
+# BOOTSTRAP the options we have already set up...
+# NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
+omicser_options <- omicser::get_config(in_path = OMICSER_RUN_DIR)
 CONDA_ENV <- omicser_options$conda_environment
 DB_ROOT_PATH <- omicser_options$db_root_path
 
 
+DB_NAME <-  list("10x PBMC3k" = "pbmc3k")
 DB_NAME <-  list("Vilas Microglia (sceasy)" = "vilas_microglia_sceasy")
 
 if (! (DB_NAME %in% omicser_options$database_names)){
@@ -46,11 +49,12 @@ if (! (DB_NAME %in% omicser_options$database_names)){
 }
 
 
-#DB_NAME = "yassene_lipid"
+#DB_NAME = "pbmc3k"
 DB_DIR = file.path(DB_ROOT_PATH,DB_NAME)
 if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
 }
+
 
 
 
@@ -132,6 +136,8 @@ colnames(rawX) <- raw$var_names
 
 rawX <- rawX[which(raw$obs_names %in% ad$obs_names),(raw$var_names %in% ad$var_names)]
 raw$obs_names <- raw$obs_names[which(raw$obs_names %in% ad$obs_names)]
+
+
 
 newraw <- anndata::AnnData(
   X=rawX,

@@ -11,11 +11,6 @@
 mod_ingestor_ui <- function(id) {
   ns <- NS(id)
 
-  # # TODO: deltet this or make it dynamic?
-  # #database_names =  golem::get_golem_options( "database_names" )
-  # # database_names <- DB_NAMES
-  # CONFIG <- configr::read.config( "./omxr_options.yml" )
-  # DB_NAMES <- CONFIG$database_names
 
   tagList(
     fluidRow(
@@ -83,10 +78,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
     # DB_ROOT_PATH <- CONFIG$ds_root_path
     database_names <- DB_NAMES
 
-    ############################ +
-    ## initiate reactive database structure
-    ##
-    ############################ +
+    ## rv_data (to_return) REACTIVE VALUES  ===================
     to_return <- reactiveValues(
       # these values hold the database contents (only reactive because we can choose)
       database_name = NULL,
@@ -119,9 +111,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
 
     updateSelectizeInput(session, "SI_database", choices = database_names, selected = DB_NAMES[1], server=TRUE)
 
-    ############################ +
-    ## load dataset
-    ############################ +
+## load dataset (observeEvent) ===================
     observeEvent(input$SI_database, {
       req(input$SI_database)
 
@@ -132,7 +122,6 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
       #
       ad <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,db_name,"db_data.h5ad"))
       diff_exp = readRDS(file = file.path(DB_ROOT_PATH,db_name,"db_de_table.rds"))
-
       conf_def <- gen_config_table(ad, db_name, DB_ROOT_PATH)
 
       omics <- ad$var_names
@@ -157,6 +146,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
 
     })
 
+    ## observes ===================
 
     observe({
       if ( !is.null(to_return$database_name) ) {
@@ -166,6 +156,21 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
         print(" no database loaded... .")
       }
     })
+
+    # keep these up to date for side_select..
+    # # Should this just be done in     observeEvent(input$SI_database,?
+    observe({
+      #to_return$database_name <- input$SI_database
+      to_return$database_name  <- names(which(database_names==input$SI_database))
+
+    })
+    # load button :: send the reactive object back to the app...
+    observeEvent(input$AB_ingest_load, {
+      # all other return values set with SI_database
+      to_return$trigger <- to_return$trigger + 1
+    })
+
+    ## render info (TODO:) ===================
 
 # TODO: clean up these renderPrint...
     output$ui_obs_exp <- renderPrint({
@@ -177,6 +182,14 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
       }
     })
 
+
+
+    # show the factors that have been loaded
+    # # TODO: render a nicely formatted version of the meta data and all this stuff...
+    output$ui_datatype <- renderText({
+      print(paste0("db type - ", to_return$omics_type , "-omics"))
+    })
+
     output$ui_omics <- renderPrint({
       if (is.null(to_return$omics)) {
         print("no datbase loaded")
@@ -186,25 +199,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
       }
     })
 
-    # keep these up to date for side_select..
-    # # Should this just be done in     observeEvent(input$SI_database,?
-    observe({
-      #to_return$database_name <- input$SI_database
-      to_return$database_name  <- names(which(database_names==input$SI_database))
 
-    })
-
-    # show the factors that have been loaded
-    output$ui_datatype <- renderText({
-      print(paste0("db type - ", to_return$omics_type , "-omics"))
-    })
-
-
-    # load button :: send the reactive object back to the app...
-    observeEvent(input$AB_ingest_load, {
-      # all other return values set with SI_database
-      to_return$trigger <- to_return$trigger + 1
-    })
 
 
     return(to_return)

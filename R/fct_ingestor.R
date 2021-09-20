@@ -241,6 +241,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
       omxr_conf[ UI==conf_list$default_factors[def_i] ]$default <- def_i
     }
 
+
     all_measures <- c(conf_list$y_obs, conf_list$y_var)
     for (def_i in 1:length(all_measures)){
       # need errorcheck?
@@ -255,14 +256,24 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     omxr_def$obs_x <- omxr_conf[default == 1]$UI #
 
     omxr_def$obs_y <- omxr_conf[measure == TRUE & field == "obs"]$UI[1] #
-    omxr_def$obs_subset <- omxr_conf[default == 2]$UI #
+
+    # in case we don't have more than 1 default we need to check...
+    #
+    if (length(conf_list$default_factors)>1){
+      def_n <- 2
+    } else {
+      def_n <- 1
+    }
+
+    omxr_def$obs_subset <- omxr_conf[default == def_n]$UI #
+    omxr_def$color_grp <- omxr_conf[default == def_n]$UI # color by...
+
 
     omxr_def$var_x <- omxr_conf[grp==TRUE & field=="var"]$UI[1] #
     omxr_def$var_y <- omxr_conf[measure == TRUE & field == "var"]$UI[1] #
     omxr_def$var_subset <- omxr_conf[grp==TRUE & field=="var"]$UI[1]  # Us
 
-    omxr_def$color_grp <- omxr_conf[default == 2]$UI # color by...
-
+    # TODO: add new parameter defaults here.
     omxr_def$scale <- NA # raw / area / z
     omxr_def$trans <- NA # log10 or no
     omxr_def$p_val <- NA # corrected?

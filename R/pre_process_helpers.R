@@ -165,36 +165,60 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
 
   if(class(data_in)[1] == "Seurat"){
     # how stereotyped is this pattern?  check for Oscar...
-    ad <- sceasy::convertFormat(data_in, from="seurat", to="anndata",
+    ad <- anndata::AnnDataR6$new(
+              sceasy::convertFormat(data_in, from="seurat", to="anndata",
                                 outFile = NULL,
                                 assay = 'SCT',
                                 main_layer = 'data',
                                 transfer_layers = c('data', 'counts', 'scale.data')
+                                )
     )
 
-    raw <- sceasy::convertFormat(data_in, from="seurat", to="anndata",
+    raw <- anndata::AnnDataR6$new(
+            sceasy::convertFormat(data_in, from="seurat", to="anndata",
                                  outFile = NULL,
                                  assay = 'RNA',
                                  main_layer = 'counts',
                                  transfer_layers = NULL)
+            )
 
 
+
+    if ( !("sample_ID" %in% ad$obs_keys()) ){
+      obs <- ad$obs
+      obs <- obs %>% dplyr::mutate(sample_ID=ad$obs_names) %>%
+        dplyr::relocate(sample_ID)
+      ad$obs <- obs
+    }
 
     #enforce sample_ID
-    # TODO: use anndata:: instead of py_to_r wrappers?
+    # TODO:
     #      replace dplyr with data.table
-    if ( !("sample_ID" %in% reticulate::py_to_r(ad$obs_keys()) ) ){
-      tmp <- dplyr::mutate( reticulate::py_to_r(ad$obs),
-                            sample_ID=reticulate::py_to_r(ad$obs_names))
-      ad$obs <- reticulate::r_to_py(tmp)
+    if ( !("omics_name" %in% ad$var_keys()) ){
+      var_ <- ad$var
+      var_ <- var_ %>% dplyr::mutate(omics_name=ad$var_names) %>%
+        dplyr::relocate(omics_name)
 
-      tmp <- dplyr::mutate( reticulate::py_to_r(raw$obs),
-                            sample_ID=reticulate::py_to_r(raw$obs_names))
-      raw$obs <- reticulate::r_to_py(tmp)
+      ad$var <- var_
 
     }
 
-    ad$raw <- raw
+    # force RAW?
+    if (is.null(ad$raw)) {
+      ad$raw <- ad$copy()
+    } else {
+      obs <- ad$raw$obs
+      obs <- obs %>% dplyr::mutate(sample_ID=ad$raw$obs_names) %>%
+        dplyr::relocate(sample_ID)
+      ad$raw$obs <- obs
+      var_ <- ad$raw$var
+      var_ <- var_ %>% dplyr::mutate(omics_name=ad$raw$var_names) %>%
+        dplyr::relocate(omics_name)
+
+      ad$raw$var <- var_
+
+    }
+
     #  DISABLED >> getting bio-conductor dependencies is a pain...
     #     } else if (class(data_in)[1] == "SingleCellExperiment") {
     #       print("SingleCellExperiment not enabled")
@@ -267,6 +291,43 @@ setup_database <- function(database_name, db_path, data_in, db_meta , re_pack=TR
 
     } else if (tolower(tools::file_ext(data_in)) == "h5ad") {
       ad <- anndata::read_h5ad(data_in)
+      # obs_meta - ensure that we are factored and sample_ID is first column
+
+      if ( !("sample_ID" %in% ad$obs_keys()) ){
+         obs <- ad$obs
+         obs <- obs %>% dplyr::mutate(sample_ID=ad$obs_names) %>%
+                        dplyr::relocate(sample_ID)
+         ad$obs <- obs
+       }
+
+      #enforce sample_ID
+      # TODO:
+      #      replace dplyr with data.table
+      if ( !("omics_name" %in% ad$var_keys()) ){
+        var_ <- ad$var
+        var_ <- var_ %>% dplyr::mutate(omics_name=ad$var_names) %>%
+                        dplyr::relocate(omics_name)
+
+        ad$var <- var_
+
+      }
+
+      # force RAW?
+      if (is.null(ad$raw)) {
+        ad$raw <- ad$copy()
+      } else {
+        obs <- ad$raw$obs
+        obs <- obs %>% dplyr::mutate(sample_ID=ad$raw$obs_names) %>%
+          dplyr::relocate(sample_ID)
+        ad$raw$obs <- obs
+        var_ <- ad$raw$var
+        var_ <- var_ %>% dplyr::mutate(omics_name=ad$raw$var_names) %>%
+          dplyr::relocate(omics_name)
+
+        ad$raw$var <- var_
+
+      }
+
 
     } else if (tolower(tools::file_ext(data_in)) == "loom"){
       print("loom loading not enabled")

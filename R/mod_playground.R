@@ -204,6 +204,8 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       hm_data = data.table()
       #TODO:  we already subsetted, so don't need to loop?  # can't enable "transpose" version until
       # loop over sample_IDs / subset category
+
+      browser()
       keep_cols <- c( in_conf[UI == X_ID]$ID, in_conf[UI == X_fact]$ID, in_conf[UI == in_subset]$ID, in_conf[UI == grp_x]$ID)
       for(omic_j in omic_js){
         tmp <- tmp_meta[, keep_cols, with = FALSE]
