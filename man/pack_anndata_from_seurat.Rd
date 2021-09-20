@@ -10,7 +10,7 @@ pack_anndata_from_seurat(seurat_obj_name)
 \item{seurat_obj}{}
 }
 \value{
-ad the anndata object we are browsing
+adata the anndata object we are browsing
 }
 \description{
 pack_anndata_from_seurat

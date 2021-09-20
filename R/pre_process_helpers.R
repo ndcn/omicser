@@ -4,18 +4,18 @@
 
 #' Title
 #'
-#' @param ad the anndata object
+#' @param adata the anndata object
 #' @param comp_types what kind of comparisons?  "allVrest" or "{a}V{b}"
 #' @param test_types statistical tests - t-test, etc
-#' @param obs_names name of the ad$obs column defining the comparision groups
+#' @param obs_names name of the adata$obs column defining the comparision groups
 #' @param sc scanpy
 #'
 #' @return
 #' @export compute_de_table
 #'
 #' @examples TODO
-compute_de_table <- function(ad,comp_types, test_types, obs_names,sc) {
-  # this should update ad in place with the diff_exp data...
+compute_de_table <- function(adata,comp_types, test_types, obs_names,sc) {
+  # this should update adata in place with the diff_exp data...
 
   diff_exp <- data.frame()
   for (obs_name in obs_names){
@@ -31,26 +31,26 @@ compute_de_table <- function(ad,comp_types, test_types, obs_names,sc) {
 
 
         if (reference == "rest") { #grpVrest
-          sc$tl$rank_genes_groups(ad,
+          sc$tl$rank_genes_groups(adata,
                                   obs_name,
                                   groups = "all",
                                   reference = reference,
                                   method=test_type,
                                   use_raw = FALSE,
                                   key_added = key)
-          de_table <- sc$get$rank_genes_groups_df(ad,
+          de_table <- sc$get$rank_genes_groups_df(adata,
                                                   group=NULL,
                                                   key=key)
           de_table$comp_type <- comp_type
         } else { #compare group vs reference
-          sc$tl$rank_genes_groups(ad,
+          sc$tl$rank_genes_groups(adata,
                                   obs_name,
                                   groups = list(group),
                                   reference = reference,
                                   method=test_type,
                                   use_raw = FALSE,
                                   key_added = key)
-          de_table <- sc$get$rank_genes_groups_df(ad,
+          de_table <- sc$get$rank_genes_groups_df(adata,
                                                   group=group,
                                                   key=key)
           de_table$group <- group
@@ -76,7 +76,7 @@ compute_de_table <- function(ad,comp_types, test_types, obs_names,sc) {
 #'
 #' @param data_in - list of matrices, tables, and lists containing the data to pack into the db
 #'
-#' @return ad the anndata object we are browsing
+#' @return adata the anndata object we are browsing
 #' @export pack_anndata_from_csv
 #'
 #' @examples  TODO
@@ -129,7 +129,7 @@ pack_anndata_from_csv <- function(data_in){
       uns <- list(etc=data_in$uns)
     }
 
-    ad <- anndata::AnnData(
+    adata <- anndata::AnnData(
       X = X,
       obs = obs,
       var = var_,
@@ -139,10 +139,10 @@ pack_anndata_from_csv <- function(data_in){
       # could _everything be in a dataframe???
       # yes... lipidomic... strip off first two columns?
       print("WARNING:  did not receive a list of data as expected")
-      ad <- NULL
+      adata <- NULL
 
     }
-  return(ad)
+  return(adata)
 }
 
 
@@ -153,7 +153,7 @@ pack_anndata_from_csv <- function(data_in){
 #'
 #' @param seurat_obj
 #'
-#' @return ad the anndata object we are browsing
+#' @return adata the anndata object we are browsing
 #' @export pack_anndata_from_seurat
 #'
 #' @examples  TODO
@@ -165,7 +165,7 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
 
   if(class(data_in)[1] == "Seurat"){
     # how stereotyped is this pattern?  check for Oscar...
-    ad <- anndata::AnnDataR6$new(
+    adata <- anndata::AnnDataR6$new(
               sceasy::convertFormat(data_in, from="seurat", to="anndata",
                                 outFile = NULL,
                                 assay = 'SCT',
@@ -184,55 +184,55 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
 
 
 
-    if ( !("sample_ID" %in% ad$obs_keys()) ){
-      obs <- ad$obs
-      obs <- obs %>% dplyr::mutate(sample_ID=ad$obs_names) %>%
+    if ( !("sample_ID" %in% adata$obs_keys()) ){
+      obs <- adata$obs
+      obs <- obs %>% dplyr::mutate(sample_ID=adata$obs_names) %>%
         dplyr::relocate(sample_ID)
-      ad$obs <- obs
+      adata$obs <- obs
     }
 
     #enforce sample_ID
     # TODO:
     #      replace dplyr with data.table
-    if ( !("omics_name" %in% ad$var_keys()) ){
-      var_ <- ad$var
-      var_ <- var_ %>% dplyr::mutate(omics_name=ad$var_names) %>%
+    if ( !("omics_name" %in% adata$var_keys()) ){
+      var_ <- adata$var
+      var_ <- var_ %>% dplyr::mutate(omics_name=adata$var_names) %>%
         dplyr::relocate(omics_name)
 
-      ad$var <- var_
+      adata$var <- var_
 
     }
 
     # force RAW?
-    if (is.null(ad$raw)) {
-      ad$raw <- ad$copy()
+    if (is.null(adata$raw)) {
+      adata$raw <- adata$copy()
     } else {
-      obs <- ad$raw$obs
-      obs <- obs %>% dplyr::mutate(sample_ID=ad$raw$obs_names) %>%
+      obs <- adata$raw$obs
+      obs <- obs %>% dplyr::mutate(sample_ID=adata$raw$obs_names) %>%
         dplyr::relocate(sample_ID)
-      ad$raw$obs <- obs
-      var_ <- ad$raw$var
-      var_ <- var_ %>% dplyr::mutate(omics_name=ad$raw$var_names) %>%
+      adata$raw$obs <- obs
+      var_ <- adata$raw$var
+      var_ <- var_ %>% dplyr::mutate(omics_name=adata$raw$var_names) %>%
         dplyr::relocate(omics_name)
 
-      ad$raw$var <- var_
+      adata$raw$var <- var_
 
     }
 
     #  DISABLED >> getting bio-conductor dependencies is a pain...
     #     } else if (class(data_in)[1] == "SingleCellExperiment") {
     #       print("SingleCellExperiment not enabled")
-    #       ad <- NULL
+    #       adata <- NULL
 
 
   } else {
     print("WARNING:  this is not a seurate object")
-    ad <- NULL
+    adata <- NULL
 
   }
 
 
-  return(ad)
+  return(adata)
 }
 
 
@@ -283,61 +283,61 @@ setup_database <- function(database_name, db_path, data_in, db_meta , re_pack=TR
         # sub-functions to deal with what kind of data we have...
     #tools::file_path_sans_ext(data_in)
     if ( class(data_in)[1] == "list" ) {
-      ad <- pack_anndata_from_csv(data_in)
+      adata <- pack_anndata_from_csv(data_in)
 
     } else if (tolower(tools::file_ext(data_in)) == "rds") {
-      ad <- pack_anndata_from_seurat(data_in)
+      adata <- pack_anndata_from_seurat(data_in)
       #TODO: logic for singleCellExperiment goes here
 
     } else if (tolower(tools::file_ext(data_in)) == "h5ad") {
-      ad <- anndata::read_h5ad(data_in)
+      adata <- anndata::read_h5ad(data_in)
       # obs_meta - ensure that we are factored and sample_ID is first column
 
-      if ( !("sample_ID" %in% ad$obs_keys()) ){
-         obs <- ad$obs
-         obs <- obs %>% dplyr::mutate(sample_ID=ad$obs_names) %>%
+      if ( !("sample_ID" %in% adata$obs_keys()) ){
+         obs <- adata$obs
+         obs <- obs %>% dplyr::mutate(sample_ID=adata$obs_names) %>%
                         dplyr::relocate(sample_ID)
-         ad$obs <- obs
+         adata$obs <- obs
        }
 
       #enforce sample_ID
       # TODO:
       #      replace dplyr with data.table
-      if ( !("omics_name" %in% ad$var_keys()) ){
-        var_ <- ad$var
-        var_ <- var_ %>% dplyr::mutate(omics_name=ad$var_names) %>%
+      if ( !("omics_name" %in% adata$var_keys()) ){
+        var_ <- adata$var
+        var_ <- var_ %>% dplyr::mutate(omics_name=adata$var_names) %>%
                         dplyr::relocate(omics_name)
 
-        ad$var <- var_
+        adata$var <- var_
 
       }
 
       # force RAW?
-      if (is.null(ad$raw)) {
-        ad$raw <- ad$copy()
+      if (is.null(adata$raw)) {
+        adata$raw <- adata$copy()
       } else {
-        obs <- ad$raw$obs
-        obs <- obs %>% dplyr::mutate(sample_ID=ad$raw$obs_names) %>%
+        obs <- adata$raw$obs
+        obs <- obs %>% dplyr::mutate(sample_ID=adata$raw$obs_names) %>%
           dplyr::relocate(sample_ID)
-        ad$raw$obs <- obs
-        var_ <- ad$raw$var
-        var_ <- var_ %>% dplyr::mutate(omics_name=ad$raw$var_names) %>%
+        adata$raw$obs <- obs
+        var_ <- adata$raw$var
+        var_ <- var_ %>% dplyr::mutate(omics_name=adata$raw$var_names) %>%
           dplyr::relocate(omics_name)
 
-        ad$raw$var <- var_
+        adata$raw$var <- var_
 
       }
 
 
     } else if (tolower(tools::file_ext(data_in)) == "loom"){
       print("loom loading not enabled")
-      ad <- NULL
+      adata <- NULL
     }
 
   } else {
     #load it
-    ad <- anndata::read_h5ad(file.path(DB_DIR,"core_data.h5ad"))
+    adata <- anndata::read_h5ad(file.path(DB_DIR,"core_data.h5ad"))
   }
 
-  return(ad)
+  return(adata)
 }

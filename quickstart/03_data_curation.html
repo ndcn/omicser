@@ -198,9 +198,9 @@ This process results in specifying the location of the data, and creating files 
 <h4><code>AnnData</code> Schema</h4>
 <p>The AnnData scheme requires us to define three pieces of data:</p>
 <ol style="list-style-type: decimal">
-<li><em>DATA</em>: a matrix e.g. transcriptomics - count matrix of cells X genes.</li>
-<li><em><em>FEATURE</em> METADATA</em>: a table of <code>omic</code> annotation - e.g. gene/protein names, families, “highly variable genes”, “is marker gene”</li>
-<li><em><em>SAMPLE</em> METADATA:</em> a table of sample annotations - e.g. cell types, sample #, batch ID sex, experiemntal condition, etc.</li>
+<li><em>DATA</em> (ad$X): a matrix of measurements - e.g. transcriptomics - count matrix of cells by genes.</li>
+<li><em><em>FEATURE</em> METADATA</em> (ad$var): a table of <code>omic</code> annotation - e.g. gene/protein names, families, “highly variable genes”, “is marker gene”, etc.</li>
+<li><em><em>SAMPLE</em> METADATA</em> (ad$obs): a table of sample annotations - e.g. cell types, sample #, batch ID sex, experiemntal condition, etc.</li>
 </ol>
 <p>More info here <a href="https://cran.r-project.org/web/packages/anndata/readme/README.html" class="uri">https://cran.r-project.org/web/packages/anndata/readme/README.html</a></p>
 <div class="figure">
@@ -229,8 +229,7 @@ sc &lt;- import(&quot;scanpy&quot;)
 sc$pp$pca(ad)
 sc$pp$neighbors(ad)
 sc$tl$leiden(ad)
-sc$tl$umap(ad)
-</code></pre>
+sc$tl$umap(ad)</code></pre>
 </div>
 <div id="differential-expression-tables" class="section level4">
 <h4>Differential Expression Tables</h4>
@@ -273,8 +272,7 @@ sc$tl$umap(ad)
 test_types &lt;- c(&#39;wilcoxon&#39;)
 comp_types &lt;- c(&#39;allVrest&#39;)
 obs_names &lt;- c(&#39;disease&#39;,&#39;cell_type&#39;)
-diff_exp &lt;- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
-</code></pre>
+diff_exp &lt;- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)</code></pre>
 </div>
 </div>
 <div id="save-the-data-to-the-database" class="section level4">

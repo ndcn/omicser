@@ -10,7 +10,7 @@ pack_anndata_from_csv(data_in)
 \item{data_in}{- list of matrices, tables, and lists containing the data to pack into the db}
 }
 \value{
-ad the anndata object we are browsing
+adata the anndata object we are browsing
 }
 \description{
 pack_anndata

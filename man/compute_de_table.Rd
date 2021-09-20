@@ -4,16 +4,16 @@
 \alias{compute_de_table}
 \title{Title}
 \usage{
-compute_de_table(ad, comp_types, test_types, obs_names, sc)
+compute_de_table(adata, comp_types, test_types, obs_names, sc)
 }
 \arguments{
-\item{ad}{the anndata object}
+\item{adata}{the anndata object}
 
 \item{comp_types}{what kind of comparisons?  "allVrest" or "{a}V{b}"}
 
 \item{test_types}{statistical tests - t-test, etc}
 
-\item{obs_names}{name of the ad$obs column defining the comparision groups}
+\item{obs_names}{name of the adata$obs column defining the comparision groups}
 
 \item{sc}{scanpy}
 }

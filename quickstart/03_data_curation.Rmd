@@ -45,9 +45,9 @@ The first step will be to make a folder to contain your data.  We will call this
 
 The AnnData scheme requires us to define three pieces of data:
 
-  1. *DATA*: a matrix e.g. transcriptomics - count matrix of cells X genes.
-  2. *_FEATURE_ METADATA*: a table of `omic` annotation - e.g. gene/protein names, families, "highly variable genes", "is marker gene"
-  3. *_SAMPLE_ METADATA:* a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experiemntal condition, etc.
+  1. *DATA* (\$X): a matrix  of measurements - e.g. transcriptomics - count matrix of cells by genes.
+  2. *_FEATURE_ METADATA* (\$var): a table of `omic` annotation  -  e.g. gene/protein names, families, "highly variable genes", "is marker gene", etc.
+  3. *_SAMPLE_ METADATA* (\$obs): a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experiemntal condition, etc.
 
 More info here https://cran.r-project.org/web/packages/anndata/readme/README.html 
 
@@ -68,8 +68,7 @@ The `omicser::setup_database()` function packages the separate tables -- DATA ma
 
 
 ``` {r , RM-prep-3, eval=FALSE}
-ad <- omicser::setup_database(database_name=DB_NAME,
-                              db_path=DS_ROOT_PATH,
+adata <- omicser::setup_database(database_name=DB_NAME,
                               data_in=data_list,
                               db_meta=NULL ,
                               re_pack=TRUE)
@@ -83,10 +82,10 @@ Although this stage is not nescessary, it demonstrates the bridge to `cellxgene`
 #==== 5-a. dimension reduction - PCA / umap ========================================================
 sc <- import("scanpy")
 # scanpy pre-processing - sc$pp
-sc$pp$pca(ad)
-sc$pp$neighbors(ad)
-sc$tl$leiden(ad)
-sc$tl$umap(ad)
+sc$pp$pca(adata)
+sc$pp$neighbors(adata)
+sc$tl$leiden(adata)
+sc$tl$umap(adata)
 
 ```
 
@@ -121,12 +120,12 @@ In [`R/pre_process_helpers.R`](../R/pre_process_helpers.R) theres a function whi
 
 parameters:
 
-  - `ad` - the anndata object
+  - `adata` - the anndata object
   - `comp_types` - what kind of comparisons? there are two types
     - "allVrest" which takes each of our experimental conditions in turn and compares against the "rest" of the data.
     - "{a}V{b}" or "firstgroupVsecondgroup" which compares the experimental condition "firstgroup" against "secondgroup"
   - `test_types` - statistical tests.  See the examples or `scanpy` documentation for which test types are available.
-  - `obs_names` -name of the ad$obs column defining the comparision groups
+  - `obs_names` -name of the adata$obs column defining the comparision groups
   - `sc` - the scanpy data object we imported with `reticulate`
 
 Here's an example which computes a differential expression with a `wilcoxon` test of significance for each _disease_ with respect to the rest of the distease states, AND for each _cell_type_ with-respect-to the "rest of" the _cell_type_ s. 
@@ -136,7 +135,7 @@ sc <- reticulate::import("scanpy")
 test_types <- c('wilcoxon')
 comp_types <- c('allVrest')
 obs_names <- c('disease','cell_type')
-diff_exp <- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
+diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc)
 
 ```
 
@@ -146,7 +145,7 @@ diff_exp <- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
 Finally we write this the anndata data object to our _database_DATABASE_ folder.   In the examples contained in the `quickstart/` folder we defined `DS_ROOT_PATH <- "test_db"`, and `DB_NAME <- "domenico_stem_cell"` .
 
 ``` {r, RM-prep-6, eval=FALSE}
-ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"db_data.h5ad"))
+adata$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"db_data.h5ad"))
 ```
 
 In the end each DATABASE folder should now these three files:

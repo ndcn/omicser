@@ -43,9 +43,9 @@ The first step will be to make a folder to contain your data.  We will call this
 
 The AnnData scheme requires us to define three pieces of data:
 
-  1. *DATA*: a matrix e.g. transcriptomics - count matrix of cells X genes.
-  2. *_FEATURE_ METADATA*: a table of `omic` annotation - e.g. gene/protein names, families, "highly variable genes", "is marker gene"
-  3. *_SAMPLE_ METADATA:* a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experiemntal condition, etc.
+  1. *DATA* (ad\$X): a matrix  of measurements - e.g. transcriptomics - count matrix of cells by genes.
+  2. *_FEATURE_ METADATA* (ad\$var): a table of `omic` annotation  -  e.g. gene/protein names, families, "highly variable genes", "is marker gene", etc.
+  3. *_SAMPLE_ METADATA* (ad\$obs): a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experiemntal condition, etc.
 
 More info here https://cran.r-project.org/web/packages/anndata/readme/README.html 
 
@@ -87,7 +87,6 @@ sc$pp$pca(ad)
 sc$pp$neighbors(ad)
 sc$tl$leiden(ad)
 sc$tl$umap(ad)
-
 ```
 
 #### Differential Expression Tables 
@@ -138,7 +137,6 @@ test_types <- c('wilcoxon')
 comp_types <- c('allVrest')
 obs_names <- c('disease','cell_type')
 diff_exp <- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
-
 ```
 
 
