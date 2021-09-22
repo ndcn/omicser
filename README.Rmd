@@ -72,12 +72,12 @@ or consult with the Curator for your application.
 
 A set of example scripts and a quickstart guide are available in the [`quickstart/`](quickstart/) directory of the repo.  The [Quickstart Guide](quickstart/README.md) will outline the flow from installation through data exploration.  i.e.
 
-1. **Set up environment**: underlying tools/packages from R and python. [link](quickstart/01_environment_setup.md)
-2. **Install software**: creates the browser and curation functions as an R package from github [link](quickstart/02_install.md)
-3. **Curate data**: the _-omics_ data curated into a _database_ [link](quickstart/03_data_curation.md)
-4. **Configure application**: connecting the _-omics database_ to the browser app [link](quickstart/04_configuration.md)
-5. **Browse data**: explore the data!  [link](quickstart/05_browsing.md)
-6. **Share application**: just a couple extra curation steps to share the data with others [link](quickstart/06_sharing.Rmd)
+1. [**Set up environment**](quickstart/01_environment_setup.md): ensure underlying tools/packages from R and python are available 
+2. [**Install package**](quickstart/02_install.md): includes data curation functions and software that runs the browser application
+3. [**Curate data**](quickstart/03_data_curation.md): the _-omics_ data curated into a _database_
+4. [**Configure application**](quickstart/04_configuration.md): connecting the _-omics database_ to the browser app
+5. [**Browse data**](quickstart/05_browsing.md): explore the data!
+6. [**Share application**](quickstart/06_sharing.md): just a couple extra curation steps to share the data with others
 
 ## Background and development
 
