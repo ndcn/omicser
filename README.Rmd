@@ -64,13 +64,16 @@ And then then the browser can be launched:
 omicser::launchApp()
 ```
 
-For more information,
-please see [FIXME]()
-or consult with the Curator for your application.
+For more information on launching the web application with your data,
+please consult with the Curator who created it.
 
 ## Installation and usage for Curators
 
-A set of example scripts and a quickstart guide are available in the [`quickstart/`](quickstart/) directory of the repo.  The [Quickstart Guide](quickstart/README.md) will outline the flow from installation through data exploration.  i.e.
+This package was developed to create a [{`shiny`}](https://shiny.rstudio.com/) application using  
+[`{golem}`](https://github.com/ThinkR-open/golem), "an opinionated framework for building production-grade shiny applications."
+It requires a number of additional R and Python packages.
+
+Documentation to walk through the process of installing necessary software, creating your application, and browsing your data is available in the [Quickstart guide](quickstart/):
 
 1. [**Set up environment**](quickstart/01_environment_setup.md): ensure underlying tools/packages from R and python are available 
 2. [**Install package**](quickstart/02_install.md): includes data curation functions and software that runs the browser application
@@ -79,13 +82,20 @@ A set of example scripts and a quickstart guide are available in the [`quickstar
 5. [**Browse data**](quickstart/05_browsing.md): explore the data, test hypotheses, create visualizations
 6. [**Share application**](quickstart/06_sharing.md): perform final curation steps that allow you to share the browser with collaborators (Viewers)
 
-## Background and development
+## Contributing to this project
 
-The NDCN Browser (`Omicser`) was developing using [`{golem}`](https://github.com/ThinkR-open/golem): "an opinionated framework for building production-grade shiny applications." 
+This project began as part of the CZI NDCN Open Science Initiative Data Science Pilot (March-Sept 2021).
 
-Primary development was initiated as part of the NDCN Open Science Initiative Data Science Pilot March-Sept 2021, with hopes of formenting ongoing open-source development.
+Please see our [Contributing guidelines](CONTRIBUTING.md)
+for more information on any of the following:
+- reporting bugs and problems using the software
+- requesting additional features and functionality
+- submitting your own code or documentation to become a part of this project
+- sharing information about how you've used this package in your own work
 
-## Roadmap
+Anyone interacting with our project is expected to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+### Roadmap
 
 Please view our [issues](https://github.com/ergonyc/omicser/issues),
 especially those tagged as [high priority](https://github.com/ergonyc/omicser/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22),
@@ -99,5 +109,3 @@ rmarkdown::render("quickstart/04_configuration.Rmd")
 rmarkdown::render("quickstart/05_browsing.Rmd")
 rmarkdown::render("quickstart/06_sharing.Rmd")
 ```
-
-
