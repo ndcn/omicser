@@ -46,22 +46,22 @@ Support for the following _post-QC_ -omics data types has been tested:
 The package is able to provide the following outputs:
 - images visualizing data
 - subsets of data
-- web application that can be shared with collaborators
-
-## Installing this package
-
-```{r, 00-install, eval=FALSE}
-devtools::install_github("ergonyc/omicser")
-```
+- web application packaged with data that can be shared with collaborators, so they can run the browser on their own computer
 
 ## Installation and usage for Viewers
 
 Once a curator has prepared the data and configured the application,
-the app can be launched from R:
+the package can be installed with R:
+
+```{r, 00-install, eval=FALSE}
+devtools::install_github("ergonyc/omicser")
+library(omicser)
+```
+
+And then then the browser can be launched:
 
 ```{r, 01-launch, eval=FALSE}
-    library(omicser)
-    omicser::launchApp()
+omicser::launchApp()
 ```
 
 For more information,
@@ -76,8 +76,8 @@ A set of example scripts and a quickstart guide are available in the [`quickstar
 2. [**Install package**](quickstart/02_install.md): includes data curation functions and software that runs the browser application
 3. [**Curate data**](quickstart/03_data_curation.md): the _-omics_ data curated into a _database_
 4. [**Configure application**](quickstart/04_configuration.md): connecting the _-omics database_ to the browser app
-5. [**Browse data**](quickstart/05_browsing.md): explore the data!
-6. [**Share application**](quickstart/06_sharing.md): just a couple extra curation steps to share the data with others
+5. [**Browse data**](quickstart/05_browsing.md): explore the data, test hypotheses, create visualizations
+6. [**Share application**](quickstart/06_sharing.md): perform final curation steps that allow you to share the browser with collaborators (Viewers)
 
 ## Background and development
 
