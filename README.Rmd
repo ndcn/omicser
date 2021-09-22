@@ -31,7 +31,7 @@ accessible through an interactive web browser.
 There are two types of users for this package:
 
 - **Curators**: data analysts who configure the app and prepare datasets for viewing. These individuals should be fairly proficient with R coding, including familiarity with building Shiny apps and knowledgeable about -omics data structures.
-- **Browsers**: scientists who are interested in exploring -omics data using the application. They do not require extensive knowledge about R, but may need to have it installed if they are running the app on their own computer.
+- **Viewers**: scientists who are interested in exploring -omics data using the application. They do not require extensive knowledge about R, but may need to have it installed if they are running the app on their own computer.
 
 The diagram below summarizes the steps required to use this package:
 
@@ -54,7 +54,7 @@ The package is able to provide the following outputs:
 devtools::install_github("ergonyc/omicser")
 ```
 
-## Installation and usage for Browsers
+## Installation and usage for Viewers
 
 Once a curator has prepared the data and configured the application,
 the app can be launched from R:
