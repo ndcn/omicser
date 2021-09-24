@@ -35,7 +35,7 @@ There are two types of users for this package:
 
 The diagram below summarizes the steps required to use this package:
 
-![ ]("omicser-overview.png")
+![Overview of data visualization using the omicser](man/figures/README-omicser-overview.png)
 
 Support for the following _post-QC_ -omics data types has been tested:
 - _transcript_-omics
