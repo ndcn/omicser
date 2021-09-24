@@ -101,7 +101,7 @@ Please view our [issues](https://github.com/ergonyc/omicser/issues),
 especially those tagged as [high priority](https://github.com/ergonyc/omicser/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22),
 for more information about immediate plans for development.
 
-```{r, render-quickstart1-6, eval=TRUE, include = FALSE}
+```{r, render-quickstart1-6, eval=FALSE, include = FALSE}
 rmarkdown::render("quickstart/01_environment_setup.Rmd")
 rmarkdown::render("quickstart/02_install.Rmd")
 rmarkdown::render("quickstart/03_data_curation.Rmd")

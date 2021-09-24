@@ -18,6 +18,8 @@ img.left {
 
 ```{r 01-omicser-1, include = FALSE}
 library(omicser)
+library(magrittr)
+library(fs)
 knitr::opts_chunk$set(comment = "")
 ```
 
@@ -62,10 +64,6 @@ Some things to keep in mind before using `{omicser}`:
 Having an R package architecture is perfectly suited for production-ready deploymentr.
 
 Let's focus on the architecture of the default `{omicser}` app, and present the role that each file plays and how you can use (or not use) each of them.
-
-```{r 01-omicser-4, include=FALSE}
-library(magrittr)
-```
 
 The repository is layed out in a specific architecture:
 

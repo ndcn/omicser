@@ -13,7 +13,7 @@ sc <- import("scanpy")
 anndat <- import("anndata")
 
 
-```{r}
+```{r, eval = FALSE}
 require("Seurat")
 require("sceasy")
 

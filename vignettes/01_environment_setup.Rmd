@@ -7,7 +7,7 @@ output:
     toc: yes
     keep_md: yes
   md_document:
-    variant: markdown_github
+    variant: gfm
 ---
 
 ```{r, setup, include=FALSE}
