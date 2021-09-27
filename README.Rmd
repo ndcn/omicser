@@ -73,14 +73,14 @@ This package was developed to create a [{`shiny`}](https://shiny.rstudio.com/) a
 [`{golem}`](https://github.com/ThinkR-open/golem), "an opinionated framework for building production-grade shiny applications."
 It requires a number of additional R and Python packages.
 
-Documentation to walk through the process of installing necessary software, creating your application, and browsing your data is available in the [Quickstart guide](quickstart/):
+Documentation to walk through the process of installing necessary software, creating your application, and browsing your data is available in the [Quickstart guide](vignettes/):
 
-1. [**Set up environment**](quickstart/01_environment_setup.md): ensure underlying tools/packages from R and python are available 
-2. [**Install package**](quickstart/02_install.md): includes data curation functions and software that runs the browser application
-3. [**Curate data**](quickstart/03_data_curation.md): the _-omics_ data curated into a _database_
-4. [**Configure application**](quickstart/04_configuration.md): connecting the _-omics database_ to the browser app
-5. [**Browse data**](quickstart/05_browsing.md): explore the data, test hypotheses, create visualizations
-6. [**Share application**](quickstart/06_sharing.md): perform final curation steps that allow you to share the browser with collaborators (Viewers)
+1. [**Set up environment**](vignettes/01_environment_setup.md): ensure underlying tools/packages from R and python are available 
+2. [**Install package**](vignettes/02_install.md): includes data curation functions and software that runs the browser application
+3. [**Curate data**](vignettes/03_data_curation.md): the _-omics_ data curated into a _database_
+4. [**Configure application**](vignettes/04_configuration.md): connecting the _-omics database_ to the browser app
+5. [**Browse data**](vignettes/05_browsing.md): explore the data, test hypotheses, create visualizations
+6. [**Share application**](vignettes/06_sharing.md): perform final curation steps that allow you to share the browser with collaborators (Viewers)
 
 ## Contributing to this project
 
@@ -102,10 +102,10 @@ especially those tagged as [high priority](https://github.com/ergonyc/omicser/is
 for more information about immediate plans for development.
 
 ```{r, render-quickstart1-6, eval=FALSE, include = FALSE}
-rmarkdown::render("quickstart/01_environment_setup.Rmd")
-rmarkdown::render("quickstart/02_install.Rmd")
-rmarkdown::render("quickstart/03_data_curation.Rmd")
-rmarkdown::render("quickstart/04_configuration.Rmd")
-rmarkdown::render("quickstart/05_browsing.Rmd")
-rmarkdown::render("quickstart/06_sharing.Rmd")
+rmarkdown::render("vignettes/01_environment_setup.Rmd")
+rmarkdown::render("vignettes/02_install.Rmd")
+rmarkdown::render("vignettes/03_data_curation.Rmd")
+rmarkdown::render("vignettes/04_configuration.Rmd")
+rmarkdown::render("vignettes/05_browsing.Rmd")
+rmarkdown::render("vignettes/06_sharing.Rmd")
 ```

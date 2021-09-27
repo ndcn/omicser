@@ -1,7 +1,7 @@
 ---
-title: "Untitled"
+title: "omicser development with golem"
 author: "andy henrie"
-date: "9/2/2021"
+date: "9/27/2021"
 output: html_document
 ---
 # Introduction to `{OMXR}` {#omxr}

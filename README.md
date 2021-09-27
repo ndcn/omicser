@@ -71,19 +71,19 @@ a number of additional R and Python packages.
 
 Documentation to walk through the process of installing necessary
 software, creating your application, and browsing your data is available
-in the [Quickstart guide](quickstart/):
+in the [Quickstart guide](vignettes/):
 
-1.  [**Set up environment**](quickstart/01_environment_setup.md): ensure
+1.  [**Set up environment**](vignettes/01_environment_setup.md): ensure
     underlying tools/packages from R and python are available
-2.  [**Install package**](quickstart/02_install.md): includes data
+2.  [**Install package**](vignettes/02_install.md): includes data
     curation functions and software that runs the browser application
-3.  [**Curate data**](quickstart/03_data_curation.md): the *-omics* data
+3.  [**Curate data**](vignettes/03_data_curation.md): the *-omics* data
     curated into a *database*
-4.  [**Configure application**](quickstart/04_configuration.md):
+4.  [**Configure application**](vignettes/04_configuration.md):
     connecting the *-omics database* to the browser app
-5.  [**Browse data**](quickstart/05_browsing.md): explore the data, test
+5.  [**Browse data**](vignettes/05_browsing.md): explore the data, test
     hypotheses, create visualizations
-6.  [**Share application**](quickstart/06_sharing.md): perform final
+6.  [**Share application**](vignettes/06_sharing.md): perform final
     curation steps that allow you to share the browser with
     collaborators (Viewers)
 

@@ -37,7 +37,7 @@ The process as illustrated in the example can be broken into the following steps
 
 #### Database Path 
 
-The first step will be to make a folder to contain your data.  We will call this folder and contents the _DATABASE_ .   Each _DATABASE_ folder that one might want to load into the browser should be in the same path.  e.g. the with the repositories `quickstart/` path there is a `test_db` folder which contains several sub-folder _DATABASES_
+The first step will be to make a folder to contain your data.  We will call this folder and contents the _DATABASE_ .   Each _DATABASE_ folder that one might want to load into the browser should be in the same path.  e.g. the with the repositories `vignettes/` path there is a `test_db` folder which contains several sub-folder _DATABASES_
 
               
 #### `AnnData` Schema
@@ -142,7 +142,7 @@ diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc
 
 #### Save the data to the _DATABASE_
 
-Finally we write this the anndata data object to our _database_DATABASE_ folder.   In the examples contained in the `quickstart/` folder we defined `DS_ROOT_PATH <- "test_db"`, and `DB_NAME <- "domenico_stem_cell"` .
+Finally we write this the anndata data object to our _database_DATABASE_ folder.   In the examples contained in the `vignettes/` folder we defined `DS_ROOT_PATH <- "test_db"`, and `DB_NAME <- "domenico_stem_cell"` .
 
 ``` {r, RM-prep-6, eval=FALSE}
 adata$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"db_data.h5ad"))
