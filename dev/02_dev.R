@@ -27,16 +27,15 @@ usethis::use_package("shinydashboard")
 usethis::use_package("shinydashboardPlus")
 
 usethis::use_package("data.table")
+usethis::use_package("DT")
+usethis::use_package("Matrix")
+usethis::use_package("configr")
+
 usethis::use_package("ggplot2")
 usethis::use_package("gridExtra")
 usethis::use_package("ggdendro")
 
 usethis::use_package("plotly")
-
-usethis::use_package("DT")
-usethis::use_package("Matrix")
-
-usethis::use_package("configr")
 
 usethis::use_package("anndata")
 
