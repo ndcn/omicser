@@ -1,0 +1,15 @@
+pandoc: 2.11.4
+pkgdown: 1.6.1
+pkgdown_sha: ~
+articles:
+  01_environment_setup: 01_environment_setup.html
+  02_install: 02_install.html
+  03_data_curation: 03_data_curation.html
+  04_configuration: 04_configuration.html
+  05_browsing: 05_browsing.html
+  06_sharing: 06_sharing.html
+  README: README.html
+  golem_startup: golem_startup.html
+  python_and_R: python_and_R.html
+last_built: 2021-09-27T17:44Z
+
