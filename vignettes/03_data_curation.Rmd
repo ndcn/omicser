@@ -1,5 +1,5 @@
 ---
-title: "Data Curation"
+title: "3-Data Curation"
 author: "andy henrie"
 date: "9/14/2021"
 output:
