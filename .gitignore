@@ -2,7 +2,7 @@
 .Rhistory
 .Rdata
 .httr-oauth
-.DS_Store
+**/.DS_Store
 .h5ad
 .h5
 .h5Seurat
@@ -11,4 +11,3 @@
 inst/doc
 /doc/
 /Meta/
-docs
