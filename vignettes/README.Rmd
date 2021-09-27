@@ -2,7 +2,6 @@
 output: github_document
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -16,7 +15,7 @@ knitr::opts_chunk$set(
 # Quickstart: NDCN -Omics Browser 
 
 # TODO: 
-- add links between teh headings and to the files referenced.
+- add links between the headings and to the files referenced.
 
 ## Overview
 

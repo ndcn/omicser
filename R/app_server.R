@@ -118,6 +118,10 @@ app_server <- function(input, output, session) {
   ##
   ############################ +
   {
-    mod_additional_info_server("additional_info_ui_1", rv_data= rv_data, DB_ROOT_PATH = DB_ROOT_PATH)
+    #db_name <- reactiveVal(value=rv_data$db_meta$name)
+    db_name = reactiveValues(name=NULL)
+    observe({ db_name$name <- rv_data$db_meta$name})
+
+    mod_additional_info_server("additional_info_ui_1", db_name = db_name, DB_ROOT_PATH = DB_ROOT_PATH)
   }
 }

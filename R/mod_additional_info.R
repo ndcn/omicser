@@ -1,3 +1,72 @@
+#' Convert a Word (docx) to a Markdown (md) file
+#'
+#' This function converts a word document to a markdown file.
+#' If output path is NULL (as default), the function will save this to a temporary path.
+#'
+#' @param file The path to your .docx file.
+#' @param output The path to save your new markdown file
+#'
+#' @return The same file as a Markdown document.
+#'
+#' @examples
+#'
+#' #ADD LATER
+#'
+word_to_markdown <- function(file, output = NULL) {
+
+
+  if (base::is.null(output)) {
+    outputFile <- base::tempfile(fileext = ".md")
+  } else {
+    outputFile <- output
+  }
+
+  rmarkdown::pandoc_convert(input = file, to = "markdown", output = outputFile)
+
+  return(outputFile)
+
+}
+
+#' Display a document in Shiny.
+#'
+#' This function will take a Markdown document (.md) or Word document (.docx) and
+#' return the UI for a Shiny app to display it. This should be embedded within a
+#' UI code (see examples for details).
+#'
+#'@param file The file (path) containing a document to display.
+#'
+#'@return html tags of the rendered doc
+#'
+#' @examples
+#'
+#' \dontrun{
+#' ui <- shiny::fluidPage(
+#' shiny::mainPanel(
+#' display_document('path-to-your-file')
+#' )
+#' )
+#'}
+display_document <- function(file) {
+
+  if (base::grepl(".docx", file)) {
+    markdownFile <- word_to_markdown(file, output = NULL)
+    base::on.exit(base::unlink(markdownFile))
+  } else if (base::grepl(".md", file)) {
+    markdownFile <- file
+  } else {
+    stop("Invalid file type. Please add a Markdown .md or Word .docx file.")
+  }
+
+  shiny::includeMarkdown(markdownFile)
+
+}
+
+
+
+
+
+
+
 #' additional_info UI Function
 #'
 #' @description A shiny Module.
@@ -13,7 +82,7 @@ mod_additional_info_ui <- function(id){
     wellPanel(
       id = ns("about"),
       htmlOutput(outputId = ns("additional_info_md")),
-      uiOutput(outputId = ns("additional_info_md2"))
+
     )
   )
 }
@@ -25,27 +94,19 @@ mod_additional_info_ui <- function(id){
 #' @param DB_ROOT_PATH where do our databases live
 #'
 #' @noRd
-mod_additional_info_server <- function(id,rv_data, DB_ROOT_PATH){
+mod_additional_info_server <- function(id,db_name, DB_ROOT_PATH){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     # show the factors that have been loaded
     output$additional_info_md <- renderUI({
-      req(rv_data$db_meta$name)
+      req(db_name$name)
 
-      md_path <- file.path(DB_ROOT_PATH,rv_data$db_meta$name,"additional_info.Rmd")
+      md_path <- file.path(DB_ROOT_PATH,db_name$name,"additional_info.Rmd")
+      #TODO:  allow a .docx file instead which will need to be rendered and then output
+      out_htm <- shiny::includeMarkdown(md_path)
 
-      out_htm <- HTML(markdown::markdownToHTML(md_path))
-
-      return(out_htm)
-    })
-    # show the factors that have been loaded
-    output$additional_info_md2 <- renderUI({
-      req(rv_data$db_meta$name)
-
-      md_path <- file.path(DB_ROOT_PATH,rv_data$db_meta$name,"additional_info.Rmd")
-
-      out_htm <- HTML(markdown::markdownToHTML(md_path))
+      #out_htm <- HTML(markdown::markdownToHTML(md_path))
 
       return(out_htm)
     })

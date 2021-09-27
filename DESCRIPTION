@@ -32,3 +32,7 @@ Authors@R: person('Andy', 'Henrie', email = 'henrie@datatecnica.com', role = c('
 RoxygenNote: 7.1.1
 URL: https://github.com/ergonyc/omicser
 BugReports: https://github.com/ergonyc/omicser/issues
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr

@@ -23,12 +23,23 @@ mod_ingestor_ui <- function(id) {
 
         )
       ),
+
+    fluidRow(
+      column(
+        width=3,
+        shinyjs::disabled(
+          actionButton(ns("AB_ingest_load"), label = "Load Database")
+        )
+      )
+    ),
     fluidRow(
       column(
         width=3,
         textOutput(ns("ui_datatype"))
       )
     ),
+    mod_additional_info_ui(id = ns("additional_info_ui_ingest")),
+
     fluidRow(
       column(
         width=6,
@@ -46,15 +57,6 @@ mod_ingestor_ui <- function(id) {
           width=8,
           textOutput(ns("ui_obs_exp"))
         )
-    ),
-
-    fluidRow(
-      column(
-        width=3,
-        shinyjs::disabled(
-          actionButton(ns("AB_ingest_load"), label = "Load Database")
-        )
-      )
     )
   ) #tagList
 }
@@ -77,6 +79,15 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
     # CONDA_ENV <- CONFIG$conda_environment
     # DB_ROOT_PATH <- CONFIG$ds_root_path
     database_names <- DB_NAMES
+
+    db_name = reactiveValues(name=NULL)
+    observe({
+      db_name$name <- to_return$db_meta$name
+    })
+
+    mod_additional_info_server("additional_info_ui_ingest",
+                               db_name = db_name,
+                               DB_ROOT_PATH = DB_ROOT_PATH)
 
     ## rv_data (to_return) REACTIVE VALUES  ===================
     to_return <- reactiveValues(
