@@ -7,18 +7,19 @@ output:
     toc: yes
     keep_md: yes
   md_document:
-    variant: markdown_github
+    variant: gfm
 ---
 
-
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 
 
 #  Environment Setup
 
 This package has been developed with a recent (4.1.0) version of R, shiny 1.6.0, and RStudio v1.4.1717.  
-
-```bash
+```{bash, RM-env-Rver, eval = FALSE} 
 R --version
 ```
 
@@ -40,9 +41,7 @@ The browser uses python to manage the data on the back end an we require v3.9.
 ### R packages
 For the sake of simplicity and clarity we can just install `devtools`, and `reticulate`.  When we install the `omicser` browser package we can leverage the dependencies to get everything else we might need.
 
-
-
-```r
+```{r, RM-install, eval=FALSE}
 
 install.packages("devtools")
 install.packages("reticulate")
@@ -50,8 +49,7 @@ install.packages("reticulate")
 
 Now, to use R to create your environment we just need to use the following `reticulate` calls:
 
-
-```r
+```{r RM-r_env, eval=FALSE}
 YOUR_CONDA_ENV <- "omxr"
 PYTHON_VERSION <- 3.9
 
@@ -64,8 +62,7 @@ Now that we have conda and our environment available we need to install two pack
 
 (Warning: if you have bioconductor configured as a channel it may cause problems.  Forcing install from the "conda-forge" channel is preferred)
 
-
-```r
+```{r RM-r_scanpy, eval=FALSE}
 YOUR_CONDA_ENV <- "omxr"
 reticulate::conda_install(envname = YOUR_CONDA_ENV, packages = "scanpy")
 reticulate::conda_install(envname= YOUR_CONDA_ENV,
@@ -81,16 +78,14 @@ And we are now ready for [Installation](02_install.md).
 
 For example for MacOS we can install miniconda like this:
 
-
-```bash
+```{bash, conda_inst, eval = FALSE}
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
 bash ~/miniconda.sh -b -p $HOME/miniconda
 ```
 
 Now we can use conda to install a python 3.9 environment to use with `reticulate`. 
 For this example we've called the environment `omxr`, and installed `scanpy` and `leidenalg` which will make sure we have everything we need on the python side.
-
-```bash
+```{bash, conda_env, eval = FALSE}
 conda create --name omxr python=3.9 scanpy                                                                             
 conda install -c conda-forge leidenalg                                                                                  
 conda activate omxr

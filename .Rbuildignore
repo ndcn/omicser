@@ -11,3 +11,6 @@ $run_dev.*
 ^Meta$
 ^Dockerfile$
 ^\.dockerignore$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

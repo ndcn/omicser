@@ -1,112 +1,19 @@
 ---
-output: github_document
+title: "Data Curation"
+author: "andy henrie"
+date: "9/14/2021"
+output:
+  html_document: 
+    keep_md: yes
+    toc: true
+  md_document:
+    variant: gfm
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Quickstart: NDCN -Omics Browser 
-
-# TODO: 
-- add links between teh headings and to the files referenced.
-
-## Overview
-
-These _quickstart_ materials are intended to quickly help a user / curator get the NDCN Omics browser up and running.  Contained in this directory are a sequence of vignettes which detail each step of:
-
-1. [Environment Setup](01_environment_setup.md)
-2. [Installation](02_install.md)
-3. [Data Curation](03_data_curation.md)
-4. [Configuration](04_configuration.md)
-5. [Browsing](05_browsing.md)
-
-
-
-
-
-There is also a subdirectory of [`examples/`](examples/) which have some R-scripts used to curate and execute example datasets, and _stubs_ to some directories holding the curated _DATABASE_ examples and configuration files (e.g. [`omicser_options.yml`](omicser_options.yml))
-
-Below the entire cycle of vignettes is copied into a single tutorial.
-
-## Quickstart Tutorial
-
-###  Environment Setup
-
-This package has been developed with a recent (4.1.0) version of R, shiny 1.6.0, and RStudio v1.4.1717.  
-```{bash, RM-env-Rver-00, eval = FALSE} 
-R --version
-```
-
-
-In addition to a recently fresh R we will also need a few more things:
-
-1. python 3.9, which we will leverage via the `reticulate` R package. 
-2. R `devtools`, so we can install the `omicser` and additional dependencies, such as `reticulate`
-
-
-#### Conda Python 
-
-The browser app looks for a conda environment so first we need to have miniconda or anaconda installed. (Please file an issue/bugo/pull req to begin the process of supporting other python environments.)  If you don't already have anaconda or mini-conda, its easy to  [install](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
-
-Or, if you prefer to do everything in R, it can be installed via `reticulate`. 
-
-The browser uses python to manage the data on the back end an we require v3.9. 
-
-#### R packages
-For the sake of simplicity and clarity we can just install `devtools`, and `reticulate`.  When we install the `omicser` browser package we can leverage the dependencies to get everything else we might need.
-
-
-```{r, RM-install-0, eval=FALSE}
-
-install.packages("devtools")
-install.packages("reticulate")
-```
-
-Now, to use R to create your environment we just need to use the following `reticulate` calls:
-
-```{r RM-r_env, eval=FALSE}
-YOUR_CONDA_ENV <- "omxr"
-PYTHON_VERSION <- 3.9
-
-require(reticulate)
-reticulate::install_miniconda() 
-reticulate::conda_create(YOUR_CONDA_ENV, python_version = PYTHON_VERSION)
-```
-
-Now that we have conda and our environment available we need to install two packages to do everything contained in the example scripts.
-
-(Warning: if you have bioconductor configured as a channel it may cause problems.  Forcing install from the "conda-forge" channel is preferred)
-
-```{r RM-r_scanpy, eval=FALSE}
-YOUR_CONDA_ENV <- "omxr"
-reticulate::conda_install(envname = YOUR_CONDA_ENV, packages = "scanpy")
-reticulate::conda_install(envname= YOUR_CONDA_ENV,
-                          channel = "conda-forge",
-                          packages = c("leidenalg") )
-```
-
-And we are now ready for Installation. 
-
-### NDCN Browser Installation
-
-Now that we've set up our enviroment, installing the NDCN browser with `devtools::install_github` is easy.  
-
-> NOTE: we will soon add releases which will be the optimal way to install. Stay Tuned.
-
-```{r, RM-install-1, eval=FALSE}
-devtools::install_github("ergonyc/omicser")
-
-```
-
-Thats it!  Now comes the crucial (and fun!) part: curating your data.
 
 ### Data Curation and Preparation
 
@@ -138,9 +45,9 @@ The first step will be to make a folder to contain your data.  We will call this
 
 The AnnData scheme requires us to define three pieces of data:
 
-  1. *DATA*: a matrix e.g. transcriptomics - count matrix of cells X genes.
-  2. *_FEATURE_ METADATA*: a table of `omic` annotation - e.g. gene/protein names, families, "highly variable genes", "is marker gene"
-  3. *_SAMPLE_ METADATA:* a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experiemntal condition, etc.
+  1. *DATA* (\$X): a matrix  of measurements - e.g. transcriptomics - count matrix of cells by genes.
+  2. *_FEATURE_ METADATA* (\$var): a table of `omic` annotation  -  e.g. gene/protein names, families, "highly variable genes", "is marker gene", etc.
+  3. *_SAMPLE_ METADATA* (\$obs): a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experiemntal condition, etc.
 
 More info here https://cran.r-project.org/web/packages/anndata/readme/README.html 
 
@@ -161,8 +68,7 @@ The `omicser::setup_database()` function packages the separate tables -- DATA ma
 
 
 ``` {r , RM-prep-3, eval=FALSE}
-ad <- omicser::setup_database(database_name=DB_NAME,
-                              db_path=DS_ROOT_PATH,
+adata <- omicser::setup_database(database_name=DB_NAME,
                               data_in=data_list,
                               db_meta=NULL ,
                               re_pack=TRUE)
@@ -176,10 +82,10 @@ Although this stage is not nescessary, it demonstrates the bridge to `cellxgene`
 #==== 5-a. dimension reduction - PCA / umap ========================================================
 sc <- import("scanpy")
 # scanpy pre-processing - sc$pp
-sc$pp$pca(ad)
-sc$pp$neighbors(ad)
-sc$tl$leiden(ad)
-sc$tl$umap(ad)
+sc$pp$pca(adata)
+sc$pp$neighbors(adata)
+sc$tl$leiden(adata)
+sc$tl$umap(adata)
 
 ```
 
@@ -214,12 +120,12 @@ In [`R/pre_process_helpers.R`](../R/pre_process_helpers.R) theres a function whi
 
 parameters:
 
-  - `ad` - the anndata object
+  - `adata` - the anndata object
   - `comp_types` - what kind of comparisons? there are two types
     - "allVrest" which takes each of our experimental conditions in turn and compares against the "rest" of the data.
     - "{a}V{b}" or "firstgroupVsecondgroup" which compares the experimental condition "firstgroup" against "secondgroup"
   - `test_types` - statistical tests.  See the examples or `scanpy` documentation for which test types are available.
-  - `obs_names` -name of the ad$obs column defining the comparision groups
+  - `obs_names` -name of the adata$obs column defining the comparision groups
   - `sc` - the scanpy data object we imported with `reticulate`
 
 Here's an example which computes a differential expression with a `wilcoxon` test of significance for each _disease_ with respect to the rest of the distease states, AND for each _cell_type_ with-respect-to the "rest of" the _cell_type_ s. 
@@ -229,7 +135,7 @@ sc <- reticulate::import("scanpy")
 test_types <- c('wilcoxon')
 comp_types <- c('allVrest')
 obs_names <- c('disease','cell_type')
-diff_exp <- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
+diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc)
 
 ```
 
@@ -239,7 +145,7 @@ diff_exp <- omicser::compute_de_table(ad,comp_types, test_types, obs_names,sc)
 Finally we write this the anndata data object to our _database_DATABASE_ folder.   In the examples contained in the `quickstart/` folder we defined `DS_ROOT_PATH <- "test_db"`, and `DB_NAME <- "domenico_stem_cell"` .
 
 ``` {r, RM-prep-6, eval=FALSE}
-ad$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"db_data.h5ad"))
+adata$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"db_data.h5ad"))
 ```
 
 In the end each DATABASE folder should now these three files:
@@ -251,77 +157,4 @@ You might also want to save some _intermediate_ files such as in the [examples](
 
 We are almost there.  In the next section we will cover the configuration which will add a `db_config.yml` files to the _DATABASE_ directory, and create an [`omicser_options.yml`](omicser_options.yml) in the directory where the app will be executed.
 
-### Configuration
-
-#### WIP
-
-
-### Browsing
-
-#### WIP
-
-##### _-omic_ browsing with the NDCN Browser
-
-From your R-prompt make sure you are in the working directory with the `omicser_options.yml` spawn the app:
-```{r, 4-browse-1, eval=FALSE}
-omicser::run_app(options = list(launch.browser = TRUE))
-```
-
-
-Assuming you have already loaded the omicser package, once the .yml files have been generated and teh data placed in the right directories you are good to browse!
-
-Congratulations you have successfully curated and spun up the data browser!
-
-Now what can it do!  The workflow of the tool is simple:
-
-0. WELCOME: exposition / meta-information
-1. INGESTOR: choose the database 
-2. SELECTOR: choose what variables and data to visualize
-3. PLAYGROUND: 
-  - tables
-  - group and _-omic_ summary statistics
-  - differential expressions
-4: ETC:  qc report, dataset meta-information, publications, etc. (cellxgene)
-
-
-###### Example workflow
-
-
-### Sharing
-
-
-#### sharing your data with  the NDCN Browser
-
-Now that the data is curated for browsing with the NDCN -Omics Browser it all ready to share.  It could be as simple as zipping the folder and sending, or otherwise moving it to somewhere accessible to whomever you are sharing with.
-
-There's a few more responsibilities that need to be addressed:
-
-1. full context ... the meta-meta-data
-2. data safety
-
-
-#### Context & Docuementation
-
-The NDCN Omics browser has a tab to render an .Rmd file containing additional information about your data.  This could include such things as a publication or pre-print, "thank-you"s, acknowledgements, links to the lab, etc.  The goal is to have all the nescessary background and caveats in one place. 
-
-TODO: example .Rmd 
-
-#### On Data Safety & Privacy with Open Science 
-
-
-
-```{r, render-quickstart1-5, eval=TRUE, include = FALSE}
-rmarkdown::render("00_start_here.Rmd")
-rmarkdown::render("01_environment_setup.Rmd")
-rmarkdown::render("02_install.Rmd")
-rmarkdown::render("03_data_curation.Rmd")
-rmarkdown::render("04_configuration.Rmd")
-rmarkdown::render("05_browsing.Rmd")
-rmarkdown::render("06_sharing.Rmd")
-rmarkdown::render("README.Rmd")
-rmarkdown::render("../README.Rmd")
-
-
-```
-
-
+On to [CONFIGURATION](04_configuration.md)
