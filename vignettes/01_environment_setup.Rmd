@@ -86,7 +86,7 @@ bash ~/miniconda.sh -b -p $HOME/miniconda
 Now we can use conda to install a python 3.9 environment to use with `reticulate`. 
 For this example we've called the environment `omxr`, and installed `scanpy` and `leidenalg` which will make sure we have everything we need on the python side.
 ```{bash, conda_env, eval = FALSE}
-conda create --name omxr python=3.9 scanpy                                                                             
+conda create --name omxr python=3.9 -c bioconda -c conda-forge scanpy                                                                             
 conda install -c conda-forge leidenalg                                                                                  
 conda activate omxr
 ```
