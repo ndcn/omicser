@@ -82,17 +82,26 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
           input$SI_comp_fact,
           input$RB_select_test)
 
-      diff_exp <- isolate(rv_data$de)
-      # TODO: change to data.frame
-      # filter according to current "cases"
-      de <- diff_exp %>%
+      diff_exp <- as.data.table(rv_data$de)
+      # # TODO: change to data.frame
+      # # filter according to current "cases"
+      #
+      #filter
+      de <- diff_exp[test_type == input$RB_select_test & versus == input$SI_comp_fact
+                 ][,f := 1
+                  ][, significant := pvals >0.01
+                  ][,point_color := ifelse(significant, "#FF7F00", "#1F78B4")
+                    ]
 
-        dplyr::filter(test_type == input$RB_select_test &
-                        versus == input$SI_comp_fact) %>%
 
-        dplyr::mutate(f=1,
-                      significant = pvals_adj < 0.01,
-                      point_color =  dplyr::recode(as.character(.data$significant), "TRUE" = "#FF7F00", "FALSE" = "#1F78B4"))
+      # de <- diff_exp %>%
+      #
+      #   dplyr::filter(test_type == input$RB_select_test &
+      #                    versus == input$SI_comp_fact) %>%
+      #
+      #   dplyr::mutate(f=1,
+      #                 significant = pvals_adj < 0.01,
+      #                 point_color =  dplyr::recode(as.character(.data$significant), "TRUE" = "#FF7F00", "FALSE" = "#1F78B4"))
 
       return(de)
     })

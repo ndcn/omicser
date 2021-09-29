@@ -136,8 +136,6 @@ pack_anndata_from_csv <- function(data_in){
       uns = uns
     )
   } else {
-      # could _everything be in a dataframe???
-      # yes... lipidomic... strip off first two columns?
       print("WARNING:  did not receive a list of data as expected")
       adata <- NULL
 

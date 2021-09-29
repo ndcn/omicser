@@ -29,18 +29,32 @@ mod_table_server <- function(id,dt_in) {
     ns <- session$ns
 
     output$table_ui_1 <- renderDT({
-      dat <- dt_in() %>% dplyr::mutate(dplyr::across(where(is.factor), as.character ))
+      # in case we didn't clean up factors during curation ...
+      #dat <- dt_in() %>% dplyr::mutate(dplyr::across(where(is.factor), as.character ))
+      dat <- dt_in()
+      dat[] <- lapply(dat, function(x) if (is.factor(x)) as.character(x) else {x})
 
       # only text fields might be too long....
-      select_target <-  which(sapply(dat, is.character))  #filter these ones..
-      names(select_target) <- NULL
+      select_char_target <-  which(sapply(dat, is.character))  #filter these ones..
+      names(select_char_target) <- NULL
+      select_num_target <-  which(sapply(dat, is.numeric))  #filter these ones..
+      names(select_num_target) <- NULL
 
       #dynamically display the shortened version
-      render_js <- JS(
+      render_char_js <- JS(
         "function(data, type, row, meta) {",
         "return type === 'display' && data.length > 20 ?",
         "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
         "}")
+
+
+      render_num_js = JS(
+        "function(data, type, row, meta){",
+        "return type === 'display' ?",
+        "data.toExponential(2) : data;",
+        "}")
+
+
       # hover "tips" to get the full text field
       callback_js <- JS(
         "table.on('mouseover', 'td', function(){",
@@ -58,10 +72,14 @@ mod_table_server <- function(id,dt_in) {
               options = list(
                 scrollX = TRUE,
                 autoWidth  = FALSE,
-                columnDefs = list(list(
-                  targets = select_target,
-                  render = render_js)
-                ),
+                columnDefs = list(
+                    list(
+                      targets = select_char_target,
+                      render = render_char_js),
+                    list(
+                      targets = select_num_target,
+                      render = render_num_js)
+                  ),
                 pageLength = 25,
                 lengthMenu = c(25, 50, 100,200,500),
                 dom = 'Bfrtip',

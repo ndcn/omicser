@@ -61,6 +61,20 @@ mod_pg_table_server <- function(id, rv_data, rv_selections) {
     #create an omics-annotation table that includes differential expressions
     my_table <- reactive({
       req(rv_data$de)
+
+      # # not sure why, but processing this as data.table causes the reactive
+      # # return to jam pu the DT::datatable
+      # # TODO:  find bug and remove dplyr
+      # join_data <- as.data.table(rv_data$ad$var)[]
+      # fix_cols <- names(join_data)[sapply(join_data, is.factor)]
+      # join_data <- join_data[,(fix_cols):= lapply(.SD, as.character), .SDcols = fix_cols]
+      # wide_data <- dcast(as.data.table(rv_data$de),
+      #                    names ~ group+test_type,
+      #                     value.var = c("logfoldchanges", "scores" ,"pvals","pvals_adj","versus"))
+      # #
+      # comp_data <- join_data[wide_data,on=c("omics_name"="names"),nomatch=0]
+
+
       join_data <- rv_data$ad$var %>% dplyr::mutate(dplyr::across(where(is.factor), as.character ))
 
       wide_data <- rv_data$de %>% tidyr::pivot_wider(
@@ -69,12 +83,11 @@ mod_pg_table_server <- function(id, rv_data, rv_selections) {
                     values_from = c(logfoldchanges, scores ,pvals,pvals_adj,versus),
                     names_repair = "check_unique"
                   )
-
       comp_data <- join_data %>%
         dplyr::inner_join(wide_data,by = c("omics_name"="names") )
 
-      comp_data <- as.data.frame(comp_data)
-      rownames(comp_data) <- comp_data$names
+      #comp_data <- as.data.frame(comp_data1)
+      rownames(comp_data) <- comp_data$omics_name
 
       return(comp_data)
     })
@@ -93,19 +106,31 @@ mod_pg_table_server <- function(id, rv_data, rv_selections) {
       # # after reindexing dataset, highlight rows of already selected proteins
       # proxy %>% selectRows(row.names(dat)[dat$omics_name %in% isolate(rv_data$omics)])
       #order_col <- c(which(colnames(dat)=="omics_name"), which(colnames(data)==rv_selections$plot_var_x))
-      select_target <-  which(sapply(dat, is.character))  #filter these ones..
-      names(select_target) <- NULL
+
+      # only text fields might be too long....
+      select_char_target <-  which(sapply(dat, is.character))  #filter these ones..
+      names(select_char_target) <- NULL
+      select_num_target <-  which(sapply(dat, is.numeric))  #filter these ones..
+      names(select_num_target) <- NULL
+
+      #dynamically display the shortened version
+      render_char_js <- JS(
+        "function(data, type, row, meta) {",
+        "return type === 'display' && data.length > 20 ?",
+        "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
+        "}")
+
+      render_num_js = JS(
+        "function(data, type, row, meta){",
+        "return type === 'display' ?",
+        "data.toExponential(2) : data;",
+        "}")
 
       init_js <- JS(
         "function(settings, json) {",
         "$(this.api().table().header()).css({'background-color': '#008b42', opacity: .7, 'color': '#ffffff'});",
         "}")
 
-      render_js <- JS(
-        "function(data, type, row, meta) {",
-        "return type === 'display' && data.length > 20 ?",
-        "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
-        "}")
 
       callback_js <- JS(
         "table.on('mouseover', 'td', function(){",
@@ -132,10 +157,14 @@ mod_pg_table_server <- function(id, rv_data, rv_selections) {
                 scrollX = TRUE,
                 autoWidth  = FALSE,
                 initComplete = init_js,
-                columnDefs = list(list(
-                  targets = select_target,
-                  render = render_js)
-                  ),
+                columnDefs = list(
+                  list(
+                    targets = select_char_target,
+                    render = render_char_js),
+                  list(
+                    targets = select_num_target,
+                    render = render_num_js)
+                ),
                 pageLength = 50,
                 lengthMenu = c(25, 50, 100,200,500),
                 # ordering = TRUE,
