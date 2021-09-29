@@ -45,6 +45,7 @@ Support for the following _post-QC_ -omics data types has been tested:
 - _lipid_-omics
 
 The package is able to provide the following outputs:
+
 - images visualizing data
 - subsets of data
 - web application packaged with data that can be shared with collaborators, so they can run the browser on their own computer
@@ -74,7 +75,7 @@ This package was developed to create a [{`shiny`}](https://shiny.rstudio.com/) a
 [`{golem}`](https://github.com/ThinkR-open/golem), "an opinionated framework for building production-grade shiny applications."
 It requires a number of additional R and Python packages.
 
-Documentation to walk through the process of installing necessary software, creating your application, and browsing your data is available in the [Quickstart guide](vignettes/):
+Documentation to walk through the process of installing necessary software, creating your application, and browsing your data is available in the [Quickstart guide](https://ergonyc.github.io/omicser/articles/01_environment_setup.html):
 
 - [**1-Set up environment**](https://ergonyc.github.io/omicser/articles/01_environment_setup.html): ensure underlying tools/packages from R and python are available 
 - [**2-Install package**](https://ergonyc.github.io/omicser/articles/02_install.html): includes data curation functions and software that runs the browser application
@@ -92,6 +93,7 @@ This project began as part of the CZI NDCN Open Science Initiative Data Science 
 
 Please see our [Contributing guidelines](CONTRIBUTING.md)
 for more information on any of the following:
+
 - reporting bugs and problems using the software
 - requesting additional features and functionality
 - submitting your own code or documentation to become a part of this project
@@ -104,12 +106,3 @@ Anyone interacting with our project is expected to follow our [Code of Conduct](
 Please view our [issues](https://github.com/ergonyc/omicser/issues),
 especially those tagged as [high priority](https://github.com/ergonyc/omicser/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22),
 for more information about immediate plans for development.
-
-```{r, render-quickstart1-6, eval=FALSE, include = FALSE}
-rmarkdown::render("vignettes/01_environment_setup.Rmd")
-rmarkdown::render("vignettes/02_install.Rmd")
-rmarkdown::render("vignettes/03_data_curation.Rmd")
-rmarkdown::render("vignettes/04_configuration.Rmd")
-rmarkdown::render("vignettes/05_browsing.Rmd")
-rmarkdown::render("vignettes/06_sharing.Rmd")
-```
