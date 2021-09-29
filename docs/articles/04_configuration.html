@@ -118,6 +118,9 @@
 
     
     
+<blockquote>
+<p><strong>This vignette is currently under active development.</strong></p>
+</blockquote>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Now move to the directory where you want to execute the omicser</span>
 <span class="co"># and make the omicser_options.yml</span>
@@ -136,9 +139,6 @@
                         conda_environment<span class="op">=</span><span class="va">conda_environment</span><span class="op">)</span>
 
 <span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/write_config.html">write_config</a></span><span class="op">(</span><span class="va">omicser_options</span>,in_path <span class="op">=</span> <span class="va">OMICSER_RUN_DIR</span> <span class="op">)</span></code></pre></div>
-<div id="work-in-progress-not-written" class="section level1">
-<h1 class="hasAnchor">
-<a href="#work-in-progress-not-written" class="anchor"></a>WORK IN PROGRESS: NOT written</h1>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#==== 7. create configs =========================================================================</span>
 <span class="co"># differentials  #if we care we need to explicitly state. defaults will be the order...</span>
@@ -173,14 +173,11 @@
 <span class="op">)</span>
 <span class="fu">configr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/configr/man/write.config.html">write.config</a></span><span class="op">(</span>config.dat <span class="op">=</span> <span class="va">conf_list</span>, file.path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">DS_ROOT_PATH</span>,<span class="va">DB_NAME</span>,<span class="st">"config.yml"</span> <span class="op">)</span>,
                       write.type <span class="op">=</span> <span class="st">"yaml"</span>, indent <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></code></pre></div>
-</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
+      </div>
 
 </div>
 

@@ -151,6 +151,39 @@
 
 <div id="contributing-guidelines" class="section level1">
 
+<blockquote>
+<p><strong>These guidelines are under construction!</strong></p>
+</blockquote>
+<p>Reference Code of Conduct</p>
+<p>Overview of ways to contribute</p>
+<p>Links to GitHub issues and NDCN contact email</p>
+<div id="contributing-changes-via-github" class="section level2">
+<h2 class="hasAnchor">
+<a href="#contributing-changes-via-github" class="anchor"></a>Contributing changes via GitHub</h2>
+<p>Links to GitHub tutorials for these tasks</p>
+<ul>
+<li>fork this repository</li>
+<li>make changes and commit</li>
+<li>submit a PR with a meaningful message explaining what your change accomplishes and why</li>
+</ul>
+</div>
+<div id="website-documentation-and-tutorials" class="section level2">
+<h2 class="hasAnchor">
+<a href="#website-documentation-and-tutorials" class="anchor"></a>Website, documentation, and tutorials</h2>
+<p>The <a href="https://ergonyc.github.io/omicser/"><code>omicser</code> website</a> is built using <a href="https://pkgdown.r-lib.org/"><code>pkgdown</code></a>.</p>
+<p>When applicable, please edit the <code>Rmd</code> version of a file (rather than the <code>md</code>) version. If you would like to recommend changes to the tutorials listed under the “Articles” drop-down menu, you can find the source files in the <code>vignettes</code> directory.</p>
+<p>The site will need to be rebuilt as follows for these changes to be visible on the website:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://pkgdown.r-lib.org">pkgdown</a></span><span class="op">)</span>
+<span class="fu">pkgdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgdown.r-lib.org/reference/build_site.html">build_site</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p>All changes from this command will need to be committed to the repository for the website to be updated.</p>
+<p>If you are proposing changes to the front page of the website, you should edit the top-level <code>README.Rmd</code> file in the repository. The file needs to be knit (to create <code>README.md</code>) and then the site rebuilt for these changes to be published to the website.</p>
+</div>
+<div id="code-fixes-and-enhancements-to-the-web-app" class="section level2">
+<h2 class="hasAnchor">
+<a href="#code-fixes-and-enhancements-to-the-web-app" class="anchor"></a>Code fixes and enhancements to the web app</h2>
+<p>TBA</p>
+</div>
 </div>
 
   </div>
