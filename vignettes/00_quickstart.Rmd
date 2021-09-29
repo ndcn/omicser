@@ -30,4 +30,8 @@ The main vignettes in the Quickstart series include:
 4. [Configuration](04_configuration.md)
 5. [Browsing](05_browsing.md)
 
-There is also a subdirectory of [`examples/`](examples/) which have some R-scripts used to curate and execute example datasets, and _stubs_ to some directories holding the curated _DATABASE_ examples and configuration files (e.g. [`omicser_options.yml`](omicser_options.yml))
+Please view the [vignettes directory of the GitHub repository](https://github.com/ergonyc/omicser/tree/main/vignettes)
+for this project to view:
+- R scripts used to curate and execute example datasets
+- an example configuration file, `omicser_options.yml`
+- placeholders for the organization of data and creation of the database files
