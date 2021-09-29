@@ -14,9 +14,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-
-# WORK IN PROGRESS:  NOT written
+> **This vignette is currently under active development.**
 
 # sharing your data with  the NDCN Browser
 
