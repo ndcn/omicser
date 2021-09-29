@@ -34,13 +34,19 @@ The diagram below summarizes the steps required to use this package:
 ![Overview of data visualization using the
 omicser](man/figures/README-omicser-overview.png)
 
-Support for the following *post-QC* -omics data types has been tested: -
-*transcript*-omics - *prote*-omics - *metabol*-omics - *lipid*-omics
+Support for the following *post-QC* -omics data types has been tested:
 
-The package is able to provide the following outputs: - images
-visualizing data - subsets of data - web application packaged with data
-that can be shared with collaborators, so they can run the browser on
-their own computer
+-   *transcript*-omics
+-   *prote*-omics
+-   *metabol*-omics
+-   *lipid*-omics
+
+The package is able to provide the following outputs:
+
+-   images visualizing data
+-   subsets of data
+-   web application packaged with data that can be shared with
+    collaborators, so they can run the browser on their own computer
 
 ## Installation and usage for Viewers
 
@@ -71,21 +77,31 @@ a number of additional R and Python packages.
 
 Documentation to walk through the process of installing necessary
 software, creating your application, and browsing your data is available
-in the [Quickstart guide](quickstart/):
+in the [Quickstart guide](vignettes/00_quickstart):
 
-1.  [**Set up environment**](https://ergonyc.github.io/omicser/articles/01_environment_setup.html): ensure
-    underlying tools/packages from R and python are available
-2.  [**Install package**](https://ergonyc.github.io/omicser/articles/02_install.html): includes data
-    curation functions and software that runs the browser application
-3.  [**Curate data**](https://ergonyc.github.io/omicser/articles/03_data_curation.html): the *-omics* data
-    curated into a *database*
-4.  [**Configure application**](https://ergonyc.github.io/omicser/articles/04_configuration.html):
+-   [**1-Set up
+    environment**](https://ergonyc.github.io/omicser/articles/01_environment_setup.html):
+    ensure underlying tools/packages from R and python are available
+-   [**2-Install
+    package**](https://ergonyc.github.io/omicser/articles/02_install.html):
+    includes data curation functions and software that runs the browser
+    application
+-   [**3-Curate
+    data**](https://ergonyc.github.io/omicser/articles/03_data_curation.html):
+    the *-omics* data curated into a *database*
+-   [**4-Configure
+    application**](https://ergonyc.github.io/omicser/articles/04_configuration.html):
     connecting the *-omics database* to the browser app
-5.  [**Browse data**](https://ergonyc.github.io/omicser/articles/05_browsing.html): explore the data, test
-    hypotheses, create visualizations
-6.  [**Share application**](https://ergonyc.github.io/omicser/articles/06_sharing.html): perform final
-    curation steps that allow you to share the browser with
-    collaborators (Viewers)
+-   [**5-Browse
+    data**](https://ergonyc.github.io/omicser/articles/05_browsing.html):
+    explore the data, test hypotheses, create visualizations
+-   [**6-Share
+    application**](https://ergonyc.github.io/omicser/articles/06_sharing.html):
+    perform final curation steps that allow you to share the browser
+    with collaborators (Viewers)
+
+Other vignettes are currently in development, but include additional
+examples for data formatting and app customization.
 
 ## Contributing to this project
 
@@ -93,11 +109,14 @@ This project began as part of the CZI NDCN Open Science Initiative Data
 Science Pilot (March-Sept 2021).
 
 Please see our [Contributing guidelines](CONTRIBUTING.md) for more
-information on any of the following: - reporting bugs and problems using
-the software - requesting additional features and functionality -
-submitting your own code or documentation to become a part of this
-project - sharing information about how you’ve used this package in your
-own work
+information on any of the following:
+
+-   reporting bugs and problems using the software
+-   requesting additional features and functionality
+-   submitting your own code or documentation to become a part of this
+    project
+-   sharing information about how you’ve used this package in your own
+    work
 
 Anyone interacting with our project is expected to follow our [Code of
 Conduct](CODE_OF_CONDUCT.md).

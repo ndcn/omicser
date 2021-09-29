@@ -54,31 +54,31 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/01_environment_setup.html">Environment Setup</a>
+      <a href="articles/00_quickstart.html">0-Quickstart Overview</a>
     </li>
     <li>
-      <a href="articles/02_install.html">Installation</a>
+      <a href="articles/01_environment_setup.html">1-Environment Setup</a>
     </li>
     <li>
-      <a href="articles/03_data_curation.html">Data Curation</a>
+      <a href="articles/02_install.html">2-Installation</a>
     </li>
     <li>
-      <a href="articles/04_configuration.html">Database Configuration</a>
+      <a href="articles/03_data_curation.html">3-Data Curation</a>
     </li>
     <li>
-      <a href="articles/05_browsing.html">Browsing</a>
+      <a href="articles/04_configuration.html">4-Database Configuration</a>
     </li>
     <li>
-      <a href="articles/06_sharing.html">Sharing</a>
+      <a href="articles/05_browsing.html">5-Browsing</a>
     </li>
     <li>
-      <a href="articles/README.html">UNKNOWN TITLE</a>
+      <a href="articles/06_sharing.html">6-Sharing</a>
     </li>
     <li>
       <a href="articles/golem_startup.html">omicser development with golem</a>
     </li>
     <li>
-      <a href="articles/python_and_R.html">R vs python with anndata</a>
+      <a href="articles/python_and_R.html">Anndata objects</a>
     </li>
   </ul>
 </li>
@@ -126,8 +126,23 @@
 </ul>
 <p>The diagram below summarizes the steps required to use this package:</p>
 <p><img src="reference/figures/README-omicser-overview.png" alt="Overview of data visualization using the omicser"></p>
-<p>Support for the following <em>post-QC</em> -omics data types has been tested: - <em>transcript</em>-omics - <em>prote</em>-omics - <em>metabol</em>-omics - <em>lipid</em>-omics</p>
-<p>The package is able to provide the following outputs: - images visualizing data - subsets of data - web application packaged with data that can be shared with collaborators, so they can run the browser on their own computer</p>
+<p>Support for the following <em>post-QC</em> -omics data types has been tested:</p>
+<ul>
+<li>
+<em>transcript</em>-omics</li>
+<li>
+<em>prote</em>-omics</li>
+<li>
+<em>metabol</em>-omics</li>
+<li>
+<em>lipid</em>-omics</li>
+</ul>
+<p>The package is able to provide the following outputs:</p>
+<ul>
+<li>images visualizing data</li>
+<li>subsets of data</li>
+<li>web application packaged with data that can be shared with collaborators, so they can run the browser on their own computer</li>
+</ul>
 </div>
 <div id="installation-and-usage-for-viewers" class="section level2">
 <h2 class="hasAnchor">
@@ -145,28 +160,35 @@
 <h2 class="hasAnchor">
 <a href="#installation-and-usage-for-curators" class="anchor"></a>Installation and usage for Curators</h2>
 <p>This package was developed to create a <a href="https://shiny.rstudio.com/">{<code>shiny</code>}</a> application using<br><a href="https://github.com/ThinkR-open/golem"><code>{golem}</code></a>, “an opinionated framework for building production-grade shiny applications.” It requires a number of additional R and Python packages.</p>
-<p>Documentation to walk through the process of installing necessary software, creating your application, and browsing your data is available in the <a href="quickstart/">Quickstart guide</a>:</p>
-<ol>
+<p>Documentation to walk through the process of installing necessary software, creating your application, and browsing your data is available in the <a href="vignettes/00_quickstart">Quickstart guide</a>:</p>
+<ul>
 <li>
-<a href="https://ergonyc.github.io/omicser/articles/01_environment_setup.html"><strong>Set up environment</strong></a>: ensure underlying tools/packages from R and python are available</li>
+<a href="https://ergonyc.github.io/omicser/articles/01_environment_setup.html"><strong>1-Set up environment</strong></a>: ensure underlying tools/packages from R and python are available</li>
 <li>
-<a href="https://ergonyc.github.io/omicser/articles/02_install.html"><strong>Install package</strong></a>: includes data curation functions and software that runs the browser application</li>
+<a href="https://ergonyc.github.io/omicser/articles/02_install.html"><strong>2-Install package</strong></a>: includes data curation functions and software that runs the browser application</li>
 <li>
-<a href="https://ergonyc.github.io/omicser/articles/03_data_curation.html"><strong>Curate data</strong></a>: the <em>-omics</em> data curated into a <em>database</em>
+<a href="https://ergonyc.github.io/omicser/articles/03_data_curation.html"><strong>3-Curate data</strong></a>: the <em>-omics</em> data curated into a <em>database</em>
 </li>
 <li>
-<a href="https://ergonyc.github.io/omicser/articles/04_configuration.html"><strong>Configure application</strong></a>: connecting the <em>-omics database</em> to the browser app</li>
+<a href="https://ergonyc.github.io/omicser/articles/04_configuration.html"><strong>4-Configure application</strong></a>: connecting the <em>-omics database</em> to the browser app</li>
 <li>
-<a href="https://ergonyc.github.io/omicser/articles/05_browsing.html"><strong>Browse data</strong></a>: explore the data, test hypotheses, create visualizations</li>
+<a href="https://ergonyc.github.io/omicser/articles/05_browsing.html"><strong>5-Browse data</strong></a>: explore the data, test hypotheses, create visualizations</li>
 <li>
-<a href="https://ergonyc.github.io/omicser/articles/06_sharing.html"><strong>Share application</strong></a>: perform final curation steps that allow you to share the browser with collaborators (Viewers)</li>
-</ol>
+<a href="https://ergonyc.github.io/omicser/articles/06_sharing.html"><strong>6-Share application</strong></a>: perform final curation steps that allow you to share the browser with collaborators (Viewers)</li>
+</ul>
+<p>Other vignettes are currently in development, but include additional examples for data formatting and app customization.</p>
 </div>
 <div id="contributing-to-this-project" class="section level2">
 <h2 class="hasAnchor">
 <a href="#contributing-to-this-project" class="anchor"></a>Contributing to this project</h2>
 <p>This project began as part of the CZI NDCN Open Science Initiative Data Science Pilot (March-Sept 2021).</p>
-<p>Please see our <a href="CONTRIBUTING.html">Contributing guidelines</a> for more information on any of the following: - reporting bugs and problems using the software - requesting additional features and functionality - submitting your own code or documentation to become a part of this project - sharing information about how you’ve used this package in your own work</p>
+<p>Please see our <a href="CONTRIBUTING.html">Contributing guidelines</a> for more information on any of the following:</p>
+<ul>
+<li>reporting bugs and problems using the software</li>
+<li>requesting additional features and functionality</li>
+<li>submitting your own code or documentation to become a part of this project</li>
+<li>sharing information about how you’ve used this package in your own work</li>
+</ul>
 <p>Anyone interacting with our project is expected to follow our <a href="CODE_OF_CONDUCT.html">Code of Conduct</a>.</p>
 <div id="roadmap" class="section level3">
 <h3 class="hasAnchor">

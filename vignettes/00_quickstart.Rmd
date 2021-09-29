@@ -1,0 +1,37 @@
+---
+title: "0-Quickstart Overview"
+author: "andy henrie"
+date: "9/14/2021"
+output:
+  html_document: 
+    toc: yes
+    keep_md: yes
+  md_document:
+    variant: gfm
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+These *Quickstart* materials are intended to guide curators through the process of creating their own web application and formatting data for visualization in the browser.
+The main vignettes in the Quickstart series include:
+
+1. [Environment Setup](01_environment_setup.md)
+2. [Installation](02_install.md)
+3. [Data Curation](03_data_curation.md)
+4. [Configuration](04_configuration.md)
+5. [Browsing](05_browsing.md)
+
+Please view the [vignettes directory of the GitHub repository](https://github.com/ergonyc/omicser/tree/main/vignettes)
+for this project to view:
+- R scripts used to curate and execute example datasets
+- an example configuration file, `omicser_options.yml`
+- placeholders for the organization of data and creation of the database files
