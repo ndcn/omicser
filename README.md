@@ -61,7 +61,7 @@ library(omicser)
 And then then the browser can be launched:
 
 ``` r
-omicser::launchApp()
+omicser::run_app()
 ```
 
 For more information on launching the web application with your data,
@@ -70,14 +70,17 @@ please consult with the Curator who created it.
 ## Installation and usage for Curators
 
 This package was developed to create a
-[{`shiny`}](https://shiny.rstudio.com/) application using  
+[`{shiny}`](https://shiny.rstudio.com/) application using  
 [`{golem}`](https://github.com/ThinkR-open/golem), “an opinionated
 framework for building production-grade shiny applications.” It requires
-a number of additional R and Python packages.
+a number of additional R and Python packages. The package creates the
+Shiny browser app as well as several functions for curating and
+packaging the data being curated.
 
 Documentation to walk through the process of installing necessary
 software, creating your application, and browsing your data is available
-in the [Quickstart guide](vignettes/00_quickstart):
+in the [Quickstart
+guide](https://ergonyc.github.io/omicser/articles/00_quickstart.html):
 
 -   [**1-Set up
     environment**](https://ergonyc.github.io/omicser/articles/01_environment_setup.html):
