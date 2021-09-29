@@ -61,7 +61,8 @@ library(omicser)
 And then then the browser can be launched:
 
 ```{r, 01-launch, eval=FALSE}
-omicser::launchApp()
+omicser::run_app()
+
 ```
 
 For more information on launching the web application with your data,
