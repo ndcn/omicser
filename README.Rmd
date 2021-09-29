@@ -38,6 +38,7 @@ The diagram below summarizes the steps required to use this package:
 ![Overview of data visualization using the omicser](man/figures/README-omicser-overview.png)
 
 Support for the following _post-QC_ -omics data types has been tested:
+
 - _transcript_-omics
 - _prote_-omics
 - _metabol_-omics
@@ -75,12 +76,15 @@ It requires a number of additional R and Python packages.
 
 Documentation to walk through the process of installing necessary software, creating your application, and browsing your data is available in the [Quickstart guide](vignettes/):
 
-1. [**Set up environment**](https://ergonyc.github.io/omicser/articles/01_environment_setup.html): ensure underlying tools/packages from R and python are available 
-2. [**Install package**](https://ergonyc.github.io/omicser/articles/02_install.html): includes data curation functions and software that runs the browser application
-3. [**Curate data**](https://ergonyc.github.io/omicser/articles/03_data_curation.html): the _-omics_ data curated into a _database_
-4. [**Configure application**](https://ergonyc.github.io/omicser/articles/04_configuration.html): connecting the _-omics database_ to the browser app
-5. [**Browse data**](https://ergonyc.github.io/omicser/articles/05_browsing.html): explore the data, test hypotheses, create visualizations
-6. [**Share application**](https://ergonyc.github.io/omicser/articles/06_sharing.html): perform final curation steps that allow you to share the browser with collaborators (Viewers)
+- [**1-Set up environment**](https://ergonyc.github.io/omicser/articles/01_environment_setup.html): ensure underlying tools/packages from R and python are available 
+- [**2-Install package**](https://ergonyc.github.io/omicser/articles/02_install.html): includes data curation functions and software that runs the browser application
+- [**3-Curate data**](https://ergonyc.github.io/omicser/articles/03_data_curation.html): the _-omics_ data curated into a _database_
+- [**4-Configure application**](https://ergonyc.github.io/omicser/articles/04_configuration.html): connecting the _-omics database_ to the browser app
+- [**5-Browse data**](https://ergonyc.github.io/omicser/articles/05_browsing.html): explore the data, test hypotheses, create visualizations
+- [**6-Share application**](https://ergonyc.github.io/omicser/articles/06_sharing.html): perform final curation steps that allow you to share the browser with collaborators (Viewers)
+
+Other vignettes are currently in development,
+but include additional examples for data formatting and app customization.
 
 ## Contributing to this project
 

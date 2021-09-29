@@ -6,6 +6,8 @@ output: html_document
 ---
 # Introduction to `{OMXR}` {#omxr}
 
+> **This vignette is under construction.**
+
 ```{=html}
 <style>
 img.left {
