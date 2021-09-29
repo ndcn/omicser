@@ -14,8 +14,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### NDCN Browser Installation
-
 Now that we've set up our enviroment, installing the NDCN browser with `devtools::install_github` is easy.  
 
 > NOTE: we will soon add releases which will be the optimal way to install. Stay Tuned.

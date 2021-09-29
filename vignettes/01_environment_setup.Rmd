@@ -14,10 +14,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-
-#  Environment Setup
-
 This package has been developed with a recent (4.1.0) version of R, shiny 1.6.0, and RStudio v1.4.1717.  
 ```{bash, RM-env-Rver, eval = FALSE} 
 R --version

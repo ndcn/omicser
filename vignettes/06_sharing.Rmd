@@ -16,8 +16,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 > **This vignette is currently under active development.**
 
-# sharing your data with  the NDCN Browser
-
 Now that the data is curated for browsing with the NDCN -Omics Browser it all ready to share.  It could be as simple as zipping the folder and sending, or otherwise moving it to somewhere accessible to whomever you are sharing with.
 
 There's a few more responsibilities that need to be addressed:

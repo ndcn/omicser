@@ -16,7 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 > **This vignette is currently under active development.**
 
-# _-omic_ browsing with the NDCN Browser
+Now that you have created your application and formatted your data,
+you are ready to browse your _-omic_ data!
 
 From your R-prompt make sure you are in the working directory with the `omicser_options.yml` spawn the app:
 ```{r, 4-browse-1, eval=FALSE}
