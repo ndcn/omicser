@@ -32,6 +32,7 @@ The main vignettes in the Quickstart series include:
 
 Please view the [vignettes directory of the GitHub repository](https://github.com/ergonyc/omicser/tree/main/vignettes)
 for this project to view:
+
 - R scripts used to curate and execute example datasets
 - an example configuration file, `omicser_options.yml`
 - placeholders for the organization of data and creation of the database files

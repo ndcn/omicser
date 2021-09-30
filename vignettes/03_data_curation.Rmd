@@ -14,10 +14,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-### Data Curation and Preparation
-
-
 The most crucial step is _curating_ your data into a database that can be loaded by the browser.  As the _curator_ you will have the responsibility to make some choices about what and how the data can be seen.  
 This process results in specifying the location of the data, and creating files which are formatted for the browser.
 

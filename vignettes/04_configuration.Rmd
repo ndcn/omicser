@@ -14,7 +14,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
+> **This vignette is currently under active development.**
 
 ```{r, setup-1, eval=FALSE}
 
@@ -38,7 +38,6 @@ omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
 
 ```
 
-# WORK IN PROGRESS:  NOT written
 
 
 ``` {r, 3-config-1, eval=FALSE}
