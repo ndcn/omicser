@@ -8,6 +8,7 @@
 .h5Seurat
 .rds
 .rda
+.DS_Store
 inst/doc
 /doc/
 /Meta/
