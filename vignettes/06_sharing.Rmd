@@ -28,9 +28,16 @@ There's a few more responsibilities that need to be addressed:
 
 The NDCN Omics browser has a tab to render an .Rmd file containing additional information about your data.  This could include such things as a publication or pre-print, "thank-you"s, acknowledgements, links to the lab, etc.  The goal is to have all the nescessary background and caveats in one place. 
 
+### _additional_info_
+The browser will look for an `additional_info.Rmd` which should contain a narrative style description of the data.  This should contain an overview of methadology, hypothesis being tested, links to additional information.
+
+
+###  QC report
+Many labs produce reports as part of their QC pipeline.  In the Playground tab there's a `QC` tab to render an .Rmd formatted report.  QC related variables can also be curated into the database for browsing, however given the diversity of QC strategies and analysis across -omics flavors and labs its not realistic to support full QC within the browser.  Rendering the report should give a browser sufficient context to explore the data and develop hypothesis.
+
 TODO: example .Rmd 
 
-## On Data Safety & Privacy with Open Science 
 
+## On Data Safety & Privacy with Open Science 
 
 WIP:  THIS NEEDS TO BE WRITTEN.... 

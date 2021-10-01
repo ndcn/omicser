@@ -15,6 +15,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 > **This vignette is currently under active development.**
+There are two parts to configuring the browser:
+
+1. top level configuration _DATABASE_ name and location configuration 
+2. _DATABASE_ specific configuration
+
+First, we have to tell the browser where our _DATABASE_ is, and what its called.  A _DATABASE_ is simply a directory containing or -omics data object and meta-information. Multiple _DATABASES_ can be configured to make them available via the dropdown in the "Ingest" tab.   These will be sub-directories in the same `db_root_path`.  These need to be recorded in the  `omicser_options.yml` which is written in the directory where the browser is initiated from ( via `omicser::run_app()`).
 
 ```{r, setup-1, eval=FALSE}
 
@@ -38,6 +44,7 @@ omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
 
 ```
 
+Second, the experimental factors to be selected for visualization parameters need to be specified in the `db_config.yml`
 
 
 ``` {r, 3-config-1, eval=FALSE}
@@ -72,7 +79,7 @@ conf_list <- list(
   default_factors = c("Condition","Color","Replicate")
 
 )
-configr::write.config(config.dat = conf_list, file.path = file.path(DS_ROOT_PATH,DB_NAME,"config.yml" ),
+configr::write.config(config.dat = conf_list, file.path = file.path(DS_ROOT_PATH,DB_NAME,"db_config.yml" ),
                       write.type = "yaml", indent = 4)
 
 
