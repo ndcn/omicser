@@ -64,7 +64,7 @@ get_config <- function(in_path = NULL, is_running = FALSE) {
 #' @param db_root where the folder lives. default cwd
 #' @return
 #' @export write_db_meta
-#' @importFrom configr read.config
+#' @importFrom configr write.config
 #' @examples TODO
 write_db_meta <- function(db_meta,db_name, db_root = NULL) {
 
@@ -111,7 +111,7 @@ get_db_meta <- function(db_name, db_root = NULL)  {
 #' @param db_root where the folder lives. default cwd
 #' @return
 #' @export write_db_conf
-#' @importFrom configr read.config
+#' @importFrom configr write.config
 #' @examples TODO
 write_db_conf <- function(config_list,db_name, db_root = NULL) {
 
