@@ -1,25 +1,46 @@
 ---
-title: "Additional Info - Godel, Escher, & Erdos"
+title: "PLACEHOLDER"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
- >>>>>>>>PLACEHOLDER <<<<<<<<<<<<<<<<<<
 
-### About DATABASE XYZ
+### PLACEHOLDER WARNING!!
 
-Data is from a super califragilistic study which solves materialism to the nth degree.  Decarte would be convinced his pneumatics were aliens collapsing the physical universe into an experience of ribonucleic acids. 
+> > > > > > > > WARNING!! \<\<\<\<\<\<\<\<\<\<\<\<\<\<\<\<\<\<
+
+> WIP template
+
+### This Information HAS NOT been curated
+
+CURATORS: Please _curate_ a detailed explanation of the database
+e.g. the informatin in db_config.yml
+
+-   organism: human?
+-   lab: ?
+-   annotation_database: uniprot_for_annotation.RData?
+-   title: pbmc3k
+-   omic_type: Transcriptomics
+-   measurment: normalized counts
+-   pub: TBD
+-   date: Tue Sep 14 12:50:45 2021
+-   url :
+    "[https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k"](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k")
 
 
 
-### Citation
+### Possible papers / Citation
 
-IBID Skeletal Muscle & Stem Cell Aging
-Svenja C. Schüler, Joanna M. Kirkpatrick, Manuel Schmidt, Deolinda Santinha, Philipp Koch, Simone Di Sanzo, Emilio Cirri, Martin Hemberg, Alessandro Ori and Julia von Maltzahn
+### Possible materials and methods
 
+------------------------------------------------------------------------
+### Quality Control
+> EXPERIMENTAL: for rendering in the <playground> <QC> sub-tab
 
-You can find the introductory paper: [here](https://journals.plos.org/plosone/article?id=10.1372).
+### _CONTACT INFO_ for Questions and Comments
 
-### Questions and comments
-Please write to Sir Isaac Newton at the following email address: henrie@datatecnica.com
-
+Please write to Sir Isaac Newton at the following email address:
+[henrie\@datatecnica.com](mailto:henrie@datatecnica.com){.email}
 
 © 2021 Biology is solved with wave equations, Inc.
