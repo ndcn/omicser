@@ -104,9 +104,16 @@ mod_additional_info_server <- function(id,db_name, DB_ROOT_PATH){
 
       md_path <- file.path(DB_ROOT_PATH,db_name$name,"additional_info.Rmd")
       #TODO:  allow a .docx file instead which will need to be rendered and then output
+      #
+      if (!file.exists(md_path)) { #LOAD DEFAULT MESSAGE
+        md_path <- system.file("app/www/additional_info.Rmd",package='omicser')
+      }
+
+      # TODO: check for .docx OR .md
+      #out_htm <- display_document(md_path)
+
       out_htm <- shiny::includeMarkdown(md_path)
 
-      #out_htm <- HTML(markdown::markdownToHTML(md_path))
 
       return(out_htm)
     })
