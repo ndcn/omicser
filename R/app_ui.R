@@ -103,7 +103,7 @@ app_ui <- function(request) {
               <div>
               <a href="https://chanzuckerberg.com/ndcn/" target="_blank">CZI NDCN</a>
 
-              Shiny App credits: NDCN, DTI, Andy Henrie <a href="https://github.com/ergonyc/omicser" target="_blank">ergonyc/omicser@github</a>
+              Shiny App credits: NDCN, DTI, Andy Henrie <a href="https://github.com/ndcn/omicser" target="_blank">ndcn/omicser@github</a>
 
               </div>
               </body>

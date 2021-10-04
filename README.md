@@ -54,7 +54,7 @@ Once a curator has prepared the data and configured the application, the
 package can be installed with R:
 
 ``` r
-devtools::install_github("ergonyc/omicser")
+devtools::install_github("ndcn/omicser")
 library(omicser)
 ```
 
@@ -80,31 +80,31 @@ packaging the data being curated.
 Documentation to walk through the process of installing necessary
 software, creating your application, and browsing your data is available
 in the [Quickstart
-guide](https://ergonyc.github.io/omicser/articles/00_quickstart.html):
+guide](https://ndcn.github.io/omicser/articles/00_quickstart.html):
 
 -   [**1-Set up
-    environment**](https://ergonyc.github.io/omicser/articles/01_environment_setup.html):
+    environment**](https://ndcn.github.io/omicser/articles/01_environment_setup.html):
     ensure underlying tools/packages from R and python are available
 -   [**2-Install
-    package**](https://ergonyc.github.io/omicser/articles/02_install.html):
+    package**](https://ndcn.github.io/omicser/articles/02_install.html):
     includes data curation functions and software that runs the browser
     application
 -   [**3-Curate
-    data**](https://ergonyc.github.io/omicser/articles/03_data_curation.html):
+    data**](https://ndcn.github.io/omicser/articles/03_data_curation.html):
     the *-omics* data curated into a *database*
 -   [**4-Configure
-    application**](https://ergonyc.github.io/omicser/articles/04_configuration.html):
+    application**](https://ndcn.github.io/omicser/articles/04_configuration.html):
     connecting the *-omics database* to the browser app
 -   [**5-Browse
-    data**](https://ergonyc.github.io/omicser/articles/05_browsing.html):
+    data**](https://ndcn.github.io/omicser/articles/05_browsing.html):
     explore the data, test hypotheses, create visualizations
 -   [**6-Share
-    application**](https://ergonyc.github.io/omicser/articles/06_sharing.html):
+    application**](https://ndcn.github.io/omicser/articles/06_sharing.html):
     perform final curation steps that allow you to share the browser
     with collaborators (Viewers)
 
 Please view the [vignettes directory of the GitHub
-repository](https://github.com/ergonyc/omicser/tree/main/vignettes) for
+repository](https://github.com/ndcn/omicser/tree/main/vignettes) for
 this project to view additional files used in the Quickstart.
 
 ## Contributing to this project
@@ -127,7 +127,7 @@ Conduct](CODE_OF_CONDUCT.md).
 
 ### Roadmap
 
-Please view our [issues](https://github.com/ergonyc/omicser/issues),
+Please view our [issues](https://github.com/ndcn/omicser/issues),
 especially those tagged as [high
-priority](https://github.com/ergonyc/omicser/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22),
+priority](https://github.com/ndcn/omicser/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22),
 for more information about immediate plans for development.

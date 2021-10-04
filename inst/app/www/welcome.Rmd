@@ -27,6 +27,4 @@ You can find the introductory paper: [here](https://journals.plos.org/plosone/ar
 
 ### Questions and comments
 
-If you have any questions or comments please submit an issue on the apps Github page: [https://github.com/ergonyc/NDCN_dev](https://github.com/ergonyc/NDCN_dev)
-
-© 2021 DataTecnica, Inc.
+Please visit [this project's website](https://ndcn.github.io/omicser/) for more information.

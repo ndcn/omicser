@@ -11,7 +11,7 @@ reticulate::conda_install(envname = "omxr", packages = "scanpy")
 reticulate::conda_install(envname="omxr",channel = "conda-forge",packages = c("leidenalg") )
 
 # execute THIS:
-devtools::install_github("ergonyc/omicser")
+devtools::install_github("ndcn/omicser")
 
 
 

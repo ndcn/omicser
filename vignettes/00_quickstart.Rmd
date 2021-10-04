@@ -30,7 +30,7 @@ The main vignettes in the Quickstart series include:
 4. [Configuration](04_configuration.md)
 5. [Browsing](05_browsing.md)
 
-Please view the [vignettes directory of the GitHub repository](https://github.com/ergonyc/omicser/tree/main/vignettes)
+Please view the [vignettes directory of the GitHub repository](https://github.com/ndcn/omicser/tree/main/vignettes)
 for this project to view:
 
 - R scripts used to curate and execute example datasets
