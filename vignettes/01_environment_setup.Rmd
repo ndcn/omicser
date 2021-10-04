@@ -14,28 +14,29 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This package has been developed with a recent (4.1.0) version of R, shiny 1.6.0, and RStudio v1.4.1717.  
-```{bash, RM-env-Rver, eval = FALSE} 
-R --version
-```
+Creating and running your own browser requires both Python and R.
+We provide two different options for installing and setting up 
+the environment you'll use when creating your browser:
 
+- [Setup via R](#setup-via-r)
+- [Setup via command line](#setup-via-command-lin)
 
-In addition to a recently fresh R we will also need a few more things:
+Both methods require prior installation of R and RStudio.
+This project was developed using [R](https://www.r-project.org/) version 4.1.0 and [RStudio](https://www.rstudio.com/products/rstudio/download/) v1.4.1717.
 
-1. python 3.9, which we will leverage via the `reticulate` R package. 
-2. R `devtools`, so we can install the `omicser` and additional dependencies, such as `reticulate`
+## Setup via R
 
+### Python
 
-### Conda Python 
-
-The browser app looks for a conda environment so first we need to have miniconda or anaconda installed. (Please file a bug or a pull request to begin the process of supporting other python environments.)  If you don't already have anaconda or mini-conda, its easy to  [install](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
+The browser app looks for a conda environment so first we need to have miniconda or anaconda installed. (Please file a bug or a pull request to begin the process of supporting other python environments.)  If you don't already have anaconda or mini-conda, its easy to [install](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
 Or, if you prefer to do everything in R, it can be installed via `reticulate`. 
 
 The browser uses python to manage the data on the back end an we require v3.9. 
 
-### R packages
-For the sake of simplicity and clarity we can just install `devtools`, and `reticulate`.  When we install the `omicser` browser package we can leverage the dependencies to get everything else we might need.
+## R
+
+Our first step will be to install `devtools`, and `reticulate`.  When we install the `omicser` browser package we can leverage the dependencies to get everything else we might need.
 
 ```{r, RM-install, eval=FALSE}
 
@@ -43,7 +44,7 @@ install.packages("devtools")
 install.packages("reticulate")
 ```
 
-Now, to use R to create your environment we just need to use the following `reticulate` calls:
+Now, to use R to create your environment using `reticulate`:
 
 ```{r RM-r_env, eval=FALSE}
 YOUR_CONDA_ENV <- "omxr"
@@ -69,10 +70,13 @@ reticulate::conda_install(envname= YOUR_CONDA_ENV,
 And we are now ready for [Installation](02_install.md). 
 
 
-### ETC 
-#### Alternate Command Line Instructions
+## Setup via command line
 
-For example for MacOS we can install miniconda like this:
+If you prefer to work on the command line,
+the following instructions demonstrate how to use the shell to set up your environment
+(examples for MacOSX):
+
+First, download and install miniconda:
 
 ```{bash, conda_inst, eval = FALSE}
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
@@ -80,10 +84,11 @@ bash ~/miniconda.sh -b -p $HOME/miniconda
 ```
 
 Now we can use conda to install a python 3.9 environment to use with `reticulate`. 
-For this example we've called the environment `omxr`, and installed `scanpy` and `leidenalg` which will make sure we have everything we need on the python side.
+For this example we've called the environment `omxr`.
+Installing the python packages `scanpy` and `leidenalg` will ensure all additional python requirements are installed:
+
 ```{bash, conda_env, eval = FALSE}
 conda create --name omxr python=3.9 -c bioconda -c conda-forge scanpy                                                                             
 conda install -c conda-forge leidenalg                                                                                  
 conda activate omxr
 ```
-

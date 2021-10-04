@@ -19,9 +19,13 @@ Now that we've set up our enviroment, installing the NDCN browser with `devtools
 > NOTE: we will soon add releases which will be the optimal way to install. Stay Tuned.
 
 ```{r, RM-install-1, eval=FALSE}
-devtools::install_github("ergonyc/omicser")
+devtools::install_github("ndcn/omicser")
 
 ```
 
 Thats it!  Now comes the crucial (and fun!) part: [curating](03_data_curation.md) your data.
+
+## Troubleshooting
+
+This package has been developed with R version 4.1.0, shiny 1.6.0, and Python version 3.9
 
