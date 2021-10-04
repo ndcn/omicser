@@ -90,7 +90,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
       de <- diff_exp[test_type == input$RB_select_test & versus == input$SI_comp_fact
                  ][,f := 1
                   ][, significant := pvals >0.01
-                  ][,point_color := ifelse(significant, "#FF7F00", "#1F78B4")
+                  ][,point_color := ifelse(significant, "#1F78B4", "#FF7F00")
                     ]
 
 

@@ -9,7 +9,7 @@
 #==== 0. preamble/setup ==================================================
 
 DEV_OMICSER <- TRUE
-
+REPO_PATH <- getwd()
 
 if (DEV_OMICSER){
   # this should be a full path... e.g. ~/Projects/NDCN_dev/omicser
