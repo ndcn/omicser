@@ -25,3 +25,7 @@ devtools::install_github("ndcn/omicser")
 
 Thats it!  Now comes the crucial (and fun!) part: [curating](03_data_curation.md) your data.
 
+## Troubleshooting
+
+This package has been developed with R version 4.1.0, shiny 1.6.0, and Python version 3.9
+
