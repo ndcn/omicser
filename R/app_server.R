@@ -21,6 +21,8 @@ app_server <- function(input, output, session) {
   CONDA_ENV <- CONFIG$conda_environment
   DB_ROOT_PATH <- CONFIG$db_root_path
 
+  #required = TRUE, or explicitly set the RETICULATE_PYTHON environment variable.
+
   reticulate::use_condaenv(
     required = TRUE,
     condaenv =  CONDA_ENV,
