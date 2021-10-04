@@ -18,7 +18,7 @@ Links to GitHub tutorials for these tasks
 
 ## Website, documentation, and tutorials
 
-The [`omicser` website](https://ergonyc.github.io/omicser/)
+The [`omicser` website](https://ndcn.github.io/omicser/)
 is built using [`pkgdown`](https://pkgdown.r-lib.org/).
 
 When applicable, please edit the `Rmd` version of a file (rather than the `md`) version.

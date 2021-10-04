@@ -30,8 +30,8 @@ Imports:
     tidyr
 Authors@R: person('Andy', 'Henrie', email = 'henrie@datatecnica.com', role = c('cre', 'aut'))
 RoxygenNote: 7.1.1
-URL: https://github.com/ergonyc/omicser
-BugReports: https://github.com/ergonyc/omicser/issues
+URL: https://github.com/ndcn/omicser
+BugReports: https://github.com/ndcn/omicser/issues
 Suggests: 
     rmarkdown,
     knitr
