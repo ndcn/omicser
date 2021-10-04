@@ -103,8 +103,9 @@ guide](https://ergonyc.github.io/omicser/articles/00_quickstart.html):
     perform final curation steps that allow you to share the browser
     with collaborators (Viewers)
 
-Other vignettes are currently in development, but include additional
-examples for data formatting and app customization.
+Please view the [vignettes directory of the GitHub
+repository](https://github.com/ergonyc/omicser/tree/main/vignettes) for
+this project to view additional files used in the Quickstart.
 
 ## Contributing to this project
 
