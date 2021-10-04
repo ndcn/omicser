@@ -84,8 +84,8 @@ Documentation to walk through the process of installing necessary software, crea
 - [**5-Browse data**](https://ergonyc.github.io/omicser/articles/05_browsing.html): explore the data, test hypotheses, create visualizations
 - [**6-Share application**](https://ergonyc.github.io/omicser/articles/06_sharing.html): perform final curation steps that allow you to share the browser with collaborators (Viewers)
 
-Other vignettes are currently in development,
-but include additional examples for data formatting and app customization.
+Please view the [vignettes directory of the GitHub repository](https://github.com/ergonyc/omicser/tree/main/vignettes)
+for this project to view additional files used in the Quickstart.
 
 ## Contributing to this project
 

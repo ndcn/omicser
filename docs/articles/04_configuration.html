@@ -74,12 +74,6 @@
     <li>
       <a href="../articles/06_sharing.html">6-Sharing</a>
     </li>
-    <li>
-      <a href="../articles/golem_startup.html">omicser development with golem</a>
-    </li>
-    <li>
-      <a href="../articles/python_and_R.html">Anndata objects</a>
-    </li>
   </ul>
 </li>
 <li>
@@ -119,8 +113,14 @@
     
     
 <blockquote>
-<p><strong>This vignette is currently under active development.</strong></p>
+<p><strong>This vignette is currently under active development.</strong> There are two parts to configuring the browser:</p>
 </blockquote>
+<ol style="list-style-type: decimal">
+<li>top level configuration <em>DATABASE</em> name and location configuration</li>
+<li>
+<em>DATABASE</em> specific configuration</li>
+</ol>
+<p>First, we have to tell the browser where our <em>DATABASE</em> is, and what its called. A <em>DATABASE</em> is simply a directory containing or -omics data object and meta-information. Multiple <em>DATABASES</em> can be configured to make them available via the dropdown in the “Ingest” tab. These will be sub-directories in the same <code>db_root_path</code>. These need to be recorded in the <code>omicser_options.yml</code> which is written in the directory where the browser is initiated from ( via <code><a href="../reference/run_app.html">omicser::run_app()</a></code>).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Now move to the directory where you want to execute the omicser</span>
 <span class="co"># and make the omicser_options.yml</span>
@@ -139,6 +139,7 @@
                         conda_environment<span class="op">=</span><span class="va">conda_environment</span><span class="op">)</span>
 
 <span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/write_config.html">write_config</a></span><span class="op">(</span><span class="va">omicser_options</span>,in_path <span class="op">=</span> <span class="va">OMICSER_RUN_DIR</span> <span class="op">)</span></code></pre></div>
+<p>Second, the experimental factors to be selected for visualization parameters need to be specified in the <code>db_config.yml</code></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#==== 7. create configs =========================================================================</span>
 <span class="co"># differentials  #if we care we need to explicitly state. defaults will be the order...</span>
@@ -171,7 +172,7 @@
   default_factors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Condition"</span>,<span class="st">"Color"</span>,<span class="st">"Replicate"</span><span class="op">)</span>
 
 <span class="op">)</span>
-<span class="fu">configr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/configr/man/write.config.html">write.config</a></span><span class="op">(</span>config.dat <span class="op">=</span> <span class="va">conf_list</span>, file.path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">DS_ROOT_PATH</span>,<span class="va">DB_NAME</span>,<span class="st">"config.yml"</span> <span class="op">)</span>,
+<span class="fu">configr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/configr/man/write.config.html">write.config</a></span><span class="op">(</span>config.dat <span class="op">=</span> <span class="va">conf_list</span>, file.path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">DS_ROOT_PATH</span>,<span class="va">DB_NAME</span>,<span class="st">"db_config.yml"</span> <span class="op">)</span>,
                       write.type <span class="op">=</span> <span class="st">"yaml"</span>, indent <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></code></pre></div>
   </div>
 

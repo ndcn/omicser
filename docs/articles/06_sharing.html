@@ -74,12 +74,6 @@
     <li>
       <a href="../articles/06_sharing.html">6-Sharing</a>
     </li>
-    <li>
-      <a href="../articles/golem_startup.html">omicser development with golem</a>
-    </li>
-    <li>
-      <a href="../articles/python_and_R.html">Anndata objects</a>
-    </li>
   </ul>
 </li>
 <li>
@@ -131,7 +125,18 @@
 <h2 class="hasAnchor">
 <a href="#context-docuementation" class="anchor"></a>Context &amp; Docuementation</h2>
 <p>The NDCN Omics browser has a tab to render an .Rmd file containing additional information about your data. This could include such things as a publication or pre-print, “thank-you”s, acknowledgements, links to the lab, etc. The goal is to have all the nescessary background and caveats in one place.</p>
+<div id="additional_info" class="section level3">
+<h3 class="hasAnchor">
+<a href="#additional_info" class="anchor"></a><em>additional_info</em>
+</h3>
+<p>The browser will look for an <code>additional_info.Rmd</code> which should contain a narrative style description of the data. This should contain an overview of methadology, hypothesis being tested, links to additional information.</p>
+</div>
+<div id="qc-report" class="section level3">
+<h3 class="hasAnchor">
+<a href="#qc-report" class="anchor"></a>QC report</h3>
+<p>Many labs produce reports as part of their QC pipeline. In the Playground tab there’s a <code>QC</code> tab to render an .Rmd formatted report. QC related variables can also be curated into the database for browsing, however given the diversity of QC strategies and analysis across -omics flavors and labs its not realistic to support full QC within the browser. Rendering the report should give a browser sufficient context to explore the data and develop hypothesis.</p>
 <p>TODO: example .Rmd</p>
+</div>
 </div>
 <div id="on-data-safety-privacy-with-open-science" class="section level2">
 <h2 class="hasAnchor">
