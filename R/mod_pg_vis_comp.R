@@ -241,7 +241,9 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
           # Disable the legend click since our traces do not correspond to the
           # actual legend labels
           htmlwidgets::onRender("function(el,x){el.on('plotly_legendclick', function(){ return false; })}") %>%
-          plotly::config(displayModeBar = FALSE)
+          plotly::config(displayModeBar = FALSE) %>%
+          plotly::event_register('plotly_click')
+
 
       } else {
         volc <- NULL
@@ -289,7 +291,8 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
         text = paste("Vals: ",
                      format(omic_by_subject()$val, digits = 3)),
         hoverinfo = list("median", "text"),
-        colors = "Dark2"
+        colors = "Dark2",
+        source = "B"
       ) %>%
         plotly::layout(
           title = filtered_de()[event_data(event = "plotly_click")$pointNumber + 1,1],
