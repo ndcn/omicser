@@ -14,14 +14,36 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Now that we've set up our enviroment, installing the NDCN browser with `devtools::install_github` is easy.  
-
-> NOTE: we will soon add releases which will be the optimal way to install. Stay Tuned.
+Now that we've set up our environment,
+we can install the package from which we'll build the browser application.
+We want to receive the most up-to-date version of the package possible,
+so we'll install the current code from GitHub using the `devtools` package:
 
 ```{r, RM-install-1, eval=FALSE}
 devtools::install_github("ndcn/omicser")
-
 ```
 
-Thats it!  Now comes the crucial (and fun!) part: [curating](03_data_curation.md) your data.
+We are relying on this command to install not only the `omicser` package,
+but a large number of additional packages that will support data formatting and app development.
+If you are prompted to install and/or update any of these packages,
+we recommend you do so.
 
+Now comes the crucial (and fun!) part: [curating](03_data_curation.md) your data.
+
+## Troubleshooting
+
+If you receive output in your console indicating one of these additional packages did not install correctly,
+you can manually install it.
+This may also be necessary in a later step of this series of tutorials,
+if you realize a function and/or package are not available.
+
+For example, the download for `vroom` may have stalled,
+resulting in an error in your console saying the package isn't available.
+You can install this package alone using the Packages interface in RStudio,
+or using the following code:
+
+```{r, RM-install-1, eval=FALSE}
+install.packages("vroom")
+```
+
+You may need to reinstall and/or reload other packages as well (if they are dependent on the package you manually installed).
