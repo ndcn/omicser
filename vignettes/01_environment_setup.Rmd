@@ -61,10 +61,9 @@ Now that we have conda and our environment available we need to install two pack
 
 ```{r RM-r_scanpy, eval=FALSE}
 YOUR_CONDA_ENV <- "omxr"
-reticulate::conda_install(envname = YOUR_CONDA_ENV, packages = "scanpy")
 reticulate::conda_install(envname= YOUR_CONDA_ENV,
                           channel = "conda-forge",
-                          packages = c("leidenalg") )
+                          packages = c("leidenalg", "scanpy") )
 ```
 
 And we are now ready for [Installation](02_install.md). 
