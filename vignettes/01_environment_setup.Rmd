@@ -21,30 +21,35 @@ the environment you'll use when creating your browser:
 - [Setup via R](#setup-via-r)
 - [Setup via command line](#setup-via-command-lin)
 
-Both methods require prior installation of R and RStudio.
-This project was developed using [R](https://www.r-project.org/) version 4.1.0 and [RStudio](https://www.rstudio.com/products/rstudio/download/) v1.4.1717.
+Regardless of which approach you use,
+you'll also need to install [R](https://www.r-project.org/)
+and [RStudio](https://www.rstudio.com/products/rstudio/download/)
+for later steps in this tutorial.
+This project was developed using R version 4.1.0 and RStudio v1.4.1717.
 
 ## Setup via R
 
 ### Python
 
-The browser app looks for a conda environment so first we need to have miniconda or anaconda installed. (Please file a bug or a pull request to begin the process of supporting other python environments.)  If you don't already have anaconda or mini-conda, its easy to [install](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
-
-Or, if you prefer to do everything in R, it can be installed via `reticulate`. 
-
-The browser uses python to manage the data on the back end an we require v3.9. 
+We will use a [conda environment](https://conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) 
+to manage Python packages handling data on the back end of the browser application.
+If you don't already have **Python version 3.9** installed via Anaconda or Miniconda,
+please follow [these instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
 ## R
 
-Our first step will be to install `devtools`, and `reticulate`.  When we install the `omicser` browser package we can leverage the dependencies to get everything else we might need.
+Once we have Python installed,
+our next step will set up our R requirements,
+primarily `devtools` and `reticulate`:
 
 ```{r, RM-install, eval=FALSE}
-
 install.packages("devtools")
 install.packages("reticulate")
 ```
 
-Now, to use R to create your environment using `reticulate`:
+> Installing the `omicser` browser package in the next tutorial will also install additional R packages as dependencies.
+
+Now, use R to create your environment using `reticulate`:
 
 ```{r RM-r_env, eval=FALSE}
 YOUR_CONDA_ENV <- "omxr"
@@ -55,19 +60,19 @@ reticulate::install_miniconda()
 reticulate::conda_create(YOUR_CONDA_ENV, python_version = PYTHON_VERSION)
 ```
 
-Now that we have conda and our environment available we need to install two packages to do everything contained in the example scripts.
-
-(Warning: if you have bioconductor configured as a channel it may cause problems.  Forcing install from the "conda-forge" channel is preferred)
+We'll now install Python packages into this conda environment that are required in the example scripts used later in this tutorial.
+Please note that if you have bioconductor configured as a channel it may cause problems.
+Forcing install from the "conda-forge" channel is preferred:
 
 ```{r RM-r_scanpy, eval=FALSE}
 YOUR_CONDA_ENV <- "omxr"
 reticulate::conda_install(envname= YOUR_CONDA_ENV,
                           channel = "conda-forge",
-                          packages = c("leidenalg", "scanpy") )
+                          packages = c("scanpy", "leidenalg") )
 ```
 
-And we are now ready for [Installation](02_install.md). 
-
+If you have successfully complete all steps in this section,
+you are now ready for [Installation](02_install.md). 
 
 ## Setup via command line
 
@@ -75,7 +80,7 @@ If you prefer to work on the command line,
 the following instructions demonstrate how to use the shell to set up your environment
 (examples for MacOSX):
 
-First, download and install miniconda:
+First, download and install Miniconda:
 
 ```{bash, conda_inst, eval = FALSE}
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
@@ -87,7 +92,9 @@ For this example we've called the environment `omxr`.
 Installing the python packages `scanpy` and `leidenalg` will ensure all additional python requirements are installed:
 
 ```{bash, conda_env, eval = FALSE}
-conda create --name omxr python=3.9 -c bioconda -c conda-forge scanpy                                                                             
-conda install -c conda-forge leidenalg                                                                                  
+conda create --name omxr python=3.9 -c conda-forge scanpy leidenalg                                                                           
 conda activate omxr
 ```
+
+If you have successfully complete all steps in this section,
+you are now ready for [Installation](02_install.md).
