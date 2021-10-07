@@ -140,7 +140,8 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
 
       to_return$de <- diff_exp
 
-      to_return$omics_type <- to_return$db_meta$omics_type
+      # Rico: why is this here?
+      # to_return$omics_type <- to_return$db_meta$omics_type
       to_return$ad <- ad
       to_return$omics <- omics
       # to_return$meta <- omicmeta  # this might be too redundant
@@ -198,7 +199,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
     # show the factors that have been loaded
     # # TODO: render a nicely formatted version of the meta data and all this stuff...
     output$ui_datatype <- renderText({
-      print(paste0("db type - ", to_return$omics_type , "-omics"))
+      print(paste0("db type - ", to_return$db_meta$omics_type , "-omics"))
     })
 
     output$ui_omics <- renderPrint({
