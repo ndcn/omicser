@@ -26,6 +26,7 @@ Imports:
     shinydashboardPlus,
     shinyjs,
     shinyWidgets,
+    stringr,
     thinkr,
     tidyr
 Authors@R: person('Andy', 'Henrie', email = 'henrie@datatecnica.com', role = c('cre', 'aut'))

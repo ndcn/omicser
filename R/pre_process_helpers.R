@@ -13,6 +13,8 @@
 #' @return
 #' @export compute_de_table
 #'
+#' @importFrom stringr str_match
+#'
 #' @examples TODO
 compute_de_table <- function(adata,comp_types, test_types, obs_names,sc) {
   # this should update adata in place with the diff_exp data...
@@ -21,9 +23,10 @@ compute_de_table <- function(adata,comp_types, test_types, obs_names,sc) {
   for (obs_name in obs_names){
     for (test_type in test_types) {
       for (comp_type in comp_types) {
-        parts <- strsplit(comp_type,"V")[[1]]
-        reference <- parts[2]
-        group <- parts[1]
+        parts <- str_match(pattern = "^\\{?([a-zA-Z\\+\\._]+)\\}?V\\{?([a-zA-Z\\+\\._]+)\\}?$",
+                           string = comp_type)
+        reference <- parts[3]
+        group <- parts[2]
         print(test_type)
         print(group)
         print(reference)
