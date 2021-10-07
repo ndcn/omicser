@@ -42,7 +42,7 @@ resulting in an error in your console saying the package isn't available.
 You can install this package alone using the Packages interface in RStudio,
 or using the following code:
 
-```{r, RM-install-1, eval=FALSE}
+```{r, RM-manual-install, eval=FALSE}
 install.packages("vroom")
 ```
 
