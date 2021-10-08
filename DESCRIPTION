@@ -10,7 +10,7 @@ LazyData: true
 Imports:
     anndata,
     broom,
-    ComplexHeatmap (>= 2.9.4),
+    ComplexHeatmap,
     configr,
     data.table,
     dplyr,
@@ -38,5 +38,3 @@ Suggests:
     rmarkdown,
     knitr
 VignetteBuilder: knitr
-Remotes: 
-    bioc::3.13/ComplexHeatmap
