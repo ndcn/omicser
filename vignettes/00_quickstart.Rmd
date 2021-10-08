@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-These *Quickstart* materials are intended to guide curators through the process of creating their own web application and formatting data for visualization in the browser.
+These *Quickstart* or *Example* materials are intended to guide curators through the process of creating their own web application and formatting data for visualization in the browser.
 The main vignettes in the Quickstart series include:
 
 1. [Environment Setup](01_environment_setup.md)
@@ -30,9 +30,13 @@ The main vignettes in the Quickstart series include:
 4. [Configuration](04_configuration.md)
 5. [Browsing](05_browsing.md)
 
-Please view the [vignettes directory of the GitHub repository](https://github.com/ndcn/omicser/tree/main/vignettes)
+Please view the [examples directory of the GitHub repository](https://github.com/ndcn/omicser/tree/main/examples)
 for this project to view:
 
-- R scripts used to curate and execute example datasets
+- R scripts used to curate and execute example datasets. e.g.:
+  - a transcriptomics dataset ([curate_pbmc3k.R](https://github.com/ndcn/omicser/tree/main/examples/curate_pbmc3k.R)) from _10X Genomics_ which is used by `scanpy` and `surat` packages as examples 
+  - a proteomics dataset (TBD)
+  - a lipidomics dataset (TBD)
+  - MORE TO COME
 - an example configuration file, `omicser_options.yml`
-- placeholders for the organization of data and creation of the database files
+- example paths for where _raw_ data and curated _DATABASES_ would go as per the example scripts. 
