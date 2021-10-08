@@ -1,7 +1,0 @@
-database_names:
-    Domenico DIA: domenico_stem_cell
-    Vilas Microglia (sceasy): vilas_microglia_sceasy
-    Yassene Lipid concentraions & compositions: yassene_lipid
-    10x PBMC3k: pbmc3k
-db_root_path: test_db
-conda_environment: omxr
