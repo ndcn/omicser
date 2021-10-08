@@ -248,3 +248,87 @@ bubble_heatmap <- function(heat_data, x_names, y_names, plot_type,
 }
 
 
+
+
+# bubble_heatmap ==========================
+#' Title
+#'
+#' @param heat_data
+#' @param x_names
+#' @param y_names
+#' @param plot_type
+#' @param in_do_scale
+#' @param in_clust_row
+#' @param in_clust_col
+#' @param color_scheme
+#' @param plot_size
+#' @param grp_x
+#' @param grp_y
+#' @param save
+#'
+#' @return
+#' @export
+#' @importFrom ComplexHeatmap Heatmap
+#' @import RColorBrewer
+#' @examples
+simple_bubble_heatmap <- function(in_hdata, x_names, y_names, plot_type,
+                           in_do_scale, in_clust_row, in_clust_col,
+                           color_scheme, plot_size, grp_x, grp_y, save = FALSE){
+
+  hm_dat <- isolate(in_hdata)
+browser()
+  # Aggregate:  exp(mean) + proportion -> log(val)
+  # disabling expm1 and log1p because we will be putting "NORMALIZED" quantities in...
+
+  if (max(abs(hm_dat$val),na.rm=TRUE) < 700.0 ){
+    fwd_scale <- expm1
+    inv_scale <- log1p
+  } else {
+    fwd_scale <- function( input ){ input }
+    inv_scale <- function( input ){ input }
+  }
+
+  # hm_dat:
+  #   X_ID
+  #   sub
+  #   Y_nm
+  #   value
+
+unit_name = "scaled 'X'"
+  # remove NA
+  hm_dat <- hm_dat[!is.na(val)]
+  hm_dat$val = fwd_scale(hm_dat$val)
+  hm_dat = hm_dat[, .(val = mean(val), prop = sum(val>0) / length(X_ID)),
+                  by = c("Y_nm", "X_nm")]
+  # hm_dat = hm_dat[, .(val = mean(val,na.rm=TRUE), prop = sum(val>0,na.rm=TRUE) / length(sample_ID)),
+  #                 by = c("omic", "grp_by")]
+
+  hm_dat$val = inv_scale(hm_dat$val) # do we need this??? we are already normalized...
+
+  # remove zeros
+
+  # Scale if required
+  color_range = range(hm_dat$val)
+  if(in_do_scale){
+    hm_dat[, val:= scale(val), keyby = "Y_nm"]
+    color_range = c(-max(abs(range(hm_dat$val))), max(abs(range(hm_dat$val))))
+  }
+
+  # hclust row/col if necessary
+  gg_mat = dcast.data.table(hm_dat, Y_nm~X_nm, value.var = "val")
+  tmp = gg_mat$Y_nm
+  gg_mat = as.matrix(gg_mat[, -1])
+  rownames(gg_mat) = tmp
+
+  ht <- ComplexHeatmap::Heatmap(gg_mat,
+                cluster_rows = in_clust_row,
+                cluster_columns = in_clust_col,
+                column_split = grp_x,
+                row_split = grp_y,
+                name = unit_name,
+                show_parent_dend_line = FALSE)
+
+
+  return(ht)
+
+}

@@ -22,14 +22,14 @@ mod_pg_vis_comp_ui <- function(id){
     br(),br(),
     fluidRow(
       column(
-        3, style="border-right: 2px solid black",
+        2, style="border-right: 2px solid black",
         br(),
 
         # this dynamicall makes all of our test/group selectors
           uiOutput(outputId = ns("UI_comp_group_selection"))
 
       ), # End of column (6 space)
-      column(9,
+      column(10,
              #uiOutput(ns("UI_viz_output")),
                plotlyOutput(outputId = ns("volcano_plot"),height = "800px")
              )

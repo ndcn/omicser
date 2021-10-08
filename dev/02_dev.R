@@ -35,6 +35,11 @@ usethis::use_package("ggplot2")
 usethis::use_package("gridExtra")
 usethis::use_package("ggdendro")
 
+#devtools::install_github("jokergoo/ComplexHeatmap")
+usethis::use_dev_package("ComplexHeatmap",remote='jokergoo/ComplexHeatmap')
+#usethis::use_dev_package("ComplexHeatmap",remote='bioc::3.13/ComplexHeatmap')
+#usethis::use_package("ComplexHeatmap")
+#usethis::use_dev_package("ComplexHeatmap",remote="github::jokergoo/ComplexHeatmap")
 usethis::use_package("plotly")
 
 usethis::use_package("anndata")

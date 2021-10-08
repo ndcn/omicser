@@ -7,13 +7,12 @@
 #' @param output The path to save your new markdown file
 #'
 #' @return The same file as a Markdown document.
-#'
+#' @importFrom rmarkdown pandoc_convert
 #' @examples
 #'
 #' #ADD LATER
 #'
 word_to_markdown <- function(file, output = NULL) {
-
 
   if (base::is.null(output)) {
     outputFile <- base::tempfile(fileext = ".md")
@@ -21,7 +20,7 @@ word_to_markdown <- function(file, output = NULL) {
     outputFile <- output
   }
 
-  rmarkdown::pandoc_convert(input = file, to = "markdown", output = outputFile)
+  pandoc_convert(input = file, to = "markdown", output = outputFile)
 
   return(outputFile)
 
@@ -49,15 +48,16 @@ word_to_markdown <- function(file, output = NULL) {
 display_document <- function(file) {
 
   if (base::grepl(".docx", file)) {
-    markdownFile <- word_to_markdown(file, output = NULL)
-    base::on.exit(base::unlink(markdownFile))
-  } else if (base::grepl(".md", file)) {
-    markdownFile <- file
+    #TODO: test .doc and .docx rendering works
+    markdown_file <- word_to_markdown(file, output = NULL)
+    base::on.exit(base::unlink(markdown_file))
+  } else if (base::grepl(".md", file)) { # NOTE: grepl returns true for .Rmd and .md
+    markdown_file <- file
   } else {
-    stop("Invalid file type. Please add a Markdown .md or Word .docx file.")
+    stop("Invalid file type. Please add a Markdown .md/.Rmd or Word .docx file.")
   }
 
-  shiny::includeMarkdown(markdownFile)
+  shiny::includeMarkdown(markdown_file)
 
 }
 
@@ -110,9 +110,9 @@ mod_additional_info_server <- function(id,db_name, DB_ROOT_PATH){
       }
 
       # TODO: check for .docx OR .md
-      #out_htm <- display_document(md_path)
+      out_htm <- display_document(md_path)
 
-      out_htm <- shiny::includeMarkdown(md_path)
+      #out_htm <- shiny::includeMarkdown(md_path)
 
 
       return(out_htm)

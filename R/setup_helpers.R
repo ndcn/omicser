@@ -31,7 +31,7 @@ write_config <- function(in_options, in_path=NULL) {
 #'
 #' @param in_path where the config file lives. default getwd() test
 #'
-#' @return
+#' @return the list of options contained in `omicser_options.yml`
 #' @export get_config
 #' @importFrom configr read.config
 #' @examples TODO
