@@ -14,10 +14,14 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The most crucial step is _curating_ your data into a database that can be loaded by the browser.  As the _curator_ you will have the responsibility to make some choices about what and how the data can be seen.  
-This process results in specifying the location of the data, and creating files which are formatted for the browser.
+The most crucial step when setting up your own app is _curating_ your data in preparation for loading into the browser.
+There are two reasons for these steps:
 
-As an example there is the [`curate_domenico_stem_cell.R`](examples/curate_domenico_stem_cell.R) script in the /examples subdirectory, which illustrates the steps and some of the choices required to curate your data into a browsable _database_. 
+- formatting the data into `anndata` files, which creates a database accessible by the browser
+- identifying the variables (e.g., columns in a table) that will be browsable, which specifies how data can be selected and/or manipulated in the browswer interface
+
+As the _Curator_ you have the responsibility to understand the specific research questions involved in your data,
+and how to allow these questions to be explored using a visualization tool.
 
 The process as illustrated in the example can be broken into the following steps:
 
