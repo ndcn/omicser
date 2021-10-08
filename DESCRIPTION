@@ -38,3 +38,5 @@ Suggests:
     rmarkdown,
     knitr
 VignetteBuilder: knitr
+Remotes: 
+    bioc::3.14/ComplexHeatmap
