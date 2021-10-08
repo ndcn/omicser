@@ -13,7 +13,12 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 The goal of this package is to allow exploration of -omics data using an
 interactive “playground” (e.g., Shiny application), accessible through
-an interactive web browser.
+an interactive web browser. In addition to the browser package, this
+project includes documentation about usage, example scripts, and an
+expository quickstart tutorial to demonstrate how it is to be used. The
+browser package itself contains the code to create/run the browser, as
+well as a small collection of helper functions to aid in curating and
+configuring datasets for browsing.
 
 > *Note*: although the NDCN browser is not yet officially named, there
 > are references to the browser/package as `omicser` or `omxr`.
@@ -103,9 +108,9 @@ guide](https://ndcn.github.io/omicser/articles/00_quickstart.html):
     perform final curation steps that allow you to share the browser
     with collaborators (Viewers)
 
-Please view the [vignettes directory of the GitHub
-repository](https://github.com/ndcn/omicser/tree/main/vignettes) for
-this project to view additional files used in the Quickstart.
+Please view the [examples directory of the GitHub
+repository](https://github.com/ndcn/omicser/tree/main/examples) for this
+project to view additional files used in the Quickstart.
 
 ## Contributing to this project
 
