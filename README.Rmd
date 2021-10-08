@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 The goal of this package is to allow exploration of -omics data using
 an interactive "playground" (e.g., Shiny application),
-accessible through an interactive web browser.
+accessible through an interactive web browser.  In addition to the browser package, this repo contains its documentation as well as some examples and an expository quickstart tutorial to demonstrate how it is to be used.   The browser package itself contains the browser itself as well as a small collection of helper functions to aid in curating and configuring datasets for browsing.
 
 > *Note*:  although the NDCN browser is not yet officially named, there are references to the browser/package as `omicser` or `omxr`.
 

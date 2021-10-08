@@ -54,7 +54,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
 # MODULES =================================
     mod_pg_table_server("pg_pg_table_ui_1",rv_data, rv_selections) #active_layer_data ?
-    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections,heat_data,box_data,varbox_data)
+    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections,heat_data) #,box_data,varbox_data)
     mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_data, rv_selections, active_layer_data)
     mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_data, rv_selections)
 
@@ -114,7 +114,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
         #is_layer <- any(rv_data$ad$layers$keys()==dat_loc)
         if (is_layer) {
           #X_data <- isolate(rv_data$ad$layers[[dat_loc]]) #isolate
-          X_data <- isolate(rv_data$ad$layers$get(dat_loc) )
+          X_data <- isolate(rv_data$ad$layers$get(layer) )
         } else {
           print("data not found")
           return(ret_vals)
@@ -136,6 +136,13 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
           rv_selections$data_source,
           active_layer_data$data)
 
+      # NOTES:
+      #    this packs a reactive list of data for generating the heatmap.
+      #     - we need to "subset" the omics (10-2000ish omics)
+      #     - subset the "samples" by meta-label
+      #     - find grouping variable... plot_x -> X_fact
+      #  have already set a reactive active_layer_data$data -> X_data
+      #
       in_conf <- rv_data$config
       in_meta <- as.data.table(rv_data$ad$obs)
       row.names(in_meta) <- rv_data$ad$obs_names
@@ -148,57 +155,59 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       #   if (heat_data$ready) {
       rv_selections$omics_list$viz_now <- FALSE
       # ---------- : prep data_matrix for heat_map/bubble
-      # TODO: make an "x_is" oaram in side_selector
-      x_is <- "obs" #haven't implimented visualizing by var yet...
+
+
       X_fact <- rv_selections$plot_x #in_fact <- rv_selections$observ_grpA
 
 
       X_data <- active_layer_data$data
-      ## AGGREGATE along x-axis
-      # if (x_is == "obs"){
 
-        dat_j_grp <-rv_selections$feat_subset
-        # subset var (omics)
-        if (!is.na( dat_j_grp ) ) {  #maybe don't need this check?
-          dat_js <- rv_selections$feat_subsel #index by number
-          dat_js_set <- rv_data$ad$var[[ dat_j_grp ]]
-          omic_js <- rv_data$ad$var_names[ dat_js_set %in% dat_js ]
-          #X_data <- X_data[,dat_js_set %in% rv_selections$feat_subsel ]
-        } else { #subset to omics_list
-          dat_js <- rv_selections$omics_list$value
-          dat_js_set <- rv_data$ad$var_names
-          omic_js <-  dat_js  # dat_js_set[rv_data$ad$var_names %in% dat_js]
-        }
+      #   - subset omics :: heat_data observe =================================
+      dat_j_grp <-rv_selections$feat_subset
+      # subset var (omics)
+      if (!is.na( dat_j_grp ) ) {  #maybe don't need this check?
+        dat_js <- rv_selections$feat_subsel #index by number
+        dat_js_set <- rv_data$ad$var[[ dat_j_grp ]]
+        omic_js <- rv_data$ad$var_names[ dat_js_set %in% dat_js ]
+        #X_data <- X_data[,dat_js_set %in% rv_selections$feat_subsel ]
+      } else { #subset to omics_list
+        dat_js <- rv_selections$omics_list$value
+        dat_js_set <- rv_data$ad$var_names
+        omic_js <-  dat_js  # dat_js_set[rv_data$ad$var_names %in% dat_js]
+      }
 
-        tmp_meta <- as.data.table(rv_data$ad$obs) # can probably just acces ad$obs directly since we don' tneed it to be a data_table?
-        row.names(tmp_meta) <- rv_data$ad$obs_names
 
-        if (is.na(rv_selections$observ_subset)) {
-          in_subset <-  rv_selections$plot_x# don't try and subset at the end...
-          in_subsel <- character(0)
-        } else {
-          in_subset <-  rv_selections$observ_subset
-          in_subsel <- rv_selections$observ_subsel
-        }
+      tmp_meta <- as.data.table(rv_data$ad$obs) # can probably just access ad$obs directly since we don' tneed it to be a data_table?
+      row.names(tmp_meta) <- rv_data$ad$obs_names
 
-        if (group_action == "none" | rv_selections$observ_group_by=="NA") {
-          # group along the plotting variable
-          grp_x <- rv_selections$plot_x
-        } else {
-          grp_x <- rv_selections$observ_group_by
-        }
+      #   - subset samples :: heat_data observe =================================
+      if (is.na(rv_selections$observ_subset)) {
+        in_subset <-  rv_selections$plot_x# don't try and subset at the end...
+        in_subsel <- character(0)
+      } else {
+        in_subset <-  rv_selections$observ_subset
+        in_subsel <- rv_selections$observ_subsel
+      }
 
-        grp_y <- rv_selections$feat_group_by # NOTE: could be "omics" from selector
-        if ((grp_y == "NA") | (grp_y == "")) {
-          grp_ys <- dat_js
-        } else {
-          grp_ys <- rv_data$ad$var[[ grp_y ]][which( dat_js_set %in% dat_js )]
-        }
-        #group_ys <- rv_data$ad$var[[ grp_by$y ]] [which( dat_js_set %in% dat_js )]
-        names(grp_ys) <- dat_js
 
-        X_ID = "sample_ID"
+      # GROUP...use this for grouping columns...?!?!?
+      if (group_action == "none" | rv_selections$observ_group_by=="NA") {
+        # group along the plotting variable
+        grp_x <- rv_selections$plot_x
+      } else {
+        grp_x <- rv_selections$observ_group_by
+      }
 
+      grp_y <- rv_selections$feat_group_by # NOTE: could be "omics" from selector
+      if ((grp_y == "NA") | (grp_y == "")) {
+        grp_ys <- dat_js
+      } else {
+        grp_ys <- rv_data$ad$var[[ grp_y ]][which( dat_js_set %in% dat_js )]
+      }
+      names(grp_ys) <- dat_js
+
+      #always keep the sample_ID column
+      X_ID = "sample_ID"
 
       # create the table
       hm_data = data.table()
@@ -218,6 +227,8 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
         hm_data = rbindlist(list(hm_data, tmp))
       }
 
+
+
       if(length(in_subsel) != 0 & length(in_subsel) != nlevels(hm_data$sub)){
         hm_data <-  hm_data[hm_data$sub %in% in_subsel,]
       }
@@ -227,7 +238,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
        heat_data$y_names <- dat_js
        heat_data$x_group <- grp_x
        heat_data$y_group <- grp_y
-       heat_data$x_source <- x_is
+       heat_data$x_source <- "DEPRICATED" #TODO: remove this
        heat_data$subsel <- in_subsel
        heat_data$subset <- in_subset
        heat_data$type <- active_layer_data$layer #   dat_loc
@@ -239,6 +250,10 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
     }
     )
 
+    ##############################
+    ##############################
+    ##############################
+    ##############################
 
 # box_data observe (req head_data) =================================
     observe({

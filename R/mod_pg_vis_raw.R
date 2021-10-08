@@ -10,46 +10,7 @@
 #' @importFrom shiny NS tagList
 mod_pg_vis_raw_ui <- function(id){
   ns <- NS(id)
-  tagList(
-    HTML("Violinplot / Boxplot"),
-    h4("Cell information violin plot / box plot"),
-    "Here we visualise the marginal expression values ",
-    br(),br(),
-    fluidRow(
-      column(
-        3, style = "border-right: 2px solid black",
-        radioButtons(ns("RB_dist_plot_type"), "plot type:",
-                     choices = c("violin", "boxplot"),
-                     selected = "violin", inline = TRUE),
-        checkboxInput(ns("CB_show_data_points"), "Show data points", value = FALSE),
-               br()
-        # actionButton("Van_c1tog", "Toggle graphics controls"),
-        # conditionalpanel(
-        #   condition = "input.Van_c1tog % 2 == 1",
-        #   sliderInput("Van_c1siz", "Data point size:",
-        #               min = 0, max = 4, value = 1.25, step = 0.25),
-        #   radioButtons("Van_c1psz", "plot size:",
-        #                choices = c("Small", "Medium", "Large"),
-        #                selected = "Medium", inline = TRUE),
-        #   radioButtons("Van_c1fsz", "Font size:",
-        #                choices = c("Small", "Medium", "Large"),
-        #                selected = "Medium", inline = TRUE))
-      ), # End of column (6 space)
-      column(9,
-             uiOutput(ns("UI_box_output")#,
-             # downloadButton("Van_c1oup.pdf", "Download pDF"),
-             # downloadButton("Van_c1oup.png", "Download pNG"), br(),
-             # div(style="display:inline-block",
-             #     numericInput("Van_c1oup.h", "pDF / pNG height:", width = "138px",
-             #                  min = 4, max = 20, value = 8, step = 0.5)),
-             # div(style="display:inline-block",
-             #     numericInput("Van_c1oup.w", "pDF / pNG width:", width = "138px",
-             #                  min = 4, max = 20, value = 10, step = 0.5))
-      )  # End of column (6 space)
-    )    # End of fluidRow (4 space)
-
-   ),
-
+  tag_list <- tagList(
    HTML("Bubbleplot / Heatmap"),
    h4("Gene expression bubbleplot / heatmap"),
    "In this tab, users can visualise the expression patterns of ",
@@ -57,20 +18,35 @@ mod_pg_vis_raw_ui <- function(id){
    "The normalised expression values are group averaged and scaled/thresholded (?)).",
    br(),br(),
    fluidRow(
+     hr(style = "border-top: 1px solid #000000;"),
      column(
        3, style="border-right: 2px solid black",
        radioButtons(ns("RB_heat_plot_type"), "plot type:",
                     choices = c("Bubbleplot", "Heatmap"),
-                    selected = "Bubbleplot", inline = TRUE),
+                    selected = "Heatmap", inline = TRUE),
        checkboxInput(ns("CB_scale"), "Scale omic expression", value = TRUE),
-       checkboxInput(ns("CB_cluster_rows"), "Cluster rows (omics)", value = TRUE),
-       checkboxInput(ns("CB_cluster_cols"), "Cluster columns (samples)", value = FALSE),
-       br(),
+       br()
 
      ), # End of column (6 space)
-     column(9,
+     column(
+       3, style="border-right: 2px solid black",
+       checkboxInput(ns("CB_cluster_rows"), "Cluster rows (omics)", value = TRUE),
+       checkboxInput(ns("CB_cluster_cols"), "Cluster columns (samples)", value = FALSE),
+       br()
+     ),
+     column(
+       3,
+       checkboxInput(ns("CB_show_grp_rows"), "Show row groupings (omics)", value = FALSE),
+       checkboxInput(ns("CB_show_grp_cols"), "Show col groupings (samples)", value = FALSE),
+       checkboxInput(ns("CB_group_agg"), "aggregate groupings? (samples)", value = FALSE),
+
+       br()
+     )
+   ),
+   fluidRow(
+     hr(style = "border-top: 1px dashed grey;"),
             h4(htmlOutput("HTML_header")),
-            uiOutput(ns("UI_heatmap"))
+            uiOutput(ns("UI_heatmap_agg"))
             # downloadButton("Van_d1oup.pdf", "Download pDF"),
             # downloadButton("Van_d1oup.png", "Download pNG"), br(),
             # div(style="display:inline-block",
@@ -79,41 +55,24 @@ mod_pg_vis_raw_ui <- function(id){
             # div(style="display:inline-block",
             #     numericInput("Van_d1oup.w", "pDF / pNG width:", width = "138px",
             #                  min = 4, max = 20, value = 10, step = 0.5))
-     )  # End of column (6 space)
+     #)  # End of column (6 space)
    ),    # End of fluidRow (4 space)
-   HTML("Violinplot / Boxplot"),
-   h4("omic annotaion violin plot / box plot"),
-   "variable annotations (omic category marginals)",
-   br(),br(),
    fluidRow(
-     column(
-       3, style = "border-right: 2px solid black",
-       radioButtons(ns("RB_dist_plot_type2"), "plot type:",
-                    choices = c("violin", "boxplot"),
-                    selected = "violin", inline = TRUE),
-       checkboxInput(ns("CB_show_data_points2"), "Show data points", value = FALSE),
-
-       br()
-
-     ), # End of column (6 space)
-     column(9,
-            uiOutput(ns("UI_var_box_output")#,
-                     # downloadButton("Van_c1oup.pdf", "Download pDF"),
-                     # downloadButton("Van_c1oup.png", "Download pNG"), br(),
-                     # div(style="display:inline-block",
-                     #     numericInput("Van_c1oup.h", "pDF / pNG height:", width = "138px",
-                     #                  min = 4, max = 20, value = 8, step = 0.5)),
-                     # div(style="display:inline-block",
-                     #     numericInput("Van_c1oup.w", "pDF / pNG width:", width = "138px",
-                     #                  min = 4, max = 20, value = 10, step = 0.5))
-            )  # End of column (6 space)
-     )    # End of fluidRow (4 space)
-
+     hr(style = "border-top: 1px dashed grey;"),
+     uiOutput(ns("UI_heatmap_all"))
+     # downloadButton("Van_d1oup.pdf", "Download pDF"),
+     # downloadButton("Van_d1oup.png", "Download pNG"), br(),
+     # div(style="display:inline-block",
+     #     numericInput("Van_d1oup.h", "pDF / pNG height:", width = "138px",
+     #                  min = 4, max = 20, value = 10, step = 0.5)),
+     # div(style="display:inline-block",
+     #     numericInput("Van_d1oup.w", "pDF / pNG width:", width = "138px",
+     #                  min = 4, max = 20, value = 10, step = 0.5))
+     #)  # End of column (6 space)
+   )    # End of fluidRow (4 space)
    )
 
-
-
-  )  #taglist
+  return(tag_list)
 }
 
 #' pg_vis_raw Server Functions
@@ -126,7 +85,7 @@ mod_pg_vis_raw_ui <- function(id){
 #' @param varbox_data var boxplot data
 #'
 #' @noRd
-mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, box_data, varbox_data){
+mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -137,99 +96,10 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, box_dat
     color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
     color_scheme = color_schemes[2]
 
-    #go_signal <- reactive( rv_selections$omics_list$viz )
-    output$plot_box_out <- renderPlot({
-      #req(rv_data$ad)
-      req( rv_selections$omics_list,
-           box_data$data)
-
-      plot_type <- input$RB_dist_plot_type
-      show_data_points <- input$CB_show_data_points
-
-      notch <- TRUE
-      data_point_sz = .65
-      plot_size = "Small"
-      font_size = "Small"
-      grp <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
-
-      vplot <- violin_box(box_data$data, box_data$x_name,box_data$y_name,
-                          box_data$colors,
-                          plot_type,
-                          show_data_points,
-                          data_point_sz,
-                          font_size,
-                          notch,
-                          grp)
-
-
-      # #TODO: make these interactive? (e.g. shinycell)
-      # data_point_sz = .65
-      # plot_size = "Small"
-      # font_size = "Small"
-      # color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
-      # color_scheme = color_schemes[2]
-      # in_quant <- dat_key #(maybe) just observ_y
-      # pg_violin_box(in_conf, in_meta, in_fact, in_quant,
-      #               in_grp, in_subset, in_subsel,
-      #               in_data, in_omic, plot_type,
-      #               show_data_points, data_point_sz, font_size )
-      return(vplot)
-    })
-
-
-    output$plot_varbox_out <- renderPlot({
-      #req(rv_data$ad)
-      req(rv_selections$omics_list,
-          varbox_data$data)
-
-      plot_type <- input$RB_dist_plot_type2
-      show_data_points <- input$CB_show_data_points2
-
-      notch <- TRUE
-      data_point_sz = .65
-      plot_size = "Small"
-      font_size = "Small"
-      grp <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
-
-      vplot <- violin_box(varbox_data$data, varbox_data$x_name, varbox_data$y_name,
-                          varbox_data$colors,
-                          plot_type,
-                          show_data_points,
-                          data_point_sz,
-                          font_size,
-                          notch,
-                          grp)
-
-
-      # #TODO: make these interactive? (e.g. shinycell)
-      # data_point_sz = .65
-      # plot_size = "Small"
-      # font_size = "Small"
-      # color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
-      # color_scheme = color_schemes[2]
-      # in_quant <- dat_key #(maybe) just observ_y
-      # pg_violin_box(in_conf, in_meta, in_fact, in_quant,
-      #               in_grp, in_subset, in_subsel,
-      #               in_data, in_omic, plot_type,
-      #               show_data_points, data_point_sz, font_size )
-      return(vplot)
-    })
-
-    output$UI_box_output <- renderUI({
-      #if (rv_selections$omics_list$viz_now) {
-        plotOutput(ns("plot_box_out"), height = pList2[plot_size])
-      #}
-    })
-
-    output$UI_var_box_output <- renderUI({
-      #if (rv_selections$omics_list$viz_now) {
-      plotOutput(ns("plot_varbox_out"), height = pList2[plot_size])
-      #}
-    })
 
 
     # plot_heatmap_out renderPlot---------------------------------
-    output$plot_heatmap_out <- renderPlot({
+    output$plot_heatmap_agg_out <- renderPlot({
       req(heat_data$data)
 
       input_data <- heat_data$data
@@ -242,30 +112,162 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, box_dat
       in_clust_row <- input$CB_cluster_rows
       in_clust_col <- input$CB_cluster_cols
 
+      in_agg_grp <- input$CB_group_agg
+
+      plot_size = "Small"
+      color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
+      color_scheme = color_schemes[2]
+
+      grp <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
+      in_hdata <- isolate(input_data)
+
+      # Aggregate:  exp(mean) + proportion -> log(val)
+      # disabling expm1 and log1p because we will be putting "NORMALIZED" quantities in...
+      if (max(abs(in_hdata$val),na.rm=TRUE) < 700.0 ){
+        fwd_scale <- expm1
+        inv_scale <- log1p
+      } else {
+        fwd_scale <- function( input ){ input }
+        inv_scale <- function( input ){ input }
+      }
+
+      # in_hdata:
+      #   X_ID
+      #   sub
+      #   Y_nm
+      #   value
+
+      unit_name = "scaled 'X'"
+      # remove NA
+      in_hdata <- in_hdata[!is.na(val)]
+      in_hdata$val = fwd_scale(in_hdata$val)
+
+      # AGGREGATE
+      in_hdata = in_hdata[, .(val = mean(val), prop = sum(val>0) / length(X_ID)),
+                      by = c("Y_nm", "X_nm")]
+      # in_hdata = in_hdata[, .(val = mean(val,na.rm=TRUE), prop = sum(val>0,na.rm=TRUE) / length(sample_ID)),
+      #                 by = c("omic", "grp_by")]
+
+      in_hdata$val = inv_scale(in_hdata$val) # do we need this??? we are already normalized...
+
+      # remove zeros
+
+      # Scale if required
+      if(in_do_scale){
+        in_hdata[, val:= scale(val), keyby = "Y_nm"]
+      }
+
+      # hclust row/col if necessary
+      gg_mat = dcast.data.table(in_hdata, Y_nm~X_nm, value.var = "val")
+      tmp = gg_mat$Y_nm
+      gg_mat = as.matrix(gg_mat[, -1])
+      rownames(gg_mat) = tmp
+
+      ht <- ComplexHeatmap::Heatmap(gg_mat,
+                                        cluster_rows = in_clust_row,
+                                        cluster_columns = in_clust_col,
+                                        #column_split = grp_x,
+                                        #row_split = grp_y,
+                                        name = unit_name,
+                                        column_title = "factor",
+                                        row_title = "omics",
+                                        show_parent_dend_line = FALSE)
+
+      return(ht)
+    })
+
+
+
+    # plot_heatmap_out renderPlot---------------------------------
+    output$plot_heatmap_all_out <- renderPlot({
+      req(heat_data$data)
+
+      input_data <- heat_data$data
+      #
+      x_names <- heat_data$x_names
+      y_names <- heat_data$y_names
+
+      plot_type <- input$RB_heat_plot_type
+      in_do_scale <- input$CB_scale
+      in_clust_row <- input$CB_cluster_rows
+      in_clust_col <- input$CB_cluster_cols
+
+      in_agg_grp <- input$CB_group_agg
+      unit_name = "scaled 'X'"
+
+
       plot_size = "Small"
       color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
       color_scheme = color_schemes[2]
 
       grp <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
 
-      hmap <- bubble_heatmap(input_data, x_names, y_names, plot_type,
-                                 in_do_scale, in_clust_row, in_clust_col,
-                                 color_scheme, plot_size, grp, save = FALSE)
-#
+      # hmap <- bubble_heatmap(input_data, x_names, y_names, plot_type,
+      #                            in_do_scale, in_clust_row, in_clust_col,
+      #                            color_scheme, plot_size, grp, save = FALSE)
+
+      # hmap <- simple_bubble_heatmap(input_data, x_names, y_names, plot_type,
+      #                             in_do_scale, in_clust_row, in_clust_col,
+      #                             color_scheme, plot_size, grp, grp,save = FALSE)
+      #
+      #
+      # simple_bubble_heatmap <- function(in_hdata, x_names, y_names, plot_type,
+      #                                   in_do_scale, in_clust_row, in_clust_col,
+      #                                   color_scheme, plot_size, grp_x, grp_y, save = FALSE)
+
+      in_data <- isolate(input_data)
+
+      # Scale if required
+      if(in_do_scale){
+        in_data[, val:= scale(val), keyby = "Y_nm"]
+      }
+
+      rawgg_mat = dcast.data.table(in_data, Y_nm~X_ID, value.var = "val")
+      tmp = rawgg_mat$Y_nm
+      rawgg_mat = as.matrix(rawgg_mat[, -1])
+      rownames(rawgg_mat) = tmp
+
+      grp_x = unique(in_data$X_ID)
+      tmp <- input_data[group_y==in_data$group_y[1]]
+      grp_x <- tmp$group_x
 
 
-    return(hmap)
+      #ha = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:6), labels = LETTERS[1:5]))
+      ha = ComplexHeatmap::HeatmapAnnotation(foo = ComplexHeatmap::anno_block(labels = levels(grp_x)))
+      # need to fix the raster here...
+      # suppress the "colnames" when we are plotting all the samples... all the genes
+
+      ht <- ComplexHeatmap::Heatmap(rawgg_mat,
+                                      cluster_rows = in_clust_row,
+                                      cluster_columns = in_clust_col,
+                                      column_split = grp_x,
+                                      #row_split = grp_y,
+                                      top_annotation = ha,
+                                      name = unit_name,
+                                      column_title = "factor",
+                                      row_title = "omics",
+                                      show_parent_dend_line = FALSE,
+                                      use_raster = FALSE)
+      #top_annotation = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:4))),
+
+
+      return(ht)
     })
 
-    output$UI_heatmap <- renderUI({
+
+    output$UI_heatmap_agg <- renderUI({
       #if (rv_selections$omics_list$viz_now) {
-        plotOutput(ns("plot_heatmap_out"), height = pList3[plot_size])
+        plotOutput(ns("plot_heatmap_agg_out"), height = pList3[plot_size])
 
     })
 
+    output$UI_heatmap_all <- renderUI({
+      #if (rv_selections$omics_list$viz_now) {
+      plotOutput(ns("plot_heatmap_all_out"), height = pList3[plot_size])
+
+    })
 
     output$HTML_header <- renderUI({
-
       omic_list = rv_selections$omics_list$value
       if(nrow(omic_list) > 50){
         HTML("More than 50 input omics! please reduce the omic list!")
@@ -298,6 +300,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, box_dat
     #                       input$Van_d1scl, input$Van_d1row, input$Van_d1col,
     #                       input$Van_d1cols, input$Van_d1fsz, save = TRUE) )
     #   })
+
 
 
   })
