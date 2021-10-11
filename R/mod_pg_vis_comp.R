@@ -115,27 +115,32 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
 
       cfg <- isolate(rv_data$config)
       test_choices <- levels(factor(isolate(rv_data$de$test_type)))
-
+      #comp_types <- levels(factor(isolate(rv_data$de$comp_type)))
 
       to_return <-  tagList(
         radioButtons(inputId = ns("RB_select_test"),
                      label = "sig test:",
                      choices = test_choices,
                      selected = rv_data$default$test[1]),
+        # TODO: choose comp_type first and then have a simplified comparison set
+        # selectInput(inputId = ns("SI_comp_type"),
+        #             label = "compare: ",
+        #             choices =  comp_types,
+        #             selected = comp_types[1],
 
         selectInput(inputId = ns("SI_comp_fact"),
                     label = "compare: ",
                     choices =  strsplit(cfg[ID=="diff_exp_comps"]$fID, "\\|")[[1]],
-                    selected = rv_data$default$comp_fact),
+                    selected = rv_data$default$comp_fact)
 
-        shinyjs::disabled(selectInput(inputId = ns("SI_color_grp"),
-                    label = "Color by:",
-                    choices = rv_data$config[grp == TRUE]$UI,
-                    selected = rv_data$default$color_grp)
-        ),
-        checkboxInput(inputId = ns("CB_drop_bottom"),
-                               label = "drop non-sigs?:",
-                               value = TRUE)
+        # shinyjs::disabled(selectInput(inputId = ns("SI_color_grp"),
+        #             label = "Color by:",
+        #             choices = rv_data$config[grp == TRUE]$UI,
+        #             selected = rv_data$default$color_grp)
+        # ),
+        # checkboxInput(inputId = ns("CB_drop_bottom"),
+        #                        label = "drop non-sigs?:",
+        #                        value = TRUE)
 
       )
 
@@ -172,7 +177,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
       req(filtered_de, #input$SI_comp_type,
           input$SI_comp_fact)
 
-      colorby_group <- input$SI_color_grp
+      #colorby_group <- input$SI_color_grp
       de <- filtered_de()
       # title_text <- paste0(input$SI_comp_type, " || ", input$SI_comp_fact)
       if( dim(de)[1]>0 ) {
@@ -195,6 +200,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
         # significant
         # point_color
 
+        #TODO: color the target omics a different color
 
         # TODO:  make this a function and move to fct_pg_vis_comp
         # volc <- pg_volc_ly(de=de_local , title = title_text)
