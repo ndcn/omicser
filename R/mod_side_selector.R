@@ -104,23 +104,9 @@ mod_side_selector_server <- function(id, rv_data){
     ### Reactive expressions ============================================
     rv_selections <- reactiveValues(
 
-
-      rv_selections$data_source <- NA # "X" #DISABLED input$RB_obs_X
-      rv_selections$plot_x <- NA # DISABLED input$SI_x
-      rv_selections$plot_y <- NA # DISABLED....input$SI_y
-      rv_selections$group_action <- NA #DISABLED input$RB_none_or_grp
-      rv_selections$plot_var_x <- NA # NOT ENABLED#input$SI_var_x
-      rv_selections$plot_var_y <- NA # NOT ENABLED input$SI_var_y
-      rv_selections$plot_feats <- NA # NOT ENABLED input$CB_xy_var_select
-
-
-
       data_layer = NULL,
       #omics_names = NULL,
       selected_omics = NULL,
-
-
-      group_action = NULL,
 
       observ_group_by = NULL,
       observ_group_by2 = NULL,
@@ -132,10 +118,9 @@ mod_side_selector_server <- function(id, rv_data){
       feat_subset = NULL,   # NOT ENABLEDj, using omics selector
       feat_subsel = NULL,  # NOT ENABLED
 
-
-
       #DISABLED.
       #TODO: depricate all these
+      group_action = NULL,
       data_source = NULL,
       plot_x = NULL,
       plot_y = NULL,
@@ -146,6 +131,7 @@ mod_side_selector_server <- function(id, rv_data){
       raw_plot_type = NULL,
       comp_plot_type = NULL,
       GO = FALSE
+
 
     )
     ### OMICS  =========================================================
