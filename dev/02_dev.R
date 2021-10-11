@@ -67,6 +67,7 @@ golem::add_module( name = "welcome" ) # Name of the module
 golem::add_module( name = "side_info" ) # Name of the module
 golem::add_module( name = "additional_info") # Name of the module
 golem::add_module( name = "omic_selector") # Name of the module
+golem::add_module( name = "subset_selector") # Name of the module
 golem::add_module( name = "pg_vis_qc") # Name of the module
 
 ## Add helper functions ----

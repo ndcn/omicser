@@ -13,11 +13,11 @@ mod_export_ui <- function(id){
 
     # textOutput(ns("var0")),
     # textOutput(ns("var1")),
-    # textOutput(ns("omics_list")),
+    # textOutput(ns("target_omics")),
 
     verbatimTextOutput(ns("var0"),placeholder = TRUE),
     verbatimTextOutput(ns("var1"),placeholder = TRUE),
-    verbatimTextOutput(ns("omics_list"),placeholder = TRUE),
+    verbatimTextOutput(ns("target_omics"),placeholder = TRUE),
 
     verbatimTextOutput(ns("verb"),placeholder = TRUE),
     verbatimTextOutput(ns("text1"),placeholder = TRUE),
@@ -45,7 +45,7 @@ mod_export_server <- function(id, rv_in, p){
     # exp_fact = NULL,
     # aux_fact = NULL,
     # omics_names = NULL,
-    # omics_list = NULL,
+    # target_omics = NULL,
     # plot_type = NULL,
     # comp_dat = NULL,
     # obs_dat = NULL
@@ -56,7 +56,7 @@ mod_export_server <- function(id, rv_in, p){
 
     output$var1      <- renderText({ paste0(isolate(p[["obs_dat"]]),collapse = ", ")   })
 
-    output$omics_list <- renderText({ paste0(isolate(p$omics_list$value),collapse = ", ")  })
+    output$target_omics <- renderText({ paste0(isolate(p$target_omics$value),collapse = ", ")  })
 
 
     output$verb       <- renderText({ p[["plot_type"]] })
@@ -66,8 +66,8 @@ mod_export_server <- function(id, rv_in, p){
     output$text1<- renderPrint({ list((p$comp_dat),
                                       (p$obs_dat),
                                       (p$omics_names),
-                                      (p$omics_list$value),
-                                      (p$omics_list$viz_now),
+                                      (p$target_omics$value),
+                                      (p$target_omics$viz_now),
                                       (p$plot_type)) })
 
     output$names0 <- renderText({ p[["omics_names"]] })

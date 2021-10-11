@@ -14,29 +14,41 @@ mod_omic_selector_ui <- function(id){
   ns <- NS(id)
   omic_sel_tags <- tagList(
 
+
+    h4("Target *-Omics"),
     fluidRow(
-      selectizeInput(
-        ns("SI_omics_select"), "Select omic features", "",
-        multiple=TRUE, options = list(placeholder = "Choose omic feature (i.e. genes,proteins,lipids...)")
-      )
+         selectizeInput(
+                        ns("SI_omics_select"), "Select (<100)", "",
+                        multiple=TRUE, options = list(placeholder = "Choose omic feature (i.e. genes,proteins,lipids...)")
+                      )
+
     ), #fluidRow 2
 
     fluidRow(
-
       column(width = 2, offset = 0,
              #style='padding-left:0px; padding-right:1px',
              actionButton(ns("AB_omics_reset"), "Clear", class = "btn btn-primary" ) #class="hidableClear"
       ),
-      column(width = 2, offset = 0,
+      column(width = 2, offset = 0,style="border-right: 2px solid black",
              #style='padding-left:0px; padding-right:1px',
              actionButton(ns("AB_omics_def"), "Default", class = "btn btn-primary" ) #class="hidableDefault"
       ),
-      column(width = 2, offset = 0,style="border-right: 2px solid black"),
-      column(width = 2 ,offset = 4,
-             style='padding-left:0px; padding-right:1px',
-             actionButton(ns("AB_omics_submit"),"Submit",class = "btn btn-primary" ) #class="hidableSubmit"
+      column(width = 6, offset = 0,
+              textInput(
+                inputId = ns("text_omic_add"),
+                label = "omics to add", width = "100%",
+                value = ""
+                #value = "Gene1,Gene2"
+                )
+      ),
+      column(
+        2,
+        style='padding-left:0px; padding-right:1px',
+        actionButton(ns("AB_text_omic_add"),"add ⤴",class = "btn btn-primary" )
       )
     ),
+
+
     fluidRow(
       uiOutput(ns("ui_text_warn"), width = "100%"),
     ), #fluidRow 3
@@ -69,12 +81,12 @@ mod_omic_selector_ui <- function(id){
 #' omic_selector Server Functions
 #'
 #' @param id id for module
-#' @param all_omics complete list
+#' @param active_omics complete list
 #' @param def_omics default (target omics)
 #' @param new_db_trig signal that we have a new database loaded
 #'
 #' @noRd
-mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
+mod_omic_selector_server <- function(id, active_omics, def_omics, new_db_trig) {
   moduleServer( id, function(input, output, session) {
     ns <- session$ns
 
@@ -83,11 +95,14 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
     observeEvent(
       new_db_trig(),  # new database loaded
       {
-        req(all_omics,
+        req(active_omics(),
             def_omics)  # set when database is chosen
+
         if (new_db_trig()>0) {
-          omics_list$viz_now = FALSE
-          omics_list$value <- isolate(def_omics())
+          selected_omics$target_omics <- def_omics()
+          selected_omics$all_omics <- active_omics()
+          selected_omics$freeze <- 0
+
           # get rid of error message when resetting selection
           output$ui_text_warn <- renderUI({ })
         }
@@ -97,19 +112,31 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
     ) #observe
 
 
+    # text input add to list...
+    omic_add_input <- reactive({
+      strsplit(input$text_omic_add, ",| |;|, ")[[1]]
+    })
 
-    # keep track of which proteins have been selected start with default for
-    # TODO:  check if we need to "isolate"
-    omics_list <- reactiveValues(value=isolate(def_omics()), viz_now=FALSE)
+    plus_omics <- reactive({
+      input$AB_text_omic_add  #reactive on the button rather than any text input
+
+      omics_to_add <- isolate(omic_add_input())
+      return(omics_to_add)
+    })
+
+
+    selected_omics <- reactiveValues(
+                                   target_omics=NULL, #isolate(def_omics()),
+                                   all_omics= NULL, #isolate(active_omics()),
+                                   freeze = NULL
+                                   )
 
     max_omic_feats <- 100
 
-
     observe({
       #toggle the vis_now flag if we are changing features
-      #omics_list$viz_now = FALSE
 
-      if ( length(unique(omics_list$value ) ) >= max_omic_feats ) {
+      if ( length(unique(selected_omics$target_omics ) ) >= max_omic_feats ) {
         # will this work?  or is the "observing" affecting a reactive with this render?
         output$ui_text_warn <- renderUI({
           tags$div(class = "warning", checked = NA,
@@ -133,8 +160,8 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
       } else {
         #omics_choice_list <- rv_in$var[[rv_in$omics_feature]]
          #assert that the choices are updated...
-        l_all_omics <- all_omics()
-        omics_choice_list <- isolate(l_all_omics)
+
+        omics_choice_list <- active_omics()
         if ( is.null(omics_choice_list)  ) {
           omics_choice_list <- "" #rownames(rv_in$var)
         } else {
@@ -142,19 +169,17 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
           omics_choice_list <- names(omics_choice_list)
         }}
 
-        omics_choices <- isolate(omics_list$value)
+        omics_choices <- isolate(selected_omics$target_omics) #don't update if the target_omics change (avoid loop)
 
+        omics_choices <- unique(append(omics_choices,plus_omics()))
         omics_choices <- omics_choices[omics_choices %in% omics_choice_list] # will this fix stale list?
 
         freezeReactiveValue(input, "SI_omics_select")
         updateSelectizeInput(session, "SI_omics_select",
                              choices = omics_choice_list,
                              selected = omics_choices, server=TRUE)
-        # # DEBUG
-        # print("   ::updated omics list::  ")
-        # print(isolate(omics_list$value))
+
       }
-      #print(paste0("current number of selected omics:  ",length(unique(isolate(omics_list$value)))))
 
     })
 
@@ -164,54 +189,25 @@ mod_omic_selector_server <- function(id, all_omics, def_omics, new_db_trig) {
     ## "reset" and "submit" simply sets the viz_now flag
     ############################+
     ############################
-    observe({ # turn on if the "placeholder" is gone
-      shinyjs::toggleState("AB_omics_submit", !all(input$SI_omics_select == "Choose omic feature (i.e. genes,proteins,lipids...)"))
-    })
 
     observeEvent(input$AB_omics_reset, {
-      omics_list$viz_now <- FALSE
-      omics_list$value <- character(0)
+      selected_omics$target_omics <- character(0)
+      selected_omics$all_omics <- active_omics()
     })
 
     observeEvent(input$AB_omics_def, {
-      omics_list$viz_now <- FALSE
-      omics_list$value <- isolate(def_omics())
+      selected_omics$target_omics <- def_omics()
+      selected_omics$all_omics <- active_omics()
     })
 
-    observeEvent(input$AB_omics_submit, {
-      if(length(unique(omics_list$value)) < max_omic_feats ) { #defensive
-        omics_list$value <- input$SI_omics_select #include direct selection from protein-box when pressing submit
-        omics_list$viz_now <- TRUE
-
-        output$ui_text_warn <- renderUI({
-         p("updated plot")
-        })
-      }
-    })
-
-    observe({
-      req(omics_list$viz_now)
-      if(omics_list$viz_now == FALSE) { #defensive
-        output$ui_text_warn <- renderUI({ })
-      } # else ?? print warning??
-    })
-
-    # # dOES THIS PATTERN HELP US UPDATE PROPERLY???
-    # reset_omics <- reactiveValues(reset = NULL)
-    # observeEvent(input$AB_omics_reset, {
-    #   reset_omics$reset <- TRUE
-    # })
-    # observeEvent(all_omics, {
-    #   reset_omics$reset <- TRUE
-    # })
-    # #    observeEvent(reset_omics$reset, {
-    # omics_list$viz_now = FALSE
-    # omics_list$value <- character(0)
-    # # get rid of error message when resetting selection
-    # output$ui_text_warn <- renderUI({ })
+    observeEvent(
+      selected_omics$freeze, {  # new database loaded
+      selected_omics$target_omics <- input$SI_omics_select #include direct selection from protein-box when pressing submit
+      selected_omics$all_omics <- active_omics()
+      })
 
 
-  return(omics_list)
+  return(selected_omics)
 
   })
 

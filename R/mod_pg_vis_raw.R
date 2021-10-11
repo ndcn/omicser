@@ -1,4 +1,4 @@
-
+#TODO:  change name of file and module to viz_expression or something
 #' pg_vis_raw UI Function
 #'
 #' @description A shiny Module.
@@ -24,28 +24,32 @@ mod_pg_vis_raw_ui <- function(id){
        radioButtons(ns("RB_heat_plot_type"), "plot type:",
                     choices = c("Bubbleplot", "Heatmap"),
                     selected = "Heatmap", inline = TRUE),
-       checkboxInput(ns("CB_scale"), "Scale omic expression", value = TRUE),
+       hr(style = "border-top: 1px dashed grey;"),
+       checkboxInput(ns("CB_scale"), "Scale values?", value = TRUE),
        br()
 
      ), # End of column (6 space)
      column(
        3, style="border-right: 2px solid black",
-       checkboxInput(ns("CB_cluster_rows"), "Cluster rows (omics)", value = TRUE),
-       checkboxInput(ns("CB_cluster_cols"), "Cluster columns (samples)", value = FALSE),
+       checkboxInput(ns("CB_target_omics"), "target -omics only?", value = TRUE),
+       br(),br()
+     ),
+     column(
+       3, style="border-right: 2px solid black",
+       checkboxInput(ns("CB_cluster_rows"), "Cluster rows (omics)", value = FALSE),
+       checkboxInput(ns("CB_cluster_cols"), "Cluster columns (samples)", value = TRUE),
        br()
      ),
      column(
        3,
        checkboxInput(ns("CB_show_grp_rows"), "Show row groupings (omics)", value = FALSE),
        checkboxInput(ns("CB_show_grp_cols"), "Show col groupings (samples)", value = FALSE),
-       checkboxInput(ns("CB_group_agg"), "aggregate groupings? (samples)", value = FALSE),
-
+       #checkboxInput(ns("CB_group_agg"), "aggregate groupings? (samples)", value = FALSE),
        br()
      )
    ),
    fluidRow(
      hr(style = "border-top: 1px dashed grey;"),
-            h4(htmlOutput("HTML_header")),
             uiOutput(ns("UI_heatmap_agg"))
             # downloadButton("Van_d1oup.pdf", "Download pDF"),
             # downloadButton("Van_d1oup.png", "Download pNG"), br(),
@@ -59,6 +63,7 @@ mod_pg_vis_raw_ui <- function(id){
    ),    # End of fluidRow (4 space)
    fluidRow(
      hr(style = "border-top: 1px dashed grey;"),
+     h4(htmlOutput(ns("HTML_header"))),
      uiOutput(ns("UI_heatmap_all"))
      # downloadButton("Van_d1oup.pdf", "Download pDF"),
      # downloadButton("Van_d1oup.png", "Download pNG"), br(),
@@ -102,13 +107,14 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
     output$plot_heatmap_agg_out <- renderPlot({
       req(heat_data$data)
 
+      #TODO:
+      # -limit levels of clustering columns
+      # -
+      #
+
       input_data <- heat_data$data
       #
-      x_names <- heat_data$x_names
-      y_names <- heat_data$y_names
-
       plot_type <- input$RB_heat_plot_type
-      in_do_scale <- input$CB_scale
       in_clust_row <- input$CB_cluster_rows
       in_clust_col <- input$CB_cluster_cols
 
@@ -118,12 +124,16 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
       color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
       color_scheme = color_schemes[2]
 
-      grp <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
+      dmat <- t(heat_data$mat)
+
+
+      #grouping <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
       in_hdata <- isolate(input_data)
 
       # Aggregate:  exp(mean) + proportion -> log(val)
       # disabling expm1 and log1p because we will be putting "NORMALIZED" quantities in...
-      if (max(abs(in_hdata$val),na.rm=TRUE) < 700.0 ){
+     test_v <- max( abs(in_hdata$val) , na.rm=TRUE)
+      if ( test_v < 700.0 ){
         fwd_scale <- expm1
         inv_scale <- log1p
       } else {
@@ -153,27 +163,53 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
       # remove zeros
 
       # Scale if required
-      if(in_do_scale){
+      if(input$CB_scale){
         in_hdata[, val:= scale(val), keyby = "Y_nm"]
       }
 
       # hclust row/col if necessary
       gg_mat = dcast.data.table(in_hdata, Y_nm~X_nm, value.var = "val")
+
+      gg_mat2 = dcast.data.table(in_hdata, Y_nm~X_nm, value.var = "prop")
+
       tmp = gg_mat$Y_nm
       gg_mat = as.matrix(gg_mat[, -1])
       rownames(gg_mat) = tmp
 
-      ht <- ComplexHeatmap::Heatmap(gg_mat,
-                                        cluster_rows = in_clust_row,
-                                        cluster_columns = in_clust_col,
-                                        #column_split = grp_x,
-                                        #row_split = grp_y,
-                                        name = unit_name,
-                                        column_title = "factor",
-                                        row_title = "omics",
-                                        show_parent_dend_line = FALSE)
+      if (dim(gg_mat)[2] < 3){
+        in_clust_col <- FALSE
+      }
+
+      if (input$CB_target_omics){
+        omics <- heat_data$selected_omics$target_omics
+        in_hdata <- in_hdata[in_hdata$Y_nm %in% omics,]
+        #gg_mat2 <- gg_mat[rownames(gg_mat) %in% omics,]
+        gg_mat <- gg_mat[omics,]
+        #filter
+      }
+
+      if (plot_type=="Bubbleplot"){
+        grp <- heat_data$x_group
+
+        ht <- bubble_heatmap2(in_hdata, gg_mat, plot_type,
+                                   in_do_scale, in_clust_row, in_clust_col,
+                                   color_scheme, plot_size, grp, save = FALSE)
+
+      } else {
+            ht <- ComplexHeatmap::Heatmap(gg_mat,
+                                              cluster_rows = in_clust_row,
+                                              cluster_columns = in_clust_col,
+                                              #column_split = grp_x,
+                                              #row_split = grp_y,
+                                              name = unit_name,
+                                              column_title = "factor",
+                                              row_title = "omics",
+                                              show_parent_dend_line = FALSE)
+
+    }
 
       return(ht)
+
     })
 
 
@@ -182,43 +218,25 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
     output$plot_heatmap_all_out <- renderPlot({
       req(heat_data$data)
 
-      input_data <- heat_data$data
-      #
-      x_names <- heat_data$x_names
-      y_names <- heat_data$y_names
+      unit_name = "scaled 'X'"
 
       plot_type <- input$RB_heat_plot_type
       in_do_scale <- input$CB_scale
-      in_clust_row <- input$CB_cluster_rows
+      in_clust_row <- FALSE # input$CB_cluster_rows
       in_clust_col <- input$CB_cluster_cols
 
       in_agg_grp <- input$CB_group_agg
-      unit_name = "scaled 'X'"
-
 
       plot_size = "Small"
       color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
       color_scheme = color_schemes[2]
 
-      grp <- ifelse(rv_selections$group_action=="none",FALSE,TRUE)
+      dmat <- t(heat_data$mat)
 
-      # hmap <- bubble_heatmap(input_data, x_names, y_names, plot_type,
-      #                            in_do_scale, in_clust_row, in_clust_col,
-      #                            color_scheme, plot_size, grp, save = FALSE)
-
-      # hmap <- simple_bubble_heatmap(input_data, x_names, y_names, plot_type,
-      #                             in_do_scale, in_clust_row, in_clust_col,
-      #                             color_scheme, plot_size, grp, grp,save = FALSE)
-      #
-      #
-      # simple_bubble_heatmap <- function(in_hdata, x_names, y_names, plot_type,
-      #                                   in_do_scale, in_clust_row, in_clust_col,
-      #                                   color_scheme, plot_size, grp_x, grp_y, save = FALSE)
-
-      in_data <- isolate(input_data)
+      in_data <- isolate(heat_data$data)
 
       # Scale if required
-      if(in_do_scale){
+      if (in_do_scale) {
         in_data[, val:= scale(val), keyby = "Y_nm"]
       }
 
@@ -228,21 +246,33 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
       rownames(rawgg_mat) = tmp
 
       grp_x = unique(in_data$X_ID)
-      tmp <- input_data[group_y==in_data$group_y[1]]
-      grp_x <- tmp$group_x
+      #tmp <- input_data[group_y==in_data$group_y[1]]
 
+      grp_x <- heat_data$meta[[heat_data$x_group]]
 
+      target_omics <- heat_data$selected_omics$target_omics
+      omics_at <- which(rownames(dmat) %in% target_omics)
       #ha = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:6), labels = LETTERS[1:5]))
       ha = ComplexHeatmap::HeatmapAnnotation(foo = ComplexHeatmap::anno_block(labels = levels(grp_x)))
+
+      ha2 = ComplexHeatmap::rowAnnotation(foo = ComplexHeatmap::anno_mark(at = omics_at,
+                                          labels = target_omics))
+
+
       # need to fix the raster here...
       # suppress the "colnames" when we are plotting all the samples... all the genes
-
-      ht <- ComplexHeatmap::Heatmap(rawgg_mat,
+      #TODO:
+      # -limit levels of clustering columns
+      # -
+      ht <- ComplexHeatmap::Heatmap(dmat,
                                       cluster_rows = in_clust_row,
                                       cluster_columns = in_clust_col,
                                       column_split = grp_x,
                                       #row_split = grp_y,
                                       top_annotation = ha,
+                                      right_annotation = ha2,
+                                      row_names_side = "left",
+                                      row_names_gp = grid::gpar(fontsize = 4),
                                       name = unit_name,
                                       column_title = "factor",
                                       row_title = "omics",
@@ -256,19 +286,47 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
 
 
     output$UI_heatmap_agg <- renderUI({
-      #if (rv_selections$omics_list$viz_now) {
-        plotOutput(ns("plot_heatmap_agg_out"), height = pList3[plot_size])
+      #if (rv_selections$target_omics$viz_now) {
+      req(heat_data$data)
+      out_text <- paste("hm dim: ", paste(dim(heat_data$data),collapse = " x "))
 
-    })
+      to_return <-  tagList(
+        h4("grouped average  expression"),
+        "(Aggregated)",
+        out_text,
+        br(),br(),
+        plotOutput(ns("plot_heatmap_agg_out"), height = "1200px")
+      )
 
+      return(to_return)
+
+
+    })# Panel sizes
+    # pList = c("400px", "600px", "800px")
+    # names(pList) = c("Small", "Medium", "Large")
+    # pList2 = c("500px", "700px", "900px")
+    # names(pList2) = c("Small", "Medium", "Large")
+    # pList3 = c("600px", "800px", "1000px")
+    # names(pList3) = c("Small", "Medium", "Large")
+    # sList = c(18,24,30)
+    # names(sList) = c("Small", "Medium", "Large")
+    # lList = c(5,6,7)
+    # names(lList) = c("Small", "Medium", "Large")
     output$UI_heatmap_all <- renderUI({
-      #if (rv_selections$omics_list$viz_now) {
-      plotOutput(ns("plot_heatmap_all_out"), height = pList3[plot_size])
+      #if (rv_selections$target_omics$viz_now) {
+      req(heat_data$data)
+
+      to_return <-  tagList(
+        h4("full heatmap"),
+        #"some more text",
+        br(),br(),
+        plotOutput(ns("plot_heatmap_all_out"), height = "1200px")
+      )
 
     })
 
     output$HTML_header <- renderUI({
-      omic_list = rv_selections$omics_list$value
+      omic_list = rv_selections$target_omics$value
       if(nrow(omic_list) > 50){
         HTML("More than 50 input omics! please reduce the omic list!")
       } else {
@@ -281,25 +339,6 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
         HTML(oup)
       }
     })
-    # TODO: enable save/export
-    # output$Van_d1oup.pdf <- downloadHandler(
-    #   filename = function() { paste0("Van_",input$Van_d1plt,"_",input$Van_d1grp,".pdf") },
-    #   content = function(file) { ggsave(
-    #     file, device = "pdf", height = input$Van_d1oup.h, width = input$Van_d1oup.w,
-    #     plot = bubble_heatmap(Van_conf, Van_meta, input$Van_d1inp, input$Van_d1grp, input$Van_d1plt,
-    #                       input$Van_d1sub1, input$Van_d1sub2, "Van_gexpr.h5", Van_gene,
-    #                       input$Van_d1scl, input$Van_d1row, input$Van_d1col,
-    #                       input$Van_d1cols, input$Van_d1fsz, save = TRUE) )
-    #   })
-    # output$Van_d1oup.png <- downloadHandler(
-    #   filename = function() { paste0("Van_",input$Van_d1plt,"_",input$Van_d1grp,".png") },
-    #   content = function(file) { ggsave(
-    #     file, device = "png", height = input$Van_d1oup.h, width = input$Van_d1oup.w,
-    #     plot = bubble_heatmap(Van_conf, Van_meta, input$Van_d1inp, input$Van_d1grp, input$Van_d1plt,
-    #                       input$Van_d1sub1, input$Van_d1sub2, "Van_gexpr.h5", Van_gene,
-    #                       input$Van_d1scl, input$Van_d1row, input$Van_d1col,
-    #                       input$Van_d1cols, input$Van_d1fsz, save = TRUE) )
-    #   })
 
 
 
