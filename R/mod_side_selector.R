@@ -104,16 +104,21 @@ mod_side_selector_server <- function(id, rv_data){
     ### Reactive expressions ============================================
     rv_selections <- reactiveValues(
 
-      data_source = NULL,
+
+      rv_selections$data_source <- NA # "X" #DISABLED input$RB_obs_X
+      rv_selections$plot_x <- NA # DISABLED input$SI_x
+      rv_selections$plot_y <- NA # DISABLED....input$SI_y
+      rv_selections$group_action <- NA #DISABLED input$RB_none_or_grp
+      rv_selections$plot_var_x <- NA # NOT ENABLED#input$SI_var_x
+      rv_selections$plot_var_y <- NA # NOT ENABLED input$SI_var_y
+      rv_selections$plot_feats <- NA # NOT ENABLED input$CB_xy_var_select
+
+
+
       data_layer = NULL,
       #omics_names = NULL,
       selected_omics = NULL,
 
-      plot_x = NULL,
-      plot_y = NULL,
-      plot_var_x = NULL,
-      plot_var_y = NULL,
-      plot_feats = NULL,
 
       group_action = NULL,
 
@@ -127,10 +132,21 @@ mod_side_selector_server <- function(id, rv_data){
       feat_subset = NULL,   # NOT ENABLEDj, using omics selector
       feat_subsel = NULL,  # NOT ENABLED
 
+
+
+      #DISABLED.
+      #TODO: depricate all these
+      data_source = NULL,
+      plot_x = NULL,
+      plot_y = NULL,
+      plot_var_x = NULL,
+      plot_var_y = NULL,
+      plot_feats = NULL,
       # TODO:  make this conditional on what kind of data is loaded.. and just a single plot type
       raw_plot_type = NULL,
       comp_plot_type = NULL,
       GO = FALSE
+
     )
     ### OMICS  =========================================================
 
@@ -347,11 +363,8 @@ mod_side_selector_server <- function(id, rv_data){
           #     input$SI_obs_subset)
           #TODO: add data_source to config values
           #
-        rv_selections$data_source <- NA # "X" #DISABLED input$RB_obs_X
         rv_selections$data_layer <- input$SI_data_layer
 
-        rv_selections$plot_x <- NA # DISABLED input$SI_x
-        rv_selections$plot_y <- NA # DISABLED....input$SI_y
 
         rv_selections$observ_subset <- obs_sub$set #input$SI_obs_subset
         rv_selections$observ_subsel <- obs_sub$select #input$CB_obs_subsel
@@ -361,17 +374,21 @@ mod_side_selector_server <- function(id, rv_data){
         rv_selections$observ_group_by <- input$SI_group_obs
         rv_selections$observ_group_by2 <- input$SI_group_obs2  # could be null
 
-        rv_selections$group_action <- NA #DISABLED input$RB_none_or_grp
-
         # #
         rv_selections$feat_subset <- var_sub$set #input$SI_var_subset #NA # NOT ENABLEDj, using omics selector
         rv_selections$feat_subsel <- var_sub$select #input$CB_var_subsel #NA # NOT ENABLED
 
+        rv_selections$selected_omics <- selected_omics  # value & viz_now & all_active
+
+        # DEPRICATE
+        rv_selections$data_source <- NA # "X" #DISABLED input$RB_obs_X
+        rv_selections$plot_x <- NA # DISABLED input$SI_x
+        rv_selections$plot_y <- NA # DISABLED....input$SI_y
+        rv_selections$group_action <- NA #DISABLED input$RB_none_or_grp
         rv_selections$plot_var_x <- NA # NOT ENABLED#input$SI_var_x
         rv_selections$plot_var_y <- NA # NOT ENABLED input$SI_var_y
         rv_selections$plot_feats <- NA # NOT ENABLED input$CB_xy_var_select
 
-        rv_selections$selected_omics <- selected_omics  # value & viz_now & all_active
 
     })
 
