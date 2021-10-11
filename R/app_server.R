@@ -58,8 +58,6 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     mod_side_info_server("side_info_ui_1")
-
-
   }
 
   ############################ +
