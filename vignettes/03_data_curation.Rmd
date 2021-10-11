@@ -23,25 +23,42 @@ There are two reasons for these steps:
 As the _Curator_ you have the responsibility to understand the specific research questions involved in your data,
 and how to allow these questions to be explored using a visualization tool.
 
-The process as illustrated in the example can be broken into the following steps:
+The process of curating your data generally includes the following steps:
 
-1. *provenance & meta data setup* - define the meta-data and context for the dataset
-3. *raw data ingest* - translate the outputs of your QC to our database format
-  3a. *define helper function* - any helpers you need to read and process the outputs of your QC
-  3b.*load the raw data*
-4. *pack into the browser data format* - pack into the anndata structure (scanpy/python)
-5. *post-processing* - compute relavent marginal quantities, define additional annotation and grouping variables, etc.
-  5a. *dimension reduction* - compute and cluster if needed
-6. *differential expression tables* - compute and/or formate existing tables
-7. *write database *- write the files to the database location
+1. **Metadata setup** - define the meta-data and context for the dataset
+2. **Raw data ingest** - translate the outputs of your quality-controlled (QC) data to database format
+  - *2a. Optional: Define helper functions* - any manipulations needed to read and process QC data
+3. **Format as AnnData** - pack data into  scanpy's AnnData structure
+4. **Post-processing** - compute relevant marginal quantities, define additional annotation and grouping variables, etc.
+  - *4a. Optional: Dimension reduction* - compute and cluster if needed
+5. **Differential expression tables** - compute and/or format existing tables
+6. **Write database** - create database files and store in a location the browser can locate
 
-#### Database Path 
+Each step is generally described below.
+Examples of how the process is applied to various data types can be found in the 
+[`examples/` subdirectory](https://github.com/ndcn/omicser/tree/main/examples).
+Specific scripts referenced below include:
+
+- [`curate_domenico_stem_cell.R`](examples/curate_domenico_stem_cell.R)
+- PMBC
+
+## Data organization 
+
+FIXME
 
 The first step will be to make a folder to contain your data.  We will call this folder and contents the _DATABASE_ .   Each _DATABASE_ folder that one might want to load into the browser should be in the same path.  e.g. the with the repositories `vignettes/` path there is a `test_db` folder which contains several sub-folder _DATABASES_
 
-              
-#### `AnnData` Schema
+## 1. Metadata setup
 
+FIXME
+
+## 2. Raw data ingest
+
+FIXME
+
+## 3. Format as AnnData
+
+### `AnnData` Schema
 
 The AnnData scheme requires us to define three pieces of data:
 
@@ -52,9 +69,8 @@ The AnnData scheme requires us to define three pieces of data:
 More info here https://cran.r-project.org/web/packages/anndata/readme/README.html 
 
 ![Anndata scheme](../inst/anndata_for_r.png)
-
-
-#### Loading the data
+              
+### Loading the data
 
 In addition to these three pieces differential expression tables need to be pre-computed.
 
@@ -76,25 +92,23 @@ adata <- omicser::setup_database(database_name=DB_NAME,
 
 
 Once we have packed the data into the `anndata` object we can leverage `scanpy` and the `reticulate` python backend to do dimension reduction and clustering. 
-Although this stage is not nescessary, it demonstrates the bridge to `cellxgene`.
+Although this stage is not necessary, it demonstrates the bridge to `cellxgene`.
 
 ``` {r, RM-prep-4, eval=FALSE}
-#==== 5-a. dimension reduction - PCA / umap ========================================================
+#==== 4a. dimension reduction - PCA / umap ========================================================
 sc <- import("scanpy")
 # scanpy pre-processing - sc$pp
 sc$pp$pca(adata)
 sc$pp$neighbors(adata)
 sc$tl$leiden(adata)
 sc$tl$umap(adata)
-
 ```
 
-#### Differential Expression Tables 
+## 5. Create differential expression tables
+
 This is probably the trickiest part of the curation  Fortunately we have some helper functions to help us compute them.  Often -- especially for _prote-_ omic databases -- differential expressions are computed as the output of the instrumentataion by a commercial software.  These algorithms leverage bespoke statistics, so it will be best to reformat those tables. 
 
-
-
-##### DE Table Schema
+### DE Table Schema
 
 Most proteomic, metabelomic and lipidomic data will have differential calculations at the output of the instrumentation (which leverages know statastical assumptions of the quantifications) we can also use scanpys tools to compute differential expression.  The diff_exp tables will be needed for volcano plots either way.
 
@@ -112,11 +126,12 @@ The differential expression table has these fields:
    - `pvals_adj` - adjusted pvalue (Q)
    - `versus` - label which we will choose in the browser
    
-   
-   
-##### omicser::compute_de_table()
+ 
+### omicser::compute_de_table()
 
 In [`R/pre_process_helpers.R`](../R/pre_process_helpers.R) theres a function which leverages `scanpy` and the `anndata` format we have packed to do differential expression.  We just need to pass a few quantites and it returns a properly formatted differential expression table.
+
+omicser::compute_de_table()
 
 parameters:
 
@@ -139,8 +154,7 @@ diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc
 
 ```
 
-
-#### Save the data to the _DATABASE_
+## 6. Write the _DATABASE_
 
 Finally we write this the anndata data object to our _database_DATABASE_ folder.   In the examples contained in the `vignettes/` folder we defined `DS_ROOT_PATH <- "test_db"`, and `DB_NAME <- "domenico_stem_cell"` .
 
@@ -157,4 +171,5 @@ You might also want to save some _intermediate_ files such as in the [examples](
 
 We are almost there.  In the next section we will cover the configuration which will add a `db_config.yml` files to the _DATABASE_ directory, and create an [`omicser_options.yml`](omicser_options.yml) in the directory where the app will be executed.
 
-On to [CONFIGURATION](04_configuration.md)
+In the next step,
+we'll [configure the browser](04_configuration.md).
