@@ -249,34 +249,120 @@ bubble_heatmap <- function(heat_data, x_names, y_names, plot_type,
 
 
 
-
 # bubble_heatmap ==========================
-#' Title
-#'
-#' @param heat_data
-#' @param x_names
-#' @param y_names
-#' @param plot_type
-#' @param in_do_scale
-#' @param in_clust_row
-#' @param in_clust_col
-#' @param color_scheme
-#' @param plot_size
-#' @param grp_x
-#' @param grp_y
-#' @param save
-#'
-#' @return
-#' @export
-#' @importFrom ComplexHeatmap Heatmap
-#' @import RColorBrewer
-#' @examples
+bubble_heatmap2 <- function(hm_dat, gg_mat, plot_type,
+                           in_do_scale, in_clust_row, in_clust_col,
+                           color_scheme, plot_size, grp, save = FALSE){
+
+
+
+
+  # Scale if required
+  color_range = range(hm_dat$val)
+  color_range = c(-max(abs(range(hm_dat$val))), max(abs(range(hm_dat$val))))
+
+  if(in_clust_row){
+    ####
+    ####
+    hc_row = ggdendro::dendro_data(as.dendrogram(hclust(dist(gg_mat))))
+    gg_row = ggplot2::ggplot() + ggplot2::coord_flip() +
+      ggplot2::geom_segment(data = hc_row$segments, ggplot2::aes(x=x,y=y,xend=xend,yend=yend)) +
+      ggplot2::scale_y_continuous(breaks = rep(0, uniqueN(hm_dat$X_nm)),
+                                  labels = unique(hm_dat$X_nm), expand = c(0, 0)) +
+      ggplot2::scale_x_continuous(breaks = seq_along(hc_row$labels$label),
+                                  labels = hc_row$labels$label, expand = c(0, 0.5)) +
+      sctheme(base_size = sList[plot_size]) +
+      ggplot2::theme(axis.title = ggplot2::element_blank(), axis.line = ggplot2::element_blank(),
+                     axis.ticks = ggplot2::element_blank(), axis.text.y = ggplot2::element_blank(),
+                     axis.text.x = ggplot2::element_text(color="white", angle = 45, hjust = 1))
+
+    hm_dat$Y_nm = factor(hm_dat$Y_nm, levels = hc_row$labels$label)
+  } else {
+
+    hm_dat$Y_nm = factor(hm_dat$Y_nm, levels = rev(y_names))
+
+  }
+  if(in_clust_col){
+    hc_col = ggdendro::dendro_data(as.dendrogram(hclust(dist(t(gg_mat)))))
+    gg_color = ggplot2::ggplot() +
+      ggplot2::geom_segment(data = hc_col$segments, ggplot2::aes(x=x,y=y,xend=xend,yend=yend)) +
+      ggplot2::scale_x_continuous(breaks = seq_along(hc_col$labels$label),
+                                  labels = hc_col$labels$label, expand = c(0.05, 0)) +
+      ggplot2::scale_y_continuous(breaks = rep(0, uniqueN(hm_dat$omic)),
+                                  labels = unique(hm_dat$omic), expand=c(0,0)) +
+      sctheme(base_size = sList[plot_size], Xang = 45, XjusH = 1) +
+      ggplot2::theme(axis.title = ggplot2::element_blank(), axis.line = ggplot2::element_blank(),
+                     axis.ticks = ggplot2::element_blank(), axis.text.x = ggplot2::element_blank(),
+                     axis.text.y = ggplot2::element_text(color = "white"))
+    hm_dat$X_nm = factor(hm_dat$X_nm, levels = hc_col$labels$label)
+  }
+
+  # Actual plot according to plottype
+  if(plot_type == "Bubbleplot"){
+    # Bubbleplot
+    gg_out = ggplot2::ggplot(hm_dat, ggplot2::aes(X_nm, Y_nm, color = val, size = prop)) +
+      ggplot2::geom_point() +
+      sctheme(base_size = sList[plot_size], Xang = 45, XjusH = 1) +
+      ggplot2::scale_x_discrete(expand = c(0.05, 0)) +
+      ggplot2::scale_y_discrete(expand = c(0, 0.5)) +
+      ggplot2::scale_size_continuous("proportion", range = c(0, 8),
+                                     limits = c(0, 1), breaks = c(0.00,0.25,0.50,0.75,1.00)) +
+      ggplot2::scale_color_gradientn("expression", limits = color_range, colours = cList[[color_scheme]]) +
+      ggplot2::guides(color = ggplot2::guide_colorbar(barwidth = 15)) +
+      ggplot2::theme(axis.title = ggplot2::element_blank(), legend.box = "vertical")
+  } else {
+    # Heatmap
+    gg_out = ggplot2::ggplot(hm_dat, ggplot2::aes(X_nm, Y_nm, fill = val)) +
+      ggplot2::geom_tile() +
+      sctheme(base_size = sList[plot_size], Xang = 45, XjusH = 1) +
+      ggplot2::scale_x_discrete(expand = c(0.05, 0)) +
+      ggplot2::scale_y_discrete(expand = c(0, 0.5)) +
+      ggplot2::scale_fill_gradientn("expression", limits = color_range, colours = cList[[color_scheme]]) +
+      ggplot2::guides(fill = ggplot2::guide_colorbar(barwidth = 15)) +
+      ggplot2::theme(axis.title = ggplot2::element_blank())
+  }
+
+  # Final tidy
+  gg_leg = g_legend(gg_out)
+  gg_out = gg_out + ggplot2::theme(legend.position = "none")
+  if(!save){
+    if(in_clust_row & in_clust_col){gg_out =
+      gridExtra::grid.arrange(gg_out, gg_leg, gg_color, gg_row, widths = c(7,1), heights = c(1,7,2),
+                              layout_matrix = rbind(c(3,NA),c(1,4),c(2,NA)))
+    } else if(in_clust_row){gg_out =
+      gridExtra::grid.arrange(gg_out, gg_leg, gg_row, widths = c(7,1), heights = c(7,2),
+                              layout_matrix = rbind(c(1,3),c(2,NA)))
+    } else if(in_clust_col){gg_out =
+      gridExtra::grid.arrange(gg_out, gg_leg, gg_color, heights = c(1,7,2),
+                              layout_matrix = rbind(c(3),c(1),c(2)))
+    } else {gg_out =
+      gridExtra::grid.arrange(gg_out, gg_leg, heights = c(7,2),
+                              layout_matrix = rbind(c(1),c(2)))
+    }
+  } else {
+    if(in_clust_row & in_clust_col){gg_out =
+      gridExtra::arrangeGrob(gg_out, gg_leg, gg_color, gg_row, widths = c(7,1), heights = c(1,7,2),
+                             layout_matrix = rbind(c(3,NA),c(1,4),c(2,NA)))
+    } else if(in_clust_row){gg_out =
+      gridExtra::arrangeGrob(gg_out, gg_leg, gg_row, widths = c(7,1), heights = c(7,2),
+                             layout_matrix = rbind(c(1,3),c(2,NA)))
+    } else if(in_clust_col){gg_out =
+      gridExtra::arrangeGrob(gg_out, gg_leg, gg_color, heights = c(1,7,2),
+                             layout_matrix = rbind(c(3),c(1),c(2)))
+    } else {gg_out =
+      gridExtra::arrangeGrob(gg_out, gg_leg, heights = c(7,2),
+                             layout_matrix = rbind(c(1),c(2)))
+    }
+  }
+  return(gg_out)
+}
+
+# simple_bubble_heatmap ==========================
 simple_bubble_heatmap <- function(in_hdata, x_names, y_names, plot_type,
                            in_do_scale, in_clust_row, in_clust_col,
                            color_scheme, plot_size, grp_x, grp_y, save = FALSE){
 
-  hm_dat <- isolate(in_hdata)
-browser()
+  hm_dat <- isolate(in_hdata) #isolate doesn't mean anything here...
   # Aggregate:  exp(mean) + proportion -> log(val)
   # disabling expm1 and log1p because we will be putting "NORMALIZED" quantities in...
 

@@ -84,7 +84,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
     observe({
       db_name$name <- to_return$db_meta$name
     })
-
+print("making additinal _info")
     mod_additional_info_server("additional_info_ui_ingest",
                                db_name = db_name,
                                DB_ROOT_PATH = DB_ROOT_PATH)
@@ -125,7 +125,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
 ## load dataset (observeEvent) ===================
     observeEvent(input$SI_database, {
       req(input$SI_database)
-
+     print("in observeEvent(input$SI_database, ")
       db_name <- (input$SI_database)
       # ad <- anndata::read_h5ad(filename=paste0("data-raw/",db_name,"/omxr_data.h5ad"))
       # diff_exp = readRDS(file = paste0("data-raw/",db_name,"/diff_expr_table.rds"))
@@ -159,6 +159,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
     })
 
     ## observes ===================
+    print("pre database_name")
 
     observe({
       if ( !is.null(to_return$database_name) ) {
@@ -168,13 +169,13 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
         print(" no database loaded... .")
       }
     })
+    print("post database_name")
 
     # keep these up to date for side_select..
     # # Should this just be done in     observeEvent(input$SI_database,?
     observe({
       #to_return$database_name <- input$SI_database
       to_return$database_name  <- names(which(database_names==input$SI_database))
-
     })
     # load button :: send the reactive object back to the app...
     observeEvent(input$AB_ingest_load, {
@@ -210,7 +211,6 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
         print(paste0("Current database omics: ", paste( names(omics)[1:10], collapse = ",")) )
       }
     })
-
 
 
 
