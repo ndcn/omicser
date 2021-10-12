@@ -52,6 +52,12 @@ if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
 }
 
+reticulate::use_condaenv(
+  required = TRUE,
+  condaenv =  CONDA_ENV,
+  conda = "auto"
+)
+
 
 #==== 1. documentation / provenance ==============================================================
 # TODO:  markdown file or html with some copy about the database
