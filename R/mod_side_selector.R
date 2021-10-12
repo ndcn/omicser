@@ -380,6 +380,7 @@ mod_side_selector_server <- function(id, rv_data){
 
 
   ### RETURN =========================================================
+      print("Rico: Returning rv_selections!")
   return(rv_selections)
 
   })

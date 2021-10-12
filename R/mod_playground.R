@@ -98,12 +98,17 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       data = NULL
     )
 
+
 # OBSERVES =================================
 # active_layer_data observe =================================
     observe({
       req(rv_data$ad,
           rv_selections$data_layer)
 
+      print("Rico (layer): trigger")
+      print(rv_data$trigger)
+      # below get's executed several times before the correct data is there
+      if(rv_data$trigger > 0) {
       layer <- rv_selections$data_layer
       if (layer=="X") {
         X_data <- isolate(rv_data$ad$X) #isolate
@@ -127,6 +132,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
       active_layer_data$layer <- layer
       active_layer_data$data <- X_data # is a matrix
+      }
 
     })
 
@@ -148,8 +154,13 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       #
       #  have already set a reactive active_layer_data$data -> X_data
       #
-
-
+      if(rv_data$trigger == 0) {
+        rv_selections$selected_omics$freeze  <- 0
+      }
+      print("Rico (heatmap): trigger")
+      print(rv_data$trigger)
+      # below get's executed several times before the correct data is there
+      if(rv_data$trigger > 0 & rv_selections$selected_omics$freeze > 0) {
       in_conf <- rv_data$config
       dat_source <- rv_selections$data_layer
 
@@ -159,7 +170,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
       # this is all of the "active" omics (subsetting in side-selector)
       omics <- rv_selections$selected_omics$all_omics
-      rv_selections$selected_omics$freeze <- FALSE
+      # rv_selections$selected_omics$freeze <- 0 #FALSE
       #
       omics_idx <- which(rv_data$ad$var_names %in% omics)
 
@@ -192,9 +203,16 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
       #   - subset samples :: heat_data observe =================================
       samples_idx <- which(rv_data$ad$obs[[rv_selections$observ_subset]] %in% rv_selections$observ_subsel)
+      print("Rico: sample_idx")
+      print(rv_selections$observ_subset)
+      # print(rv_data$ad$obs)
       samples <- rv_data$ad$obs_names[samples_idx]
+      print("Rico: samples, looks like this is not updated when new db is selected")
+      print(samples)
 
       samp_grp_nm <- rv_selections$observ_group_by
+      print("Rico: samp_grp_nm, looks like this is not updated when new db is selected")
+      print(samp_grp_nm)
 
       if (!is.na( samp_grp_nm ) | !is.null(samp_grp_nm)) {
         samp_grp <- rv_data$ad$obs[[ samp_grp_nm ]][samples_idx]
@@ -222,8 +240,10 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       #TODO:  we already subsetted, so don't need to loop?  # can't enable "transpose" version until
       # loop over sample_IDs / subset category
       # this will be for bubbleplots?
-      keep_cols <- c( in_conf[UI == X_ID]$ID, in_conf[UI == samp_grp_nm]$ID, in_conf[UI == rv_selections$observ_subset]$ID, in_conf[UI == samp_grp_nm]$ID)
-
+      keep_cols <- c( in_conf[UI == X_ID]$ID,
+                      in_conf[UI == samp_grp_nm]$ID, # Rico: twice?!?
+                      in_conf[UI == rv_selections$observ_subset]$ID,
+                      in_conf[UI == samp_grp_nm]$ID)
 
       grp_ys <- omic_grp
       names(grp_ys) <- omics
@@ -263,6 +283,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
        heat_data$meta <- tmp_meta
        heat_data$ready <- TRUE
        heat_data$selected_omics <- rv_selections$selected_omics
+      }
     })
 
 

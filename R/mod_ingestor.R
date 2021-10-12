@@ -156,6 +156,9 @@ print("making additinal _info")
       to_return$db_meta$publication<-conf_def$def$db_meta$pub
       to_return$db_meta$etc<-conf_def$def$db_meta$annotation_database
 
+      # Rico: when new database is selected set trigger back to 0
+      to_return$trigger <- 0
+      print("Rico: loaded new database!")
     })
 
     ## observes ===================
@@ -212,8 +215,7 @@ print("making additinal _info")
       }
     })
 
-
-
+    print("Rico: return rv_data")
     return(to_return)
   })
 }

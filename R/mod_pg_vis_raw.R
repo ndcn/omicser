@@ -112,6 +112,9 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
       # -
       #
 
+      print("Rico: show freeze status:")
+      print(rv_selections$selected_omics$freeze)
+      if(rv_data$trigger > 0 & rv_selections$selected_omics$freeze > 0) {
       input_data <- heat_data$data
       #
       plot_type <- input$RB_heat_plot_type
@@ -209,7 +212,9 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
     }
 
       return(ht)
-
+      } else {
+        return(NULL)
+      }
     })
 
 
@@ -218,6 +223,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
     output$plot_heatmap_all_out <- renderPlot({
       req(heat_data$data)
 
+      if(rv_data$trigger > 0 & rv_selections$selected_omics$freeze > 0) {
       unit_name = "scaled 'X'"
 
       plot_type <- input$RB_heat_plot_type
@@ -282,6 +288,9 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
 
 
       return(ht)
+      } else {
+        return(NULL)
+      }
     })
 
 

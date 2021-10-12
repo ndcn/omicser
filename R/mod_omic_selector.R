@@ -96,7 +96,7 @@ mod_omic_selector_server <- function(id, active_omics, def_omics, new_db_trig) {
       new_db_trig(),  # new database loaded
       {
         req(active_omics(),
-            def_omics)  # set when database is chosen
+            def_omics())  # set when database is chosen
 
         if (new_db_trig()>0) {
           selected_omics$target_omics <- def_omics()
