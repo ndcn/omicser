@@ -31,12 +31,12 @@ mod_pg_vis_raw_ui <- function(id){
      ), # End of column (6 space)
      column(
        3, style="border-right: 2px solid black",
-       checkboxInput(ns("CB_target_omics"), "target -omics only?", value = TRUE),
+       checkboxInput(ns("CB_target_omics"), "target -omics only?", value = FALSE),
        br(),br()
      ),
      column(
        3, style="border-right: 2px solid black",
-       checkboxInput(ns("CB_cluster_rows"), "Cluster rows (omics)", value = FALSE),
+       checkboxInput(ns("CB_cluster_rows"), "Cluster rows (omics)", value = TRUE),
        checkboxInput(ns("CB_cluster_cols"), "Cluster columns (samples)", value = TRUE),
        br()
      ),
@@ -105,6 +105,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
 
     # plot_heatmap_out renderPlot---------------------------------
     output$plot_heatmap_agg_out <- renderPlot({
+      print("plot_heatmap_agg_out 0 ")
       req(heat_data$data)
 
       #TODO:
@@ -180,13 +181,25 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
         in_clust_col <- FALSE
       }
 
+      omics <- heat_data$selected_omics$target_omics
       if (input$CB_target_omics){
-        omics <- heat_data$selected_omics$target_omics
         in_hdata <- in_hdata[in_hdata$Y_nm %in% omics,]
         #gg_mat2 <- gg_mat[rownames(gg_mat) %in% omics,]
         gg_mat <- gg_mat[omics,]
         #filter
+        #
+        ha2 <- NULL
+      } else {
+
+        omics <- heat_data$selected_omics$target_omics
+        omics_at <- which(rownames(gg_mat) %in% omics)
+
+
+        ha2 <- ComplexHeatmap::rowAnnotation(foo = ComplexHeatmap::anno_mark(at = omics_at,
+                                                                            labels = omics))
+
       }
+
 
       if (plot_type=="Bubbleplot"){
         grp <- heat_data$x_group
@@ -196,9 +209,13 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
                                    color_scheme, plot_size, grp, save = FALSE)
 
       } else {
-            ht <- ComplexHeatmap::Heatmap(gg_mat,
+
+        ht <- ComplexHeatmap::Heatmap(gg_mat,
                                               cluster_rows = in_clust_row,
                                               cluster_columns = in_clust_col,
+                                              right_annotation = ha2,
+                                              row_names_side = "left",
+                                              row_names_gp = grid::gpar(fontsize = 4),
                                               #column_split = grp_x,
                                               #row_split = grp_y,
                                               name = unit_name,
@@ -216,12 +233,10 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
 
     # plot_heatmap_out renderPlot---------------------------------
     output$plot_heatmap_all_out <- renderPlot({
-      req(heat_data$data)
-
+      req(heat_data$data,
+          heat_data$mat)
       unit_name = "scaled 'X'"
-
       plot_type <- input$RB_heat_plot_type
-      in_do_scale <- input$CB_scale
       in_clust_row <- FALSE # input$CB_cluster_rows
       in_clust_col <- input$CB_cluster_cols
 
@@ -233,10 +248,10 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
 
       dmat <- t(heat_data$mat)
 
-      in_data <- isolate(heat_data$data)
+      in_data <- heat_data$data
 
       # Scale if required
-      if (in_do_scale) {
+      if (input$CB_scale) {
         in_data[, val:= scale(val), keyby = "Y_nm"]
       }
 
@@ -248,10 +263,12 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
       grp_x = unique(in_data$X_ID)
       #tmp <- input_data[group_y==in_data$group_y[1]]
 
-      grp_x <- heat_data$meta[[heat_data$x_group]]
+      grp_x <- heat_data$obs_meta[[ heat_data$x_group ]]
 
       target_omics <- heat_data$selected_omics$target_omics
       omics_at <- which(rownames(dmat) %in% target_omics)
+
+
       #ha = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:6), labels = LETTERS[1:5]))
       ha = ComplexHeatmap::HeatmapAnnotation(foo = ComplexHeatmap::anno_block(labels = levels(grp_x)))
 
@@ -287,14 +304,22 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
 
     output$UI_heatmap_agg <- renderUI({
       #if (rv_selections$target_omics$viz_now) {
-      req(heat_data$data)
-      out_text <- paste("hm dim: ", paste(dim(heat_data$data),collapse = " x "))
+      req(heat_data$mat,
+          heat_data$selected_omics$target_omics)
+
+      out_text1 <- paste("hm dim: ",
+                        paste(dim(heat_data$mat),collapse = " x "))
+
+      out_text2 <-  paste("n target_omics: ",
+                        length(heat_data$selected_omics$target_omics))
 
       to_return <-  tagList(
         h4("grouped average  expression"),
         "(Aggregated)",
-        out_text,
-        br(),br(),
+        out_text1,
+        br(),
+        out_text2,
+        br(),
         plotOutput(ns("plot_heatmap_agg_out"), height = "1200px")
       )
 
@@ -314,29 +339,30 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
     # names(lList) = c("Small", "Medium", "Large")
     output$UI_heatmap_all <- renderUI({
       #if (rv_selections$target_omics$viz_now) {
-      req(heat_data$data)
+      req(heat_data$mat)
+      out_text <- paste("hm dim: ", paste(dim(heat_data$mat),collapse = " x "))
+
 
       to_return <-  tagList(
         h4("full heatmap"),
         #"some more text",
+        out_text,
         br(),br(),
-        plotOutput(ns("plot_heatmap_all_out"), height = "1200px")
+        plotOutput(outputId = ns("plot_heatmap_all_out"),
+                   height = "1200px")
       )
 
+      print("leaving UI_heatmap_all")
+
+      return(to_return)
     })
 
     output$HTML_header <- renderUI({
-      omic_list = rv_selections$target_omics$value
-      if(nrow(omic_list) > 50){
-        HTML("More than 50 input omics! please reduce the omic list!")
+      omic_list <- heat_data$selected_omics$target_omics
+      if( length(omic_list) > 100){
+        HTML("More than 100 input omics! please reduce the omic list!")
       } else {
-        oup = paste0(nrow(omic_list[present == TRUE]), " omic OK and will be plotted")
-        if(nrow(omic_list[present == FALSE]) > 0){
-          oup = paste0(oup, "<br/>",
-                       nrow(omic_list[present == FALSE]), " omic not found (",
-                       paste0(omic_list[present == FALSE]$omic, collapse = ", "), ")")
-        }
-        HTML(oup)
+        HTML(paste0(length(omic_list), " omics OK and will be plotted"))
       }
     })
 
