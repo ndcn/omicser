@@ -106,15 +106,15 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
       layer <- rv_selections$data_layer
       if (layer=="X") {
-        X_data <- isolate(rv_data$ad$X) #isolate
+        X_data <- rv_data$ad$X
       } else if (layer == "raw") {
-        X_data <- isolate(rv_data$ad$raw$X)#isolate
+        X_data <- rv_data$ad$raw$X
       } else { #} if (dat_loc == "layers") { #must be a layer
         is_layer <- any(layer %in% rv_data$ad$layers$keys())
         #is_layer <- any(rv_data$ad$layers$keys()==dat_loc)
         if (is_layer) {
           #X_data <- isolate(rv_data$ad$layers[[dat_loc]]) #isolate
-          X_data <- isolate(rv_data$ad$layers$get(layer) )
+          X_data <- rv_data$ad$layers$get(layer)
         } else {
           print("data not found")
           X_data <- NULL
@@ -136,6 +136,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
           rv_selections$data_layer,
           active_layer_data$data)
 
+
       # NOTES:
       #    this packs a reactive list of data for generating the heatmap.
       #    we need to return a
@@ -148,24 +149,22 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       #
       #  have already set a reactive active_layer_data$data -> X_data
       #
-
-
+print("in observer: heat_data packer")
       in_conf <- rv_data$config
-      dat_source <- rv_selections$data_layer
+      dat_source <- isolate(rv_selections$data_layer)
 
       # not using the viz_now... for now
-
       X_data <- active_layer_data$data
 
       # this is all of the "active" omics (subsetting in side-selector)
       omics <- rv_selections$selected_omics$all_omics
-      rv_selections$selected_omics$freeze <- FALSE
-      #
+      # # send signal back to side selector...
+      # rv_selections$selected_omics$freeze <- FALSE
       omics_idx <- which(rv_data$ad$var_names %in% omics)
 
       #   - subset omics... bug above :: heat_data observe =================================
-      omics_idx <- which(rv_data$ad$var[[rv_selections$feat_subset]] %in% rv_selections$feat_subsel)
-      omics <- rv_data$ad$var_names[omics_idx]
+      #omics_idx <- which(rv_data$ad$var[[rv_selections$feat_subset]] %in% rv_selections$feat_subsel)
+      #omics <- rv_data$ad$var_names[omics_idx]
 
       omic_grp_nm <- rv_selections$feat_group_by
       # st var (omics)
@@ -214,7 +213,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       tmp_meta <- as.data.table(rv_data$ad$obs) # can probably just access ad$obs directly since we don' tneed it to be a data_table?
       #row.names(tmp_meta) <- rv_data$ad$obs_names
       tmp_meta <- tmp_meta[samples_idx,]
-      row.names(tmp_meta) <- samples
+      #row.names(tmp_meta) <- samples
       #tmp_meta$sample_ID <- samples
 
       # create the table
@@ -222,7 +221,10 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       #TODO:  we already subsetted, so don't need to loop?  # can't enable "transpose" version until
       # loop over sample_IDs / subset category
       # this will be for bubbleplots?
-      keep_cols <- c( in_conf[UI == X_ID]$ID, in_conf[UI == samp_grp_nm]$ID, in_conf[UI == rv_selections$observ_subset]$ID, in_conf[UI == samp_grp_nm]$ID)
+      keep_cols <- c( in_conf[UI == X_ID]$ID,
+                      in_conf[UI == samp_grp_nm]$ID,
+                      in_conf[UI == rv_selections$observ_subset]$ID,
+                      in_conf[UI == samp_grp_nm]$ID)
 
 
       grp_ys <- omic_grp
@@ -238,6 +240,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
         hm_data = rbindlist(list(hm_data, tmp))
       }
+
 # browser()
 #       # TODO:  use data.table melt (or something rather than loop)
 #       # melt(DT, id.vars = c("family_id", "age_mother"),
@@ -260,7 +263,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
        heat_data$type <- active_layer_data$layer #   dat_loc
        heat_data$data <- hm_data
        heat_data$mat <- X_filtered
-       heat_data$meta <- tmp_meta
+       heat_data$obs_meta <- tmp_meta
        heat_data$ready <- TRUE
        heat_data$selected_omics <- rv_selections$selected_omics
     })
