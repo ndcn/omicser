@@ -29,18 +29,7 @@ This project was developed using R version 4.1.0 and RStudio v1.4.1717.
 
 ## Setup via R
 
-### Python
-
-We will use a [conda environment](https://conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) 
-to manage Python packages handling data on the back end of the browser application.
-If you don't already have **Python version 3.9** installed via Anaconda or Miniconda,
-please follow [these instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
-
-## R
-
-Once we have Python installed,
-our next step will set up our R requirements,
-primarily `devtools` and `reticulate`:
+First, let's install the R tools we'll use to create and manage our other installations:
 
 ```{r, RM-install, eval=FALSE}
 install.packages("devtools")
@@ -49,13 +38,16 @@ install.packages("reticulate")
 
 > Installing the `omicser` browser package in the next tutorial will also install additional R packages as dependencies.
 
-Now, use R to create your environment using `reticulate`:
+We will use a [conda environment](https://conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) 
+to manage the Python packages handling data on the back end of the browser application.
+We can use R to install **Python version 3.9** and other necessary Python packages
+by creating a conda environment using `reticulate`:
 
 ```{r RM-r_env, eval=FALSE}
 YOUR_CONDA_ENV <- "omxr"
 PYTHON_VERSION <- 3.9
 
-require(reticulate)
+library(reticulate)
 reticulate::install_miniconda() 
 reticulate::conda_create(YOUR_CONDA_ENV, python_version = PYTHON_VERSION)
 ```
@@ -65,7 +57,6 @@ Please note that if you have bioconductor configured as a channel it may cause p
 Forcing install from the "conda-forge" channel is preferred:
 
 ```{r RM-r_scanpy, eval=FALSE}
-YOUR_CONDA_ENV <- "omxr"
 reticulate::conda_install(envname= YOUR_CONDA_ENV,
                           channel = "conda-forge",
                           packages = c("scanpy", "leidenalg") )
@@ -84,8 +75,10 @@ First, download and install Miniconda:
 
 ```{bash, conda_inst, eval = FALSE}
 curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh
-bash ~/miniconda.sh -b -p $HOME/miniconda
+bash ~/miniconda.sh -p $HOME/miniconda
 ```
+
+You may need to respond to some prompts in your Console to complete this installation.
 
 Now we can use conda to install a python 3.9 environment to use with `reticulate`. 
 For this example we've called the environment `omxr`.
