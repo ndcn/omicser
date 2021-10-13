@@ -36,7 +36,7 @@ mod_subset_selector_server <- function(id,rv_conf,meta_field){
 
       req(cfg)
 
-      subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
+      #subs_label <- paste0("select ",isolate(input$SI_subset),"s: ")
       choices <- cfg[grp == TRUE & field==meta_field]$UI
 
       ret_tags <- tagList(
@@ -149,8 +149,10 @@ mod_subset_selector_server <- function(id,rv_conf,meta_field){
     })
 
 
-    observe({ret_rv_sub$set <- input$SI_subset})
-    observe({ret_rv_sub$select <- input$CB_subsel})
+    observe({
+            ret_rv_sub$set <- input$SI_subset
+            ret_rv_sub$select <- input$CB_subsel
+            })
 
     ### RETURN =========================================================
     return(ret_rv_sub)

@@ -86,57 +86,93 @@ mod_omic_selector_ui <- function(id){
 #' @param new_db_trig signal that we have a new database loaded
 #'
 #' @noRd
-mod_omic_selector_server <- function(id, active_omics, def_omics, new_db_trig) {
+mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_trig) {
   moduleServer( id, function(input, output, session) {
     ns <- session$ns
 
 
 
-    observeEvent(
-      new_db_trig(),  # new database loaded
-      {
-        req(active_omics(),
-            def_omics)  # set when database is chosen
-
-        if (new_db_trig()>0) {
-          selected_omics$target_omics <- def_omics()
-          selected_omics$all_omics <- active_omics()
-          selected_omics$freeze <- 0
-
-          # get rid of error message when resetting selection
-          output$ui_text_warn <- renderUI({ })
-        }
-      },
-      ignoreNULL = TRUE,
-      ignoreInit = TRUE
-    ) #observe
+    # Define return rvs: `selected_omics`  -----------------
+    selected_omics <- reactiveValues(
+      target_omics=NULL, #isolate(def_omics()),
+      all_omics= NULL, #isolate(active_omics()),
+      freeze = NULL
+    )
 
 
-    # text input add to list...
-    omic_add_input <- reactive({
-      strsplit(input$text_omic_add, ",| |;|, ")[[1]]
+    # OBSERVES -----------------
+    observe({
+      #req(active_omics())  # set when database is chosen ... this is essentially a reset...
+      selected_omics$all_omics <- active_omics()
+      selected_omics$freeze <- 0 #reset ffreeze?
+      output$ui_text_warn <- renderUI({ })
+      print("observed active_omics()")
     })
 
+
+    observe({
+      #req(def_omics() )  # set when database is chosen
+      selected_omics$target_omics <- def_omics()
+      print("observed def_omics()")
+
+    })
+
+    # # REACTIVES    -----------------
+    # plus_omics <- eventReactive( input$AB_text_omic_add, {
+    #   print("plus_omics()")
+    #   return(  strsplit(input$text_omic_add, ",| |;|, ")[[1]] )
+    # })
+
+    # REACTIVES    -----------------
     plus_omics <- reactive({
       input$AB_text_omic_add  #reactive on the button rather than any text input
+      return( strsplit(isolate(input$text_omic_add), ",| |;|, ")[[1]] )
 
-      omics_to_add <- isolate(omic_add_input())
-      return(omics_to_add)
     })
 
 
-    selected_omics <- reactiveValues(
-                                   target_omics=NULL, #isolate(def_omics()),
-                                   all_omics= NULL, #isolate(active_omics()),
-                                   freeze = NULL
-                                   )
+
+    # observeEvent(
+    #   new_db_trig(),  # new database loaded
+    #   {
+    #     req(active_omics(),
+    #         def_omics)  # set when database is chosen
+    #
+    #     if (new_db_trig()>0) {
+    #       selected_omics$target_omics <- def_omics()
+    #       selected_omics$all_omics <- active_omics()
+    #       selected_omics$freeze <- 0
+    #
+    #       # get rid of error message when resetting selection
+    #       output$ui_text_warn <- renderUI({ })
+    #     }
+    #   },
+    #   ignoreNULL = TRUE,
+    #   ignoreInit = TRUE
+    # ) #observe
+
+
+    # # text input add to list...
+    # omic_add_input <- reactive({
+    #   strsplit(input$text_omic_add, ",| |;|, ")[[1]]
+    # })
+
 
     max_omic_feats <- 100
 
     observe({
       #toggle the vis_now flag if we are changing features
+      req(selected_omics$all_omics)# don't trip
 
-      if ( length(unique(selected_omics$target_omics ) ) >= max_omic_feats ) {
+      omics_choices <- selected_omics$target_omics #don't update if the target_omics change (avoid loop)
+      print("observing selected_omics$target_omics ... ")
+      print(paste0("n omics choices...1 ", length(omics_choices)) )
+
+      if ( length( unique( omics_choices ) ) >= max_omic_feats ) {
+        print("TOOO MANY FEATURES...")
+        print(paste0("n omics choices. 2A.. ", length(omics_choices)) )
+
+
         # will this work?  or is the "observing" affecting a reactive with this render?
         output$ui_text_warn <- renderUI({
           tags$div(class = "warning", checked = NA,
@@ -154,7 +190,7 @@ mod_omic_selector_server <- function(id, active_omics, def_omics, new_db_trig) {
                       faster computation ! <br> Continue by pressing "Clear".
                       </div>
                       </body>')))
-        })
+            })
 
 
       } else {
@@ -162,16 +198,16 @@ mod_omic_selector_server <- function(id, active_omics, def_omics, new_db_trig) {
          #assert that the choices are updated...
 
         omics_choice_list <- active_omics()
-        if ( is.null(omics_choice_list)  ) {
-          omics_choice_list <- "" #rownames(rv_in$var)
-        } else {
-          if (!is.null(names(omics_choice_list))) {
-          omics_choice_list <- names(omics_choice_list)
-        }}
 
-        omics_choices <- isolate(selected_omics$target_omics) #don't update if the target_omics change (avoid loop)
+        # if ( is.null(omics_choice_list)  ) {
+        #   omics_choice_list <- "" #rownames(rv_in$var)
+        # } else {
+        #   if (!is.null(names(omics_choice_list))) {
+        #   omics_choice_list <- names(omics_choice_list)
+        # }}
 
-        omics_choices <- unique(append(omics_choices,plus_omics()))
+        #omics_choices <- isolate(selected_omics$target_omics) #don't update if the target_omics change (avoid loop)
+        omics_choices <- unique( append( omics_choices,plus_omics() ) )
         omics_choices <- omics_choices[omics_choices %in% omics_choice_list] # will this fix stale list?
 
         freezeReactiveValue(input, "SI_omics_select")
@@ -192,18 +228,26 @@ mod_omic_selector_server <- function(id, active_omics, def_omics, new_db_trig) {
 
     observeEvent(input$AB_omics_reset, {
       selected_omics$target_omics <- character(0)
-      selected_omics$all_omics <- active_omics()
-    })
+      #selected_omics$all_omics <- active_omics()
+      print("Reset! N target omics: ")
+      print(length(selected_omics$target_omics))
+
+      })
 
     observeEvent(input$AB_omics_def, {
       selected_omics$target_omics <- def_omics()
-      selected_omics$all_omics <- active_omics()
+      print("Default! N target omics: ")
+      print(length(selected_omics$target_omics))
+      #selected_omics$all_omics <- active_omics() #unnesscessary...
     })
 
     observeEvent(
       selected_omics$freeze, {  # new database loaded
+      # selected_omics$target_omics <- isolate(input$SI_omics_select) #include direct selection from protein-box when pressing submit
+      # selected_omics$all_omics <- isolate(active_omics())
       selected_omics$target_omics <- input$SI_omics_select #include direct selection from protein-box when pressing submit
-      selected_omics$all_omics <- active_omics()
+      print("FREEZE!")
+
       })
 
 

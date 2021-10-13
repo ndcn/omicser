@@ -20,16 +20,16 @@ app_server <- function(input, output, session) {
   DB_NAMES <- CONFIG$database_names
   CONDA_ENV <- CONFIG$conda_environment
   DB_ROOT_PATH <- CONFIG$db_root_path
+
   #TODO: curate CONDA_PATH?  Maybe set up an environment variable?
   #
 
   #required = TRUE, or explicitly set the RETICULATE_PYTHON environment variable.
 
   reticulate::use_condaenv(
-    required = TRUE,
-    condaenv =  CONDA_ENV,
-     conda = "auto"
-  )
+      required = TRUE,
+      condaenv = CONDA_ENV,
+      conda = "auto")
 
   ############################ +
   ## Module 4 : "Ingest" Data

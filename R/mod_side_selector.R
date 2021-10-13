@@ -132,39 +132,41 @@ mod_side_selector_server <- function(id, rv_data){
       comp_plot_type = NULL,
       GO = FALSE
 
-
     )
     ### OMICS  =========================================================
 
-    def_omics <- reactive( rv_data$default$omics )
-    new_db_trig <- reactive( rv_data$trigger )
-
-    obs_sub <- mod_subset_selector_server("subset_selector_ui_obs",rv_config,"obs")
-    var_sub <- mod_subset_selector_server("subset_selector_ui_var",rv_config,"var")
-
+    #new_db_trig <- reactive( rv_data$trigger )
     rv_config <- reactive({
       rv_data$config
     })
 
+    obs_sub <- mod_subset_selector_server("subset_selector_ui_obs",rv_config,"obs")
+    var_sub <- mod_subset_selector_server("subset_selector_ui_var",rv_config,"var")
+
+
+    all_omics <- reactive( rv_data$ad$var_names )  #only changes when new database is loaded
+    def_omics <- reactive( rv_data$default$omics )
+
     # filter omics from subsetting
     active_omics <- reactive({
       #this is the maybe subsetting
-      req(rv_data$ad$var_names)
-      omic_js <- isolate(rv_data$ad$var_names)
-      dat_j_grp <- var_sub$set
       # subset var (omics)
-      if (!is.null( dat_j_grp ) ) {
-        dat_js <- var_sub$select
-        dat_js_set <- isolate(rv_data$ad$var[[ dat_j_grp ]])
-        omic_js <- isolate(rv_data$ad$var_names[ dat_js_set %in% dat_js ])
-        #X_data <- X_data[,dat_js_set %in% rv_selections$feat_subsel ]
-      }
-     return(omic_js)
+      if (!is.null( var_sub$set ) ) {
+        if (!is.null( var_sub$select )) {
+          if (length(var_sub$select)>0) {
+            return (all_omics()[ rv_data$ad$var[[ var_sub$set ]]  %in% var_sub$select ])
+          } else {
+            print("everything unselected...")
+          }
+        }
+        }
+
+        return( all_omics() )
 
     })
 
 
-    selected_omics <- mod_omic_selector_server("omic_selector_ui_1", active_omics, def_omics, new_db_trig)
+    selected_omics <- mod_omic_selector_server("omic_selector_ui_1", active_omics, def_omics) #, new_db_trig)
 
 
     ### Outputs =========================================================
@@ -349,22 +351,24 @@ mod_side_selector_server <- function(id, rv_data){
           #     input$SI_obs_subset)
           #TODO: add data_source to config values
           #
-        rv_selections$data_layer <- input$SI_data_layer
 
+        rv_selections$data_layer <- input$SI_data_layer
 
         rv_selections$observ_subset <- obs_sub$set #input$SI_obs_subset
         rv_selections$observ_subsel <- obs_sub$select #input$CB_obs_subsel
+        # #
+        rv_selections$feat_subset <- var_sub$set #input$SI_var_subset #NA # NOT ENABLEDj, using omics selector
+        rv_selections$feat_subsel <- var_sub$select #input$CB_var_subsel #NA # NOT ENABLED
 
         # group (plotting)
         rv_selections$feat_group_by <- input$SI_group_var
         rv_selections$observ_group_by <- input$SI_group_obs
         rv_selections$observ_group_by2 <- input$SI_group_obs2  # could be null
 
-        # #
-        rv_selections$feat_subset <- var_sub$set #input$SI_var_subset #NA # NOT ENABLEDj, using omics selector
-        rv_selections$feat_subsel <- var_sub$select #input$CB_var_subsel #NA # NOT ENABLED
-
         rv_selections$selected_omics <- selected_omics  # value & viz_now & all_active
+
+        rv_selections$GO = TRUE  # use this to trigger the heatmap to update...
+
 
         # DEPRICATE
         rv_selections$data_source <- NA # "X" #DISABLED input$RB_obs_X
