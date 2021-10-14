@@ -34,7 +34,7 @@ Please view the [examples directory of the GitHub repository](https://github.com
 for this project to view:
 
 - R scripts used to curate and execute example datasets. e.g.:
-  - a transcriptomics dataset ([curate_pbmc3k.R](https://github.com/ndcn/omicser/tree/main/examples/curate_pbmc3k.R)) from _10X Genomics_ which is used by the `scanpy` and `seurat` packages as an example 
+  - a transcriptomics dataset ([browse_pbmc3k.R](https://github.com/ndcn/omicser/tree/main/examples/browse_pbmc3k.R)) from _10X Genomics_ which is used by the `scanpy` and `seurat` packages as an example 
   - a proteomics dataset (TBD)
   - a lipidomics dataset (TBD)
   - MORE TO COME
