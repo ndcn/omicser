@@ -26,11 +26,10 @@ and how to allow these questions to be explored using a visualization tool.
 The process of curating your data generally includes the following steps:
 
 1. **Metadata documentation** - define the metadata and context for the dataset
-2. **Raw data ingest** - translate the outputs of your quality-controlled (QC) data to database format; may include defining functions to read/process QC data
-3. **Format as AnnData** - pack data into scanpy's AnnData structure
-4. **Post-processing** - dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.
-5. **Differential expression tables** - compute and/or format existing tables
-6. **Write database** - create database and configuration files and store in a location the browser can locate
+2. **Format and ingest raw data** - translate the outputs of your quality-controlled (QC) data to database format and pack data into scanpy's `AnnData` structure
+3. **Post-processing** - dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.
+4. **Differential expression tables** - compute and/or format existing tables
+5. **Write database** - create database and configuration files and store in a location the browser can locate
 
 Each step of data curation is generally described below,
 referencing the PBMC3k dataset from 10X Genomics as an example.
@@ -67,52 +66,69 @@ In this step,
 you can create a list of metadata about your dataset,
 then use `write_db_meta()` to save the information as `db_meta.yml`.
 
-## 2. Raw data ingest
+## 2. Format and ingest raw data
 
-Ingesting raw data requires the use of the `scanpy` Python package,
-which we'll access using the `reticulate` R package.
-If you have difficulty accessing `scanpy` in this section,
-please see the [Troubleshooting section of 1-Environment Setup](04_configuration.md#troubleshooting).
-
-This step involves reading the PBMC3k data files using `scanpy`'s `read_10x_mtx()` function,
-then writing the data to file in `.h5ad` format.
-This format is the database format we'll use for eventual visualization in the browser.
-First, though, we'll need to perform some additional manipulations to add structure to the data.
-
-## 3. Format as AnnData
+The exact steps required to ingest raw data vary widely depending on your data type
+and how these data are formatted.
+The general goal is to obtain the data necessary to create an  `AnnData` object
+containing all data and metadata required for visualization.
 
 ### `AnnData` Schema
 
-The AnnData scheme requires us to define three pieces of data:
+The `AnnData` format includes three types of data:
 
-  1. *DATA* (\$X): a matrix  of measurements - e.g. transcriptomics - count matrix of cells by genes.
+  1. *DATA* (\$X): a matrix  of measurements - e.g. count matrix of cells by genes (for transcriptomic data).
   2. *_FEATURE_ METADATA* (\$var): a table of `omic` annotation  -  e.g. gene/protein names, families, "highly variable genes", "is marker gene", etc.
-  3. *_SAMPLE_ METADATA* (\$obs): a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experiemntal condition, etc.
+  3. *_SAMPLE_ METADATA* (\$obs): a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experimental condition, etc.
 
-More info here https://cran.r-project.org/web/packages/anndata/readme/README.html 
+More information on this format is available on the [AnnData for R website](https://cran.r-project.org/web/packages/anndata/readme/README.html).
 
-![Anndata scheme](../inst/anndata_for_r.png)
-              
-### Loading the data
+![](../inst/anndata_for_r.png)
 
-In addition to these three pieces differential expression tables need to be pre-computed.
+### Ingesting raw data
 
-Here are some of the key helper functions and he section they fall into.
+For our example, we'll read the PBMC3k data files using the `read_10x_mtx()` function
+from Python's `scanpy` package,
+then writing the data to file in `.h5ad` format.
+We'll access `scanpy` using the `reticulate` R package.
+If you have difficulty accessing `scanpy` in this section,
+please see the [Troubleshooting section of 1-Environment Setup](04_configuration.md#troubleshooting).
 
-Here is an example of loading three data files and then pakaging them with a "helper function" (defined in section #2 of the example curation script) into the `data_list` which will be used by the next stage.
+Please see the other [example curation scripts](https://github.com/ndcn/omicser/tree/main/examples)
+to understand how other data can be processed at this step.
+This may include writing custom helper scripts to standardize data manipulation
+from files resulting from your data generation processes.
 
-#### `setup_database()`
+### Formatting as `AnnData`
 
-The `omicser::setup_database()` function packages the separate tables -- DATA matrix, omic FEATURE METADATA annotations, and SAMPLE METADATA -- into the anndata object.  This function can also take the name of a seurat object file.  
+Our next step will use the raw database we just created
+and add the consistent structure we'll need to orient the browser features later.
+The `omicser::setup_database()` function incorporates the three separate data sources
+(DATA matrix, omic FEATURE METADATA annotations, and SAMPLE METADATA)
+into the `AnnData` object.
 
+For our PBMC3k example, 
+we'll apply the `omicser::setup_database()` function:
 
-``` {r , RM-prep-3, eval=FALSE}
-adata <- omicser::setup_database(database_name=DB_NAME,
-                              data_in=data_list,
-                              db_meta=NULL ,
-                              re_pack=TRUE)
+```{r, eval=FALSE}
+# identify location of raw data
+data_list <- list(object = path(DB_ROOT_PATH, DB_NAME, "core_data.h5ad"))
+
+# create database formatted as AnnData
+adata_2 <- omicser::setup_database(database_name = DB_NAME,
+                                 db_path = DB_ROOT_PATH,
+                                 data_in = data_list,
+                                 db_meta = NULL,
+                                 re_pack = TRUE)
 ```
 
+In this case, all data necessary was ingested in the previous step.
+This results in a database that is consistently formatted,
+and thus able to potentially be combined with other datasets in the future.
+If there were additional metadata files,
+they could be indicated here (e.g., instead of `db_meta = NULL`).
+              
+## 3. Post-processing 
 
 Once we have packed the data into the `anndata` object we can leverage `scanpy` and the `reticulate` python backend to do dimension reduction and clustering. 
 Although this stage is not necessary, it demonstrates the bridge to `cellxgene`.
@@ -127,7 +143,7 @@ sc$tl$leiden(adata)
 sc$tl$umap(adata)
 ```
 
-## 5. Create differential expression tables
+## 4. Create differential expression tables
 
 This is probably the trickiest part of the curation  Fortunately we have some helper functions to help us compute them.  Often -- especially for _prote-_ omic databases -- differential expressions are computed as the output of the instrumentataion by a commercial software.  These algorithms leverage bespoke statistics, so it will be best to reformat those tables. 
 
@@ -177,7 +193,7 @@ diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc
 
 ```
 
-## 6. Write the _DATABASE_
+## 5. Write the _DATABASE_
 
 Finally we write this the anndata data object to our _database_DATABASE_ folder.   In the examples contained in the `vignettes/` folder we defined `DS_ROOT_PATH <- "test_db"`, and `DB_NAME <- "domenico_stem_cell"` .
 
