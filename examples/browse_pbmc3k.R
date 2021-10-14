@@ -53,14 +53,14 @@ library(omicser)
 
 # aggregate metadata for dataset
 db_meta <- list(
-  organism = 'human',
+  organism = "human",
   lab = "",
-  source = "blook monocular cells",
+  source = "peripheral blood mononuclear cells (PBMCs)",
   annotation_database =  "",
   title = "pbmc3k",
   omic_type = "Transcriptomics",
   measurment = "normalized counts",
-  pub = "TBD",
+  pub = "10X Genomics",
   date = format(Sys.time(), "%a %b %d %X %Y"),
   url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k"
 )
