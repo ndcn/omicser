@@ -56,6 +56,7 @@ and [Seurat](https://satijalab.org/seurat/archive/v3.0/pbmc3k_tutorial.html).
 
 The [PBMC3k example script](https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R)
 includes code sections to help you install software/environments, download/organize data, and otherwise prepare for the data curation steps below.
+Please note that the data files from 10X Genomics need to be saved as `.gz` files for them to be read correctly when importing the data.
 
 ## 1. Metadata setup
 
@@ -68,7 +69,15 @@ then use `write_db_meta()` to save the information as `db_meta.yml`.
 
 ## 2. Raw data ingest
 
-FIXME
+Ingesting raw data requires the use of the `scanpy` Python package,
+which we'll access using the `reticulate` R package.
+If you have difficulty accessing `scanpy` in this section,
+please see the [Troubleshooting section of 1-Environment Setup](04_configuration.md#troubleshooting).
+
+This step involves reading the PBMC3k data files using `scanpy`'s `read_10x_mtx()` function,
+then writing the data to file in `.h5ad` format.
+This format is the database format we'll use for eventual visualization in the browser.
+First, though, we'll need to perform some additional manipulations to add structure to the data.
 
 ## 3. Format as AnnData
 
