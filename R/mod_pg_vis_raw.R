@@ -28,6 +28,8 @@ mod_pg_vis_raw_ui <- function(id){
          ),
        hr(style = "border-top: 1px dashed grey;"),
        checkboxInput(ns("CB_scale"), "Scale values?", value = TRUE),
+       hr(style = "border-top: 1px dashed grey;"),
+       checkboxInput(ns("CB_collapse"), "Collapse heatmap?", value = FALSE),
        br()
 
      ), # End of column (6 space)
@@ -265,22 +267,52 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
       #TODO:
       # -limit levels of clustering columns
       # -
-      ht <- ComplexHeatmap::Heatmap(in_mat,
-                                    cluster_rows = in_clust_row,
-                                    cluster_columns = in_clust_col,
-                                    column_split = grp_x,
-                                    #row_split = grp_y,
-                                    top_annotation = ha,
-                                    show_row_names = show_row_names,
-                                    right_annotation = ha2,
-                                    row_names_side = "right",
-                                    #row_names_side = "left",
-                                    row_names_gp = grid::gpar(fontsize = 7),
-                                    name = units_label,
-                                    column_title = x_title,
-                                    row_title = omics_title,
-                                    show_parent_dend_line = TRUE,
-                                    use_raster = FALSE)
+      if(input$CB_collapse) {
+        # collapse heatmap
+        # calculate the cluster for the rows
+        hc <- hclust(dist(in_mat,
+                          method = "euclidian"),
+                     method = "complete")
+
+        # make heatmap with empty matrix
+        ht <- ComplexHeatmap::Heatmap(matrix(ncol = 0,
+                                             nrow = nrow(in_mat)),
+                                      cluster_rows = hc,
+                                      # cluster_columns = in_clust_col,
+                                      # column_split = grp_x,
+                                      #row_split = grp_y,
+                                      top_annotation = ha,
+                                      show_row_names = show_row_names,
+                                      right_annotation = ha2,
+                                      row_names_side = "right",
+                                      #row_names_side = "left",
+                                      row_names_gp = grid::gpar(fontsize = 7),
+                                      name = units_label,
+                                      column_title = x_title,
+                                      row_title = omics_title,
+                                      show_parent_dend_line = TRUE,
+                                      row_dend_reorder = FALSE, # Rico: this is needed to make sure ComplexHeatmap doesn't reorder the rows after clustering
+                                      use_raster = FALSE)
+      } else {
+        # show full heatmap
+        ht <- ComplexHeatmap::Heatmap(in_mat,
+                                      cluster_rows = in_clust_row,
+                                      cluster_columns = in_clust_col,
+                                      column_split = grp_x,
+                                      #row_split = grp_y,
+                                      top_annotation = ha,
+                                      show_row_names = show_row_names,
+                                      right_annotation = ha2,
+                                      row_names_side = "right",
+                                      #row_names_side = "left",
+                                      row_names_gp = grid::gpar(fontsize = 7),
+                                      name = units_label,
+                                      column_title = x_title,
+                                      row_title = omics_title,
+                                      show_parent_dend_line = TRUE,
+                                      row_dend_reorder = FALSE, # Rico: this is needed to make sure ComplexHeatmap doesn't reorder the rows after clustering
+                                      use_raster = FALSE)
+      }
 
       #top_annotation = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:4))),
 #

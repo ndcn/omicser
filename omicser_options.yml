@@ -1,0 +1,6 @@
+database_names:
+    Domenico: domenico_stem_cell
+    Yassene: yassene_lipid
+    Schisto: schisto_lipids
+db_root_path: /home/ricoderks/Documents/LUMC/Projects/omicser/inst/DB
+conda_environment: omxr
