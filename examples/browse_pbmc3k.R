@@ -232,6 +232,9 @@ omicser_options <- list(database_names=DB_NAME,
 
 omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
 
+#### Launch browser ####
+
+omicser::run_app(options = list(launch.browser = TRUE))
 
 #==== create meta-data narrative for rendering in INGEST  =========================================================================
 
