@@ -187,3 +187,9 @@ We are almost there.  In the next section we will cover the configuration which 
 
 In the next step,
 we'll [configure the browser](04_configuration.md).
+
+## Troubleshooting
+
+### Managing files and directories
+
+FIXME: excecuting code within notebooks is tricky, use scripts instead
