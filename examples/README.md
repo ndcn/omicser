@@ -7,7 +7,7 @@
   - install_script.R
   - dev_install_script.R
 - curation scripts:
-  - curate_pbmc3k.R
+  - browse_pbmc3k.R
   - curate_domenico_stem_cell.R
   - others?
 - configuration
