@@ -28,6 +28,8 @@ mod_pg_vis_raw_ui <- function(id){
          ),
        hr(style = "border-top: 1px dashed grey;"),
        checkboxInput(ns("CB_scale"), "Scale values?", value = TRUE),
+       hr(style = "border-top: 1px dashed grey;"),
+       checkboxInput(ns("CB_collapse"), "Collapse heatmap?", value = FALSE),
        br()
 
      ), # End of column (6 space)
