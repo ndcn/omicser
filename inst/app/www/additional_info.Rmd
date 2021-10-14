@@ -8,25 +8,24 @@ editor_options:
 
 ### PLACEHOLDER WARNING!!
 
-> > > > > > > > WARNING!! \<\<\<\<\<\<\<\<\<\<\<\<\<\<\<\<\<\<
+> > > > WARNING!! \<\<\<\<\<
 
 > WIP template
 
 ### This Information HAS NOT been curated
 
 CURATORS: Please _curate_ a detailed explanation of the database
-e.g. the informatin in db_config.yml
+e.g. the informatin in `db_config.yml` could be configured here, such as:
 
 -   organism: human?
 -   lab: ?
 -   annotation_database: uniprot_for_annotation.RData?
--   title: pbmc3k
--   omic_type: Transcriptomics
+-   title: awesome_data
+-   omic_type: <blanketyblank>omics
 -   measurment: normalized counts
 -   pub: TBD
--   date: Tue Sep 14 12:50:45 2021
--   url :
-    "[https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k"](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k")
+-   date: Tue Oct 14 12:50:45 2021
+-   url : [find me](http:google.com)
 
 
 

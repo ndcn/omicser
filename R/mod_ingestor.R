@@ -13,51 +13,32 @@ mod_ingestor_ui <- function(id) {
 
 
   tagList(
-    fluidRow(
-      column(
-        width=12,
-        selectizeInput(
-          ns("SI_database"), "Database",
-          "",multiple=FALSE, options = list(placeholder = " database first")
-          )
-
-        )
-      ),
+    h4("Load databases for browsing and exploration"),
 
     fluidRow(
-      column(
-        width=3,
+        selectizeInput(ns("SI_database"),
+                            "Database",
+                            "", multiple=FALSE, options = list(placeholder = " database first")
+                            ),
         shinyjs::disabled(
-          actionButton(ns("AB_ingest_load"), label = "Load Database")
-        )
-      )
-    ),
-    fluidRow(
-      column(
-        width=3,
-        textOutput(ns("ui_datatype"))
-      )
-    ),
-    mod_additional_info_ui(id = ns("additional_info_ui_ingest")),
+               actionButton(ns("AB_ingest_load"), label = "Load Database")
+                      )
 
-    fluidRow(
-      column(
-        width=6,
-        uiOutput(ns("ui_omics"))
-      )
-    ),
-
-    fluidRow(
-      helpText(
-        HTML("<i>observations</i>  <b> experimental</b>.")
-      )
       ),
+
+    hr(style = "border-top: 1px dashed grey;"),
     fluidRow(
-      column(
-          width=8,
-          textOutput(ns("ui_obs_exp"))
-        )
-    )
+      column(width = 2,
+             offset = 0,
+             "DATABASE",br(),
+             "info"
+      ),
+      column(width = 10,
+             offset = 0,
+             uiOutput(ns("ui_data_meta")),
+      )
+    ),
+    mod_additional_info_ui(id = ns("additional_info_ui_ingest"))
   ) #tagList
 }
 
@@ -80,136 +61,122 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
     # DB_ROOT_PATH <- CONFIG$ds_root_path
     database_names <- DB_NAMES
 
-    db_name = reactiveValues(name=NULL)
+    db_name = reactiveValues(name=NULL,
+                             dir=NULL)
     observe({
       db_name$name <- to_return$db_meta$name
     })
-print("making additinal _info")
+
     mod_additional_info_server("additional_info_ui_ingest",
                                db_name = db_name,
                                DB_ROOT_PATH = DB_ROOT_PATH)
 
-    ## rv_data (to_return) REACTIVE VALUES  ===================
     to_return <- reactiveValues(
       # these values hold the database contents (only reactive because we can choose)
       database_name = NULL,
       omics_type = NULL, # Transcript-omics, Prote-omics, Lipid-omics, Metabol-omics, misc-
-      measure = NULL, #normalized count, concentration, composotion, etc.
 
-      # should this be packed into ad$uns?  written into .yml
-      # provides context and  plot labeling choices...
-      # TODO: makefunctions like ShinyProt "protein_conversions.R"
-      db_meta = list( name = NULL,
-                      omics_type = NULL,
-                      measurment = NULL,
-                      organism = NULL,
-                      publication = NULL,
-                      etc = NULL
-                      ),
+      # TODO:
+      measure = NULL, #normalized count, concentration, composotion, etc.
 
       #  Everything is packed into an anndata object
       ad = NULL,
+      de = NULL,
 
       # omics key feature i.e. genes, proteins, lipids
       omics = NULL, #the omics columnname...
 
       config = NULL,
       default = NULL,
-      meta = NULL,
-      de = NULL,
+
+
       trigger = 0
     )
 
     updateSelectizeInput(session, "SI_database", choices = database_names, selected = DB_NAMES[1], server=TRUE)
 
-## load dataset (observeEvent) ===================
+
+    loaded_data <- reactiveValues(
+        adata = NULL,
+        de = NULL, # Tra
+        conf_def = NULL
+    )
+
+    ## load dataset (observeEvent) ===================
     observeEvent(input$SI_database, {
       req(input$SI_database)
-     print("in observeEvent(input$SI_database, ")
-      db_name <- (input$SI_database)
-      # ad <- anndata::read_h5ad(filename=paste0("data-raw/",db_name,"/omxr_data.h5ad"))
-      # diff_exp = readRDS(file = paste0("data-raw/",db_name,"/diff_expr_table.rds"))
-      #globals: DS_ROOT_PATH
-      #
-      ad <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,db_name,"db_data.h5ad"))
-      diff_exp = readRDS(file = file.path(DB_ROOT_PATH,db_name,"db_de_table.rds"))
-      conf_def <- gen_config_table(ad, db_name, DB_ROOT_PATH)
 
-      omics <- ad$var_names
-      names(omics) <- omics
+      print("making loaded_data rv")
+      db_name$dir <- input$SI_database
+      db_name$name <- names(which(database_names==input$SI_database))
 
-      to_return$de <- diff_exp
+      loaded_data$adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,db_name$dir,"db_data.h5ad"))
+      loaded_data$de <- readRDS(file = file.path(DB_ROOT_PATH,db_name$dir,"db_de_table.rds"))
+      loaded_data$conf_def <- gen_config_table(ad, db_name$dir, DB_ROOT_PATH)
+      })
+      # is there overhead to store these in a reactive conduit?
 
-      # Rico: why is this here?
-      # to_return$omics_type <- to_return$db_meta$omics_type
-      to_return$ad <- ad
-      to_return$omics <- omics
-      # to_return$meta <- omicmeta  # this might be too redundant
 
-      to_return$config <- conf_def$conf
-      to_return$default <- conf_def$def
-
-      to_return$db_meta$name<-db_name
-      to_return$db_meta$omics_type<-conf_def$def$db_meta$omic_type
-      to_return$db_meta$measurment<-conf_def$def$db_meta$measurement
-      to_return$db_meta$organism<-conf_def$def$db_meta$organizm
-      to_return$db_meta$publication<-conf_def$def$db_meta$pub
-      to_return$db_meta$etc<-conf_def$def$db_meta$annotation_database
-
-    })
 
     ## observes ===================
-    print("pre database_name")
 
     observe({
-      if ( !is.null(to_return$database_name) ) {
+      if ( !is.null( db_name$name ) ) {
         shinyjs::enable("AB_ingest_load")
       } else {
         shinyjs::disable("AB_ingest_load")
         print(" no database loaded... .")
       }
     })
-    print("post database_name")
 
     # keep these up to date for side_select..
     # # Should this just be done in     observeEvent(input$SI_database,?
-    observe({
-      #to_return$database_name <- input$SI_database
-      to_return$database_name  <- names(which(database_names==input$SI_database))
-    })
-    # load button :: send the reactive object back to the app...
+
+    # load button :: send the reactive object over to the side selector.
     observeEvent(input$AB_ingest_load, {
       # all other return values set with SI_database
+
+      to_return$de <- loaded_data$de
+      to_return$ad <- loaded_data$adata
+
+      to_return$config <- loaded_data$conf_def$conf
+      to_return$default <- loaded_data$conf_def$def
+
+      to_return$db_meta$name<-db_name$name
+      to_return$db_meta$db_dir<-db_name$dir
+
+      to_return$db_meta$omics_type<-loaded_data$conf_def$def$db_meta$omic_type
+      to_return$db_meta$measurment<-loaded_data$cconf_def$def$db_meta$measurement
+      to_return$db_meta$organism<-loaded_data$cconf_def$def$db_meta$organizm
+      to_return$db_meta$publication<-loaded_data$cconf_def$def$db_meta$pub
+      to_return$db_meta$etc<-loaded_data$cconf_def$def$db_meta$annotation_database
+
       to_return$trigger <- to_return$trigger + 1
+
     })
+
 
     ## render info (TODO:) ===================
 
-# TODO: clean up these renderPrint...
-    output$ui_obs_exp <- renderPrint({
-      obs_choices <- isolate(to_return$ad$obs_keys())
-      if (is.null(obs_choices)) {
-        print("(obs_exp) no datbase loaded")
-      } else {
-        print(paste0("observ exp: ", paste(obs_choices[1:min(10,length(obs_choices))], collapse = ","),"... ") )
-      }
-    })
+    # will this work?  or is the "observing" affecting a reactive with this render?
+    output$ui_data_meta <- renderUI({
+      req(loaded_data$conf_def,
+          db_name$name)
+      #omics_type <- loaded_data$conf_def$def$db_meta$omic_type
+      #type_text <- HTML(paste("omics type: <b>", omics_type, " </b> x "))
+      out_text <- HTML(paste("<b>omics type: </b> ,<i>",
+                             loaded_data$conf_def$def$db_meta$omic_type,
+                             " </i> from the <i>", loaded_data$conf_def$def$db_meta$lab),"</i>")
 
+      ret_tags <-  tagList(
+        h4("Database Info >> "),
+        #"some more text",
+        out_text,
+        br()
+      )
 
+      return( ret_tags )
 
-    # show the factors that have been loaded
-    # # TODO: render a nicely formatted version of the meta data and all this stuff...
-    output$ui_datatype <- renderText({
-      print(paste0("db type - ", to_return$db_meta$omics_type , "-omics"))
-    })
-
-    output$ui_omics <- renderPrint({
-      if (is.null(to_return$omics)) {
-        print("no datbase loaded")
-      } else {
-        omics <- isolate(to_return$omics)
-        print(paste0("Current database omics: ", paste( names(omics)[1:10], collapse = ",")) )
-      }
     })
 
 
