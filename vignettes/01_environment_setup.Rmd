@@ -91,3 +91,30 @@ conda activate omxr
 
 If you have successfully complete all steps in this section,
 you are now ready for [Installation](02_install.md).
+
+## Troubleshooting
+
+### `reticulate` and `conda`
+
+If you have difficulty loading `scanpy` (e.g., "ModuleNotFoundError: No module named 'scanpy'"),
+you can check the details of your Python environment:
+
+```{r}
+reticulate::py_discover_config()
+```
+
+Because you used `reticulate` to create an environment for you 
+with the relevant packages installed,
+you should see your environment name ("omxr")
+listed in the Python paths
+(e.g., `r-miniconda/envs/omxr/bin/python`).
+
+If you do not see your environment listed in the paths,
+you can load your environment:
+
+```{r}
+reticulate::use_condaenv(condaenv = "omxr", required = TRUE)
+```
+
+This may also require you to restart your R session.
+For more information, please see the [`reticulate` website](https://rstudio.github.io/reticulate/index.html)
