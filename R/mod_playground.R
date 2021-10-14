@@ -54,6 +54,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
 # MODULES =================================
     mod_pg_table_server("pg_pg_table_ui_1",rv_data, rv_selections) #active_layer_data ?
+
     mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections,heat_data) #,box_data,varbox_data)
     mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_data, rv_selections, active_layer_data)
     mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_data, rv_selections)
@@ -81,7 +82,6 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       dat_source =NULL,
       data = NULL
     )
-
 
     varbox_data <- reactiveValues(
       x_name = NULL,
@@ -204,6 +204,9 @@ print("in observer: heat_data packer")
 
       X_filtered <- X_data[samples,omics]
 
+
+      X_tab <- as.data.table(X_filtered)
+
       # convert to table for bubbleplot?
       #always keep the sample_ID column
       X_ID = "sample_ID"
@@ -216,30 +219,31 @@ print("in observer: heat_data packer")
       #row.names(tmp_meta) <- samples
       #tmp_meta$sample_ID <- samples
 
-      # create the table
-      hm_data = data.table()
-      #TODO:  we already subsetted, so don't need to loop?  # can't enable "transpose" version until
-      # loop over sample_IDs / subset category
-      # this will be for bubbleplots?
-      keep_cols <- c( in_conf[UI == X_ID]$ID,
-                      in_conf[UI == samp_grp_nm]$ID,
-                      in_conf[UI == rv_selections$observ_subset]$ID,
-                      in_conf[UI == samp_grp_nm]$ID)
 
-
-      grp_ys <- omic_grp
-      names(grp_ys) <- omics
-      for(omic_j in omics){
-        tmp <- tmp_meta[, keep_cols, with = FALSE]
-        colnames(tmp) <- c("X_ID", "X_nm", "sub","group_x")
-        #tmp$X_ID = tmp_meta[[in_conf[UI == X_fact]$ID]]
-        tmp$Y_nm <- omic_j
-
-        tmp$group_y <- grp_ys[omic_j]
-        tmp$val = X_filtered[,omic_j ]
-
-        hm_data = rbindlist(list(hm_data, tmp))
-      }
+      # # create the table
+      # hm_data = data.table()
+      # #TODO:  we already subsetted, so don't need to loop?  # can't enable "transpose" version until
+      # # loop over sample_IDs / subset category
+      # # this will be for bubbleplots?
+      # keep_cols <- c( in_conf[UI == X_ID]$ID,
+      #                 in_conf[UI == samp_grp_nm]$ID,
+      #                 in_conf[UI == rv_selections$observ_subset]$ID,
+      #                 in_conf[UI == samp_grp_nm]$ID)
+      #
+      #
+      # grp_ys <- omic_grp
+      # names(grp_ys) <- omics
+      # for(omic_j in omics){
+      #   tmp <- tmp_meta[, keep_cols, with = FALSE]
+      #   colnames(tmp) <- c("X_ID", "X_nm", "sub","group_x")
+      #   #tmp$X_ID = tmp_meta[[in_conf[UI == X_fact]$ID]]
+      #   tmp$Y_nm <- omic_j
+      #
+      #   tmp$group_y <- grp_ys[omic_j]
+      #   tmp$val = X_filtered[,omic_j ]
+      #
+      #   hm_data = rbindlist(list(hm_data, tmp))
+      # }
 
 # browser()
 #       # TODO:  use data.table melt (or something rather than loop)
@@ -256,12 +260,15 @@ print("in observer: heat_data packer")
 
 
 
-      heat_data$x_names <- unique(hm_data$X_nm)
+
+
+
+      heat_data$x_names <- samp_grp
       heat_data$y_names <- omics
       heat_data$x_group <- samp_grp_nm
 
        heat_data$type <- active_layer_data$layer #   dat_loc
-       heat_data$data <- hm_data
+       heat_data$data <- NULL #hm_data
        heat_data$mat <- X_filtered
        heat_data$obs_meta <- tmp_meta
        heat_data$ready <- TRUE

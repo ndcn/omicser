@@ -258,8 +258,7 @@ bubble_heatmap2 <- function(hm_dat, gg_mat, plot_type,
 
 
   # Scale if required
-  color_range = range(hm_dat$val)
-  color_range = c(-max(abs(range(hm_dat$val))), max(abs(range(hm_dat$val))))
+  color_range = c(-max(abs(range(gg_mat))), max(abs(range(gg_mat))))
 
   if(in_clust_row){
     ####

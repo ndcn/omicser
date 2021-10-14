@@ -94,9 +94,9 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
 
     # Define return rvs: `selected_omics`  -----------------
     selected_omics <- reactiveValues(
-      target_omics=NULL, #isolate(def_omics()),
-      all_omics= NULL, #isolate(active_omics()),
-      freeze = NULL
+                              target_omics=NULL, #isolate(def_omics()),
+                              all_omics= NULL, #isolate(active_omics()),
+                              freeze = NULL
     )
 
 
@@ -106,15 +106,12 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
       selected_omics$all_omics <- active_omics()
       selected_omics$freeze <- 0 #reset ffreeze?
       output$ui_text_warn <- renderUI({ })
-      print("observed active_omics()")
     })
 
 
     observe({
       #req(def_omics() )  # set when database is chosen
       selected_omics$target_omics <- def_omics()
-      print("observed def_omics()")
-
     })
 
     # # REACTIVES    -----------------
@@ -165,8 +162,6 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
       req(selected_omics$all_omics)# don't trip
 
       omics_choices <- selected_omics$target_omics #don't update if the target_omics change (avoid loop)
-      print("observing selected_omics$target_omics ... ")
-      print(paste0("n omics choices...1 ", length(omics_choices)) )
 
       if ( length( unique( omics_choices ) ) >= max_omic_feats ) {
         print("TOOO MANY FEATURES...")
@@ -229,14 +224,12 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
     observeEvent(input$AB_omics_reset, {
       selected_omics$target_omics <- character(0)
       #selected_omics$all_omics <- active_omics()
-      print("Reset! N target omics: ")
       print(length(selected_omics$target_omics))
 
       })
 
     observeEvent(input$AB_omics_def, {
       selected_omics$target_omics <- def_omics()
-      print("Default! N target omics: ")
       print(length(selected_omics$target_omics))
       #selected_omics$all_omics <- active_omics() #unnesscessary...
     })
@@ -246,7 +239,6 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
       # selected_omics$target_omics <- isolate(input$SI_omics_select) #include direct selection from protein-box when pressing submit
       # selected_omics$all_omics <- isolate(active_omics())
       selected_omics$target_omics <- input$SI_omics_select #include direct selection from protein-box when pressing submit
-      print("FREEZE!")
 
       })
 
