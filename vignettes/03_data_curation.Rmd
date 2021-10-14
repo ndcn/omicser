@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 The most crucial step when setting up your own app is _curating_ your data in preparation for loading into the browser.
 There are two reasons for these steps:
 
-- formatting the data into `anndata` files, which creates a database accessible by the browser
+- formatting the data into `AnnData` files, which creates a database accessible by the browser
 - identifying the variables (e.g., columns in a table) that will be browsable, which specifies how data can be selected and/or manipulated in the browswer interface
 
 As the _Curator_ you have the responsibility to understand the specific research questions involved in your data,
@@ -25,28 +25,37 @@ and how to allow these questions to be explored using a visualization tool.
 
 The process of curating your data generally includes the following steps:
 
-1. **Metadata setup** - define the meta-data and context for the dataset
-2. **Raw data ingest** - translate the outputs of your quality-controlled (QC) data to database format
-  - *2a. Optional: Define helper functions* - any manipulations needed to read and process QC data
-3. **Format as AnnData** - pack data into  scanpy's AnnData structure
-4. **Post-processing** - compute relevant marginal quantities, define additional annotation and grouping variables, etc.
-  - *4a. Optional: Dimension reduction* - compute and cluster if needed
+1. **Metadata documentation** - define the metadata and context for the dataset
+2. **Raw data ingest** - translate the outputs of your quality-controlled (QC) data to database format; may include defining functions to read/process QC data
+3. **Format as AnnData** - pack data into scanpy's AnnData structure
+4. **Post-processing** - dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.
 5. **Differential expression tables** - compute and/or format existing tables
-6. **Write database** - create database files and store in a location the browser can locate
+6. **Write database** - create database and configuration files and store in a location the browser can locate
 
-Each step is generally described below.
-Examples of how the process is applied to various data types can be found in the 
+Each step of data curation is generally described below,
+referencing the PBMC3k dataset from 10X Genomics as an example.
+The complete script used for curation can be found in [`examples/browse_pbmc3k.R`](https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R).
+Additional examples of how the data curation process is applied to various data types and use cases can be found in the 
 [`examples/` subdirectory](https://github.com/ndcn/omicser/tree/main/examples).
-Specific scripts referenced below include:
 
-- [`curate_domenico_stem_cell.R`](examples/curate_domenico_stem_cell.R)
-- PMBC
+## Data organization
 
-## Data organization 
+There are three main locations you'll need to specify while curating your data and otherwise preparing your browser app:
 
-FIXME
+- **run directory**: location from which the browser is launched. For the PBMC3k example, we will refer to this as `OMICSER_RUN_DIR`, and create a new directory named `omicser_test/` which will contain the other content for this project. If you plan to make more extensive modifications to the browser, we recommend cloning the [`omicser`](https://github.com/ndcn/omicser) package and using the top level folder for your run directory.
+- **location of data**: folder containing your -omics data, referred to as `RAW_DIR` and set to `raw_data/` in the PBMC3k example. This location is only used in the data curation steps.
+- **location of database**: folder containing the formatted data produced by the data curation steps, packaged to be ingested for visualization in a browser. For the PBMC3k example, it is referred to as `DB_ROOT_PATH` and set as `test_db/` we will be working with a single dataset (and single dataset), though it is possible to visualize multiple datasets with the same browser configuration (i.e., this folder can potentially contain multiple databases).
 
-The first step will be to make a folder to contain your data.  We will call this folder and contents the _DATABASE_ .   Each _DATABASE_ folder that one might want to load into the browser should be in the same path.  e.g. the with the repositories `vignettes/` path there is a `test_db` folder which contains several sub-folder _DATABASES_
+### Example data from 10X Genomics
+
+The example data used for this tutorial are from 
+~3000 peripheral blood mononuclear cells (PBMCs) from a healthy donor.
+Further information about the data is available at the [10X Genomics website](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k).
+These data have also been used in tutorials from [scanpy](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html)
+and [Seurat](https://satijalab.org/seurat/archive/v3.0/pbmc3k_tutorial.html).
+
+The [PBMC3k example script](https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R)
+includes code sections to help you install software/environments, download/organize data, and otherwise prepare for the data curation steps below.
 
 ## 1. Metadata setup
 

@@ -24,10 +24,10 @@ devtools::install_github("ndcn/omicser")
 # location where data, database, and browser files will be created
 dir_create("omicser_test")
 setwd("omicser_test/")
-OMICSER_RUN_DIR <- getwd() # must be absolute path
-DB_ROOT_PATH <- path(OMICSER_RUN_DIR,"test_db")
-DB_NAME <- list("10x PBMC3k" = "pbmc3k")
-RAW_DIR <- path(OMICSER_RUN_DIR,"raw_data", DB_NAME)
+OMICSER_RUN_DIR <- getwd() # run directory; must be absolute path
+DB_ROOT_PATH <- path(OMICSER_RUN_DIR,"test_db") # location of database
+DB_NAME <- list("10x PBMC3k" = "pbmc3k") # name of database(s)
+RAW_DIR <- path(OMICSER_RUN_DIR,"raw_data", DB_NAME) # location of data
 
 #### Download and organize data ###
 
