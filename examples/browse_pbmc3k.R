@@ -65,10 +65,10 @@ db_meta <- list(
   url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k"
 )
 
-# write metadata configuration
+# write metadata configuration to db_meta.yml
 write_db_meta(db_meta, DB_NAME, db_root = DB_ROOT_PATH)
 
-#### Data curation 2. Raw data ingest ####
+#### Data curation 2. Format and ingest raw data ####
 
 # make scanpy functions available
 sc <- reticulate::import("scanpy")
@@ -81,10 +81,8 @@ adata <- sc$read_10x_mtx(
   var_names='gene_symbols',
   # write a cache file for faster subsequent reading
   cache=TRUE)
-# write the file to an object
+# save as file
 adata$write_h5ad(path(DB_ROOT_PATH, DB_NAME,"core_data.h5ad"))
-
-#### Data curation 3. Format as AnnData ####
 
 # identify location of raw data
 data_list <- list(object=path(DB_ROOT_PATH,DB_NAME,"core_data.h5ad"))
@@ -96,7 +94,7 @@ adata <- omicser::setup_database(database_name = DB_NAME,
                                  db_meta = NULL,
                                  re_pack = TRUE)
 
-#### Data curation 4. Post-processing ####
+#### Data curation 3. Post-processing ####
 
 adata$var_names_make_unique()
 # unnecessary if using `var_names='gene_ids'` in `sc.read_10x_mtx`
@@ -149,7 +147,7 @@ if (FALSE){
   adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 }
 
-#### Data curation 5. Differential expression ####
+#### Data curation 4. Differential expression ####
 
 # identify stats
 test_types <- c('wilcoxon','t-test_overestim_var')
@@ -166,7 +164,7 @@ if (FALSE){
 # save DE tables
 saveRDS(diff_exp, file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
-#### Data curation 6. Write database ####
+#### Data curation 5. Write database ####
 
 # write final database
 adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
