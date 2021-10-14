@@ -59,7 +59,12 @@ includes code sections to help you install software/environments, download/organ
 
 ## 1. Metadata setup
 
-FIXME
+Given your intended use for the browser you are developing,
+you may choose develop documentation accessible through the browser itself
+for referencing information about the data's source(s).
+In this step, 
+you can create a list of metadata about your dataset,
+then use `write_db_meta()` to save the information as `db_meta.yml`.
 
 ## 2. Raw data ingest
 
