@@ -130,18 +130,35 @@ they could be indicated here (e.g., instead of `db_meta = NULL`).
               
 ## 3. Post-processing 
 
-Once we have packed the data into the `anndata` object we can leverage `scanpy` and the `reticulate` python backend to do dimension reduction and clustering. 
-Although this stage is not necessary, it demonstrates the bridge to `cellxgene`.
+Now that the data are packed into the the `AnnData` object,
+we can leverage additional functions from `scanpy` and `reticulate` to do perform additional data manipulation,
+such as dimension reduction and clustering.
+
+> You have flexibility in the data curation process regarding which approaches you use,
+> and when those steps are performed.
+> For example, clustering and dimension reduction isn't required to browse data,
+> but is a useful step if you'd like to work with your data in other tools,
+> like [`cellxgene`](https://github.com/chanzuckerberg/cellxgene).
+
+The example below demonstrates dimension reduction with the `AnnData` object using `scanpy`.
+For more information on using `scanpy` in R,
+please see the [troubleshooting section](#troubleshooting).
 
 ``` {r, RM-prep-4, eval=FALSE}
-#==== 4a. dimension reduction - PCA / umap ========================================================
 sc <- import("scanpy")
-# scanpy pre-processing - sc$pp
+# run PCA
 sc$pp$pca(adata)
+# compute neighbor graph
 sc$pp$neighbors(adata)
+## infer clusters
 sc$tl$leiden(adata)
+# compute umap
 sc$tl$umap(adata)
 ```
+
+In addition to dimension reduction, 
+post-processing for the PMBC3k data includes steps to filter, annotate,
+and otherwise prepare the data for visualization.
 
 ## 4. Create differential expression tables
 
@@ -218,3 +235,13 @@ we'll [configure the browser](04_configuration.md).
 ### Managing files and directories
 
 FIXME: excecuting code within notebooks is tricky, use scripts instead
+
+### `scanpy` in R 
+
+`scanpy` was originally written as a Python package,
+but we are using it within R courtesy of the `reticulate` R package.
+The [original `scanpy` documentation](https://scanpy-tutorials.readthedocs.io/en/latest/index.html)
+can help you understand the assumptions and requirements of functions,
+which retain the same names between Python and R.
+For more information on syntax for `scanpy` in R,
+please see [this documentation](https://theislab.github.io/scanpy-in-R/#using-scanpy-functions).
