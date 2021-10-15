@@ -110,7 +110,7 @@ into the `AnnData` object.
 For our PBMC3k example, 
 we'll apply the `omicser::setup_database()` function:
 
-```{r, eval=FALSE}
+```{r, 3-anndata, eval=FALSE}
 # identify location of raw data
 data_list <- list(object = path(DB_ROOT_PATH, DB_NAME, "core_data.h5ad"))
 
@@ -144,7 +144,7 @@ The example below demonstrates dimension reduction with the `AnnData` object usi
 For more information on using `scanpy` in R,
 please see the [troubleshooting section](#troubleshooting).
 
-``` {r, RM-prep-4, eval=FALSE}
+```{r, RM-prep-4, eval=FALSE}
 sc <- import("scanpy")
 # run PCA
 sc$pp$pca(adata)
@@ -205,7 +205,7 @@ We will need to provide the function with the following parameters:
 
 Here's an example which computes a differential expression with a `wilcoxon` test of significance for each _disease_ with respect to the rest of the distease states, AND for each _cell_type_ with-respect-to the "rest of" the _cell_type_ s. 
 
-``` {r RM-prep-5, eval=FALSE}
+```{r, RM-prep-5, eval=FALSE}
 sc <- reticulate::import("scanpy")
 test_types <- c('wilcoxon')
 comp_types <- c('allVrest')
@@ -215,7 +215,7 @@ diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc
 
 The DE table output from this function should be saved to the database folder as `db_de_table.rds`:
 
-```{r}
+```{r, 3-saverds, eval = FALSE}
 saveRDS(diff_exp, file = file.path(DB_ROOT_PATH, DB_NAME, "db_de_table.rds"))
 ```
 
@@ -223,7 +223,7 @@ saveRDS(diff_exp, file = file.path(DB_ROOT_PATH, DB_NAME, "db_de_table.rds"))
 
 The last step of data curation is to write the final database to the database directory as `db_data.h5ad`:
 
-``` {r, RM-prep-6, eval=FALSE}
+```{r, RM-prep-6, eval=FALSE}
 adata$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"db_data.h5ad"))
 ```
 
