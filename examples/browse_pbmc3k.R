@@ -133,7 +133,7 @@ if (FALSE){
 }
 
 ## Dimension reduction - PCA / umap
-#run PCA
+# run PCA
 sc$pp$pca(adata)
 # compute neighbor graph
 sc$pp$neighbors(adata)
@@ -162,12 +162,12 @@ if (FALSE){
 }
 
 # save DE tables
-saveRDS(diff_exp, file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
+saveRDS(diff_exp, file = file.path(DB_ROOT_PATH, DB_NAME, "db_de_table.rds"))
 
 #### Data curation 5. Write database ####
 
 # write final database
-adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
+adata$write_h5ad(filename = file.path(DB_ROOT_PATH, DB_NAME, "db_data.h5ad"))
 
 #### Configuration 1. Database configuration ####
 
@@ -204,7 +204,7 @@ config_list <- list(
 
   layers = c("X","raw"),
 
-  # Dimred
+  # dimension reduction
   dimreds = list(obsm = adata$obsm_keys(),
                  varm = adata$varm_keys()),
 
