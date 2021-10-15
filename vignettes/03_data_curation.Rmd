@@ -162,41 +162,43 @@ and otherwise prepare the data for visualization.
 
 ## 4. Create differential expression tables
 
-This is probably the trickiest part of the curation  Fortunately we have some helper functions to help us compute them.  Often -- especially for _prote-_ omic databases -- differential expressions are computed as the output of the instrumentataion by a commercial software.  These algorithms leverage bespoke statistics, so it will be best to reformat those tables. 
+The ability to identify which -omics features differ among categories is perhaps the most important part of data curation.
+However, it is also one of the trickiest parts,
+as some data generation services (especially for proteomics)
+compute differential expression (DE) using commercial software associated with instrumentation.
+These algorithms leverage bespoke statistics,
+with unknown assumptions about the statistical tests involved,
+so it will be best to reformat those tables. 
+Additionally, the schema below provides a way to standardize comparisons across datasets,
+which is important for browsers drawing from multi-omics data.
 
 ### DE Table Schema
 
-Most proteomic, metabelomic and lipidomic data will have differential calculations at the output of the instrumentation (which leverages know statastical assumptions of the quantifications) we can also use scanpys tools to compute differential expression.  The diff_exp tables will be needed for volcano plots either way.
+The differential expression table has the following fields:
 
-The differential expression table has these fields:
-
-   - `group` - the comparison   {names}V{reference}
+   - `group` - the comparison, using the format {names}V{reference} from fields below
    - `names` - what are we comparing?
-   - `obs_name`  - name of the meta data variable
-   - `test_type` - what statistic are we using
-   - `reference` - the denomenator. or the condition we are comparing expressions values to
-   - `comp_type` - grpVref or grpVrest. rest is all other conditions
+   - `obs_name`  - name of the metadata variable
+   - `test_type` - what statistic are we using?
+   - `reference` - the denominator, or the condition against which we are comparing expressions values
+   - `comp_type` - same format as `group`, as grpVref or grpVrest, with rest representing all other conditions
    - `logfoldchanges` - log2(name/reference)
    - `scores` - statistic score
-   - `pvals` - pvalues from the stats test. e.g. t-test
+   - `pvals` - pvalues from the statisticals test, e.g. t-test
    - `pvals_adj` - adjusted pvalue (Q)
    - `versus` - label which we will choose in the browser
-   
- 
-### omicser::compute_de_table()
 
-In [`R/pre_process_helpers.R`](../R/pre_process_helpers.R) theres a function which leverages `scanpy` and the `anndata` format we have packed to do differential expression.  We just need to pass a few quantites and it returns a properly formatted differential expression table.
+### Computing the DE table
 
-omicser::compute_de_table()
-
-parameters:
+The `omicser::compute_de_table()` leverages `scanpy` functions and the `AnnData` object to compute differential expression and provide a properly formatted DE table.
+We will need to provide the function with the following parameters:
 
   - `adata` - the anndata object
-  - `comp_types` - what kind of comparisons? there are two types
+  - `comp_types` - what kind of comparisons? there are two types:
     - "allVrest" which takes each of our experimental conditions in turn and compares against the "rest" of the data.
     - "{a}V{b}" or "firstgroupVsecondgroup" which compares the experimental condition "firstgroup" against "secondgroup"
-  - `test_types` - statistical tests.  See the examples or `scanpy` documentation for which test types are available.
-  - `obs_names` -name of the adata$obs column defining the comparision groups
+  - `test_types` - statistical tests. See our examples or `scanpy` documentation for which test types are available.
+  - `obs_names` - name of the `adata$obs` column defining the comparision groups
   - `sc` - the scanpy data object we imported with `reticulate`
 
 Here's an example which computes a differential expression with a `wilcoxon` test of significance for each _disease_ with respect to the rest of the distease states, AND for each _cell_type_ with-respect-to the "rest of" the _cell_type_ s. 
@@ -207,7 +209,6 @@ test_types <- c('wilcoxon')
 comp_types <- c('allVrest')
 obs_names <- c('disease','cell_type')
 diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc)
-
 ```
 
 ## 5. Write the _DATABASE_
