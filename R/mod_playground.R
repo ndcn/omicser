@@ -18,12 +18,12 @@ mod_playground_ui <- function(id){
       id = 'tab',
       # summary stats tab
       tabPanel(
-        title = "Quantities", value = 'raw',
+        title = "Expression", value = 'raw',
         mod_pg_vis_raw_ui(id=ns("pg_vis_raw_ui_1"))
       ),
       # volcano tab
       tabPanel(
-        title = "Differential",value = 'comp',
+        title = "Diff. Expr.",value = 'comp',
         mod_pg_vis_comp_ui(id=ns("pg_vis_comp_ui_1"))
 
       ),
@@ -53,9 +53,9 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
     ns <- session$ns
 
 # MODULES =================================
-    mod_pg_table_server("pg_pg_table_ui_1",rv_data, rv_selections) #active_layer_data ?
+    mod_pg_table_server("pg_pg_table_ui_1",rv_data, rv_selections, active_layer_data)
 
-    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections,heat_data) #,box_data,varbox_data)
+    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections, heat_data, agg_heat) #,box_data,varbox_data)
     mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_data, rv_selections, active_layer_data)
     mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_data, rv_selections)
 
@@ -75,22 +75,6 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       ready = FALSE
     )
 
-    box_data <- reactiveValues(
-      x_name = NULL,
-      y_name = NULL,
-      colors = NULL,
-      dat_source =NULL,
-      data = NULL
-    )
-
-    varbox_data <- reactiveValues(
-      x_name = NULL,
-      y_name = NULL,
-      colors = NULL,
-      dat_source =NULL,
-      data = NULL
-    )
-
     # TODO:  get units/label for dat_loc
     # grab the right matrix for the heatmap and for the volcano plot distribution)
     active_layer_data <- reactiveValues(
@@ -98,23 +82,47 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       data = NULL
     )
 
+
+    agg_heat <- reactive({
+      req(heat_data$mat)
+      # START FIX HERE
+      # use data.table to do the aggregating over the grouping variable
+      print("aggregating agg_heat()")
+      in_hdata <- as.data.table(heat_data$mat)
+      in_hdata$grp <- as.character(heat_data$x_names)
+
+      # in_hdata$X_ID <- rownames(heat_data$mat)
+      # om_cols <- colnames(in_hdata)
+      # agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp, .SDcols = -c("X_ID")]
+      agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp]
+      tmp <- agg_hdata$grp
+      agg_mat <- t(as.matrix(agg_hdata[,grp:=NULL]))
+      colnames(agg_mat) <- tmp
+      # make sure we have colunn names...
+
+      return( agg_mat )
+    }
+    )
+
+
+
 # OBSERVES =================================
 # active_layer_data observe =================================
     observe({
-      req(rv_data$ad,
+      req(rv_data$anndata,
           rv_selections$data_layer)
-
+print("start observer: active_layer")
       layer <- rv_selections$data_layer
       if (layer=="X") {
-        X_data <- rv_data$ad$X
+        X_data <- rv_data$anndata$X
       } else if (layer == "raw") {
-        X_data <- rv_data$ad$raw$X
+        X_data <- rv_data$anndata$raw$X
       } else { #} if (dat_loc == "layers") { #must be a layer
-        is_layer <- any(layer %in% rv_data$ad$layers$keys())
-        #is_layer <- any(rv_data$ad$layers$keys()==dat_loc)
+        is_layer <- any(layer %in% rv_data$anndata$layers$keys())
+        #is_layer <- any(rv_data$anndata$layers$keys()==dat_loc)
         if (is_layer) {
-          #X_data <- isolate(rv_data$ad$layers[[dat_loc]]) #isolate
-          X_data <- rv_data$ad$layers$get(layer)
+          #X_data <- isolate(rv_data$anndata$layers[[dat_loc]]) #isolate
+          X_data <- rv_data$anndata$layers$get(layer)
         } else {
           print("data not found")
           X_data <- NULL
@@ -122,20 +130,20 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       }
 
       if(is.null(dimnames(X_data)[[1]]) & !is.null(X_data) ){
-        dimnames(X_data) <- list(rv_data$ad$obs_names,rv_data$ad$var_names)
+        dimnames(X_data) <- list(rv_data$anndata$obs_names,rv_data$anndata$var_names)
       }
 
       active_layer_data$layer <- layer
       active_layer_data$data <- X_data # is a matrix
+      print("set -------> active_layer")
 
     })
 
 # heat_data observe =================================
     observe({
-      req(rv_data$ad,
+      req(rv_data$anndata,
           rv_selections$data_layer,
           active_layer_data$data)
-
 
       # NOTES:
       #    this packs a reactive list of data for generating the heatmap.
@@ -149,10 +157,9 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       #
       #  have already set a reactive active_layer_data$data -> X_data
       #
-print("in observer: heat_data packer")
+    print("in observer: heat_data packer")
       in_conf <- rv_data$config
-      dat_source <- isolate(rv_selections$data_layer)
-
+      dat_source <- rv_selections$data_layer
       # not using the viz_now... for now
       X_data <- active_layer_data$data
 
@@ -160,50 +167,41 @@ print("in observer: heat_data packer")
       omics <- rv_selections$selected_omics$all_omics
       # # send signal back to side selector...
       # rv_selections$selected_omics$freeze <- FALSE
-      omics_idx <- which(rv_data$ad$var_names %in% omics)
+      omics_idx <- which(rv_data$anndata$var_names %in% omics)
 
       #   - subset omics... bug above :: heat_data observe =================================
-      #omics_idx <- which(rv_data$ad$var[[rv_selections$feat_subset]] %in% rv_selections$feat_subsel)
-      #omics <- rv_data$ad$var_names[omics_idx]
+      #omics_idx <- which(rv_data$anndata$var[[rv_selections$feat_subset]] %in% rv_selections$feat_subsel)
+      #omics <- rv_data$anndata$var_names[omics_idx]
 
-      omic_grp_nm <- rv_selections$feat_group_by
-      # st var (omics)
-      if (!is.na( omic_grp_nm ) | !is.null(omic_grp_nm)) {
-        omic_grp <- rv_data$ad$var[[ omic_grp_nm ]][omics_idx]
-      } else { #subset to selected_omics since there was NO meta-category to subset against
-        omic_grp <- (omics_idx>0) #hack a single group...
-      }
-
-
-
-
+      # omic_grp_nm <- rv_selections$feat_group_by
+      # # st var (omics)
+      # if (!is.na( omic_grp_nm ) | !is.null(omic_grp_nm)) {
+      #   omic_grp <- rv_data$anndata$var[[ omic_grp_nm ]][omics_idx]
+      # } else { #subset to selected_omics since there was NO meta-category to subset against
+      #   omic_grp <- (omics_idx>0) #hack a single group...
+      # }
 
       # samples...
       # 1. subset
-
       # 2. grouping
 
       # FILTER the data matrix
       #
 
-
-
-
       #   - subset samples :: heat_data observe =================================
-      samples_idx <- which(rv_data$ad$obs[[rv_selections$observ_subset]] %in% rv_selections$observ_subsel)
-      samples <- rv_data$ad$obs_names[samples_idx]
+      samples_idx <- which(rv_data$anndata$obs[[rv_selections$observ_subset]] %in% rv_selections$observ_subsel)
+      samples <- rv_data$anndata$obs_names[samples_idx]
 
       samp_grp_nm <- rv_selections$observ_group_by
 
       if (!is.na( samp_grp_nm ) | !is.null(samp_grp_nm)) {
-        samp_grp <- rv_data$ad$obs[[ samp_grp_nm ]][samples_idx]
+        samp_grp <- rv_data$anndata$obs[[ samp_grp_nm ]][samples_idx]
       } else { #subset to all samles since there was NO meta-category to subset against (SHOULD NEVER HAPPEN)
         samp_grp <- (samples_idx>0) #hack a single group...
       }
 
 
       X_filtered <- X_data[samples,omics]
-
 
       X_tab <- as.data.table(X_filtered)
 
@@ -213,8 +211,8 @@ print("in observer: heat_data packer")
       # ---------- : prep data_matrix for heat_map/bubble
       X_fact <- rv_selections$observ_group_by
 
-      tmp_meta <- as.data.table(rv_data$ad$obs) # can probably just access ad$obs directly since we don' tneed it to be a data_table?
-      #row.names(tmp_meta) <- rv_data$ad$obs_names
+      tmp_meta <- as.data.table(rv_data$anndata$obs) # can probably just access anndata$obs directly since we don' tneed it to be a data_table?
+      #row.names(tmp_meta) <- rv_data$anndata$obs_names
       tmp_meta <- tmp_meta[samples_idx,]
       #row.names(tmp_meta) <- samples
       #tmp_meta$sample_ID <- samples
@@ -258,9 +256,7 @@ print("in observer: heat_data packer")
 #       xtab2$group_x <- samp_grp
 #
 
-
-
-
+      print("---->  finishing: heat_data packer")
 
 
       heat_data$x_names <- samp_grp
@@ -273,7 +269,22 @@ print("in observer: heat_data packer")
        heat_data$obs_meta <- tmp_meta
        heat_data$ready <- TRUE
        heat_data$selected_omics <- rv_selections$selected_omics
+
+       print("---->  DONE: heat_data packer")
+
     })
+
+
+
+
+    #TODO:  split head_data into
+    #
+    #   agg_mat
+    #   filt_mat
+    #
+    #       heat_data$aggregated
+    #       heat_data$full
+
 
 
   })

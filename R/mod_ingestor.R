@@ -46,7 +46,7 @@ mod_ingestor_ui <- function(id) {
 #' ingestor Server Functions
 #'
 #' @noRd
-mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
+mod_ingestor_server <- function(id,db_names, db_root_path) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -56,10 +56,10 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
     # global from omxr_options.yml (app_server.R)
     # CONFIG <- configr::read.config( "./omxr_options.yml" )
     #
-    # DB_NAMES <- CONFIG$database_names
+    # db_names <- CONFIG$database_names
     # CONDA_ENV <- CONFIG$conda_environment
-    # DB_ROOT_PATH <- CONFIG$ds_root_path
-    database_names <- DB_NAMES
+    # db_root_path <- CONFIG$ds_root_path
+    database_names <- db_names
 
     db_name = reactiveValues(name=NULL,
                              dir=NULL)
@@ -69,7 +69,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
 
     mod_additional_info_server("additional_info_ui_ingest",
                                db_name = db_name,
-                               DB_ROOT_PATH = DB_ROOT_PATH)
+                               db_root_path = db_root_path)
 
     to_return <- reactiveValues(
       # these values hold the database contents (only reactive because we can choose)
@@ -77,10 +77,10 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
       omics_type = NULL, # Transcript-omics, Prote-omics, Lipid-omics, Metabol-omics, misc-
 
       # TODO:
-      measure = NULL, #normalized count, concentration, composotion, etc.
+      omic_units = NULL, #normalized count, concentration, composotion, etc.
 
       #  Everything is packed into an anndata object
-      ad = NULL,
+      anndata = NULL,
       de = NULL,
 
       # omics key feature i.e. genes, proteins, lipids
@@ -93,11 +93,11 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
       trigger = 0
     )
 
-    updateSelectizeInput(session, "SI_database", choices = database_names, selected = DB_NAMES[1], server=TRUE)
+    updateSelectizeInput(session, "SI_database", choices = database_names, selected = db_names[1], server=TRUE)
 
 
     loaded_data <- reactiveValues(
-        adata = NULL,
+        anndata = NULL,
         de = NULL, # Tra
         conf_def = NULL
     )
@@ -109,12 +109,33 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
       print("making loaded_data rv")
       db_name$dir <- input$SI_database
       db_name$name <- names(which(database_names==input$SI_database))
+      loaded_data$de <- readRDS(file = file.path(db_root_path,db_name$dir,"db_de_table.rds"))
+      ad <- anndata::read_h5ad(filename=file.path(db_root_path,db_name$dir,"db_data.h5ad"))
+      loaded_data$anndata <- ad
+      loaded_data$conf_def <- gen_config_table(ad, db_name$dir, db_root_path)
+    })
+    # is there overhead to store these in a reactive conduit?
 
-      loaded_data$adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,db_name$dir,"db_data.h5ad"))
-      loaded_data$de <- readRDS(file = file.path(DB_ROOT_PATH,db_name$dir,"db_de_table.rds"))
-      loaded_data$conf_def <- gen_config_table(ad, db_name$dir, DB_ROOT_PATH)
-      })
-      # is there overhead to store these in a reactive conduit?
+    ## render info (TODO:) ===================
+
+    # will this work?  or is the "observing" affecting a reactive with this render?
+    output$ui_data_meta <- renderUI({
+      req(loaded_data$conf_def,
+          db_name$name)
+      #omics_type <- loaded_data$conf_def$def$db_meta$omic_type
+      #type_text <- HTML(paste("omics type: <b>", omics_type, " </b> x "))
+      out_text <- HTML(paste("<b>omics type: </b> ,<i>",
+                             loaded_data$conf_def$def$db_meta$omic_type,
+                             " </i> from the <i>", loaded_data$conf_def$def$db_meta$lab),"</i>")
+
+      ret_tags <-  tagList(
+        h4("Database Info >> "),
+        #"some more text",
+        out_text,
+        br()
+      )
+      return( ret_tags )
+    })
 
 
 
@@ -137,7 +158,7 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
       # all other return values set with SI_database
 
       to_return$de <- loaded_data$de
-      to_return$ad <- loaded_data$adata
+      to_return$anndata <- loaded_data$anndata
 
       to_return$config <- loaded_data$conf_def$conf
       to_return$default <- loaded_data$conf_def$def
@@ -155,29 +176,6 @@ mod_ingestor_server <- function(id,DB_NAMES, DB_ROOT_PATH) {
 
     })
 
-
-    ## render info (TODO:) ===================
-
-    # will this work?  or is the "observing" affecting a reactive with this render?
-    output$ui_data_meta <- renderUI({
-      req(loaded_data$conf_def,
-          db_name$name)
-      #omics_type <- loaded_data$conf_def$def$db_meta$omic_type
-      #type_text <- HTML(paste("omics type: <b>", omics_type, " </b> x "))
-      out_text <- HTML(paste("<b>omics type: </b> ,<i>",
-                             loaded_data$conf_def$def$db_meta$omic_type,
-                             " </i> from the <i>", loaded_data$conf_def$def$db_meta$lab),"</i>")
-
-      ret_tags <-  tagList(
-        h4("Database Info >> "),
-        #"some more text",
-        out_text,
-        br()
-      )
-
-      return( ret_tags )
-
-    })
 
 
 

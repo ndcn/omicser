@@ -43,6 +43,9 @@ usethis::use_dev_package("ComplexHeatmap",remote='jokergoo/ComplexHeatmap')
 usethis::use_package("plotly")
 
 usethis::use_package("anndata")
+usethis::use_package("magick")
+usethis::use_package("Cairo")
+
 
 # DISABLED for now
 # usethis::use_package("BiocManager")

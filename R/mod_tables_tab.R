@@ -55,13 +55,13 @@ mod_tables_tab_server <- function(id,rv_data, rv_selections){
     ns <- session$ns
 
     dt_obs <- reactive({
-      req(rv_data$ad)
-        rv_data$ad$obs
+      req(rv_data$anndata)
+        rv_data$anndata$obs
     })
 
     dt_var <- reactive({
-      req(rv_data$ad)
-      rv_data$ad$var
+      req(rv_data$anndata)
+      rv_data$anndata$var
     })
 
     dt_de <- reactive({

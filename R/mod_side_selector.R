@@ -118,18 +118,18 @@ mod_side_selector_server <- function(id, rv_data){
       feat_subset = NULL,   # NOT ENABLEDj, using omics selector
       feat_subsel = NULL,  # NOT ENABLED
 
-      #DISABLED.
-      #TODO: depricate all these
-      group_action = NULL,
-      data_source = NULL,
-      plot_x = NULL,
-      plot_y = NULL,
-      plot_var_x = NULL,
-      plot_var_y = NULL,
-      plot_feats = NULL,
-      # TODO:  make this conditional on what kind of data is loaded.. and just a single plot type
-      raw_plot_type = NULL,
-      comp_plot_type = NULL,
+      # #DISABLED.
+      # #TODO: depricate all these
+      # group_action = NULL,
+      # data_source = NULL,
+      # plot_x = NULL,
+      # plot_y = NULL,
+      # plot_var_x = NULL,
+      # plot_var_y = NULL,
+      # plot_feats = NULL,
+      # # TODO:  make this conditional on what kind of data is loaded.. and just a single plot type
+      # raw_plot_type = NULL,
+      # comp_plot_type = NULL,
       GO = FALSE
 
     )
@@ -144,7 +144,7 @@ mod_side_selector_server <- function(id, rv_data){
     var_sub <- mod_subset_selector_server("subset_selector_ui_var",rv_config,"var")
 
 
-    all_omics <- reactive( rv_data$ad$var_names )  #only changes when new database is loaded
+    all_omics <- reactive( rv_data$anndata$var_names )  #only changes when new database is loaded
     def_omics <- reactive( rv_data$default$omics )
 
     # filter omics from subsetting
@@ -154,7 +154,7 @@ mod_side_selector_server <- function(id, rv_data){
       if (!is.null( var_sub$set ) ) {
         if (!is.null( var_sub$select )) {
           if (length(var_sub$select)>0) {
-            return (all_omics()[ rv_data$ad$var[[ var_sub$set ]]  %in% var_sub$select ])
+            return (all_omics()[ rv_data$anndata$var[[ var_sub$set ]]  %in% var_sub$select ])
           } else {
             print("everything unselected...")
           }
@@ -349,9 +349,8 @@ mod_side_selector_server <- function(id, rv_data){
           # route the chosen data type out...
           # req(input$CB_obs_subsel,
           #     input$SI_obs_subset)
-          #TODO: add data_source to config values
           #
-
+print("mod_side_selector:  pack rv_selections")
         rv_selections$data_layer <- input$SI_data_layer
 
         rv_selections$observ_subset <- obs_sub$set #input$SI_obs_subset
@@ -366,18 +365,19 @@ mod_side_selector_server <- function(id, rv_data){
         rv_selections$observ_group_by2 <- input$SI_group_obs2  # could be null
 
         rv_selections$selected_omics <- selected_omics  # value & viz_now & all_active
+        rv_selections$GO = TRUE
 
-        rv_selections$GO = TRUE  # use this to trigger the heatmap to update...
-
-
-        # DEPRICATE
-        rv_selections$data_source <- NA # "X" #DISABLED input$RB_obs_X
-        rv_selections$plot_x <- NA # DISABLED input$SI_x
-        rv_selections$plot_y <- NA # DISABLED....input$SI_y
-        rv_selections$group_action <- NA #DISABLED input$RB_none_or_grp
-        rv_selections$plot_var_x <- NA # NOT ENABLED#input$SI_var_x
-        rv_selections$plot_var_y <- NA # NOT ENABLED input$SI_var_y
-        rv_selections$plot_feats <- NA # NOT ENABLED input$CB_xy_var_select
+        # rv_selections$GO = TRUE  # use this to trigger the heatmap to update...
+        #
+        #
+        # # DEPRICATE
+        # rv_selections$data_source <- NA # "X" #DISABLED input$RB_obs_X
+        # rv_selections$plot_x <- NA # DISABLED input$SI_x
+        # rv_selections$plot_y <- NA # DISABLED....input$SI_y
+        # rv_selections$group_action <- NA #DISABLED input$RB_none_or_grp
+        # rv_selections$plot_var_x <- NA # NOT ENABLED#input$SI_var_x
+        # rv_selections$plot_var_y <- NA # NOT ENABLED input$SI_var_y
+        # rv_selections$plot_feats <- NA # NOT ENABLED input$CB_xy_var_select
 
 
     })

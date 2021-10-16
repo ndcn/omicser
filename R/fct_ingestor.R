@@ -46,7 +46,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     # default list of omics for subsetting/choosing
 
 
-    # A observation meta (ad$obs)  ----------------------------------------
+    # A observation meta ($obs)  ----------------------------------------
     obs_meta <- as.data.table(ad_in$obs)
     for (i_meta in colnames(obs_meta)) {
       obs_meta[[i_meta]] = unlist(obs_meta[[i_meta]]) # unlist and refactor
@@ -63,7 +63,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     # Start making config data.table
     omxr_conf <- data.table()
 
-    # A- "observations"  (ad$obs) pack in the observations.
+    # A- "observations"  (ad_in$obs) pack in the observations.
     for (i_meta in meta_to_include) {
       tmp_conf <- data.table(
         ID = i_meta, UI = i_meta, fID = NA, fUI = NA,
@@ -95,7 +95,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
       omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
 
-    # B variable annotations (var-meta; ad$var)  ----------------------------------------
+    # B variable annotations (var-meta; ad_in$var)  ----------------------------------------
     var_to_include <- ad_in$var_keys()# the first one should be "omics
     for (i_var in var_to_include) {
       tmp_conf <- data.table(
@@ -166,7 +166,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     }
 
 
-    # D- dimension reductions (ad$varm ) ---------------------
+    # D- dimension reductions (ad_in$varm ) ---------------------
     dimreds <- conf_list$dimreds
     dr_to_include <- names(dimreds) # the first one should be "omics
     for (i_dr in dr_to_include) {
@@ -201,7 +201,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
       }
     }
 
-    # E- matrix layers (ad$layers ) ---------------------
+    # E- matrix layers (ad_in$layers ) ---------------------
     lr_to_include <- conf_list$layers
     for (i_lr in lr_to_include) {
       tmp_conf <- data.table(

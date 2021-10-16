@@ -55,62 +55,111 @@ mod_pg_table_ui <- function(id){
 #' @param rv_selections side selector reactives
 #' @importFrom DT JS datatable renderDT dataTableProxy selectRows
 #' @noRd
-mod_pg_table_server <- function(id, rv_data, rv_selections) {
+mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+
     #create an omics-annotation table that includes differential expressions
-    my_table <- reactive({
-      req(rv_data$de)
+    omic_table <- reactiveValues(
+      dt = NULL
+    )
 
-      # # not sure why, but processing this as data.table causes the reactive
-      # # return to jam pu the DT::datatable
-      # # TODO:  find bug and remove dplyr
-      # join_data <- as.data.table(rv_data$ad$var)[]
-      # fix_cols <- names(join_data)[sapply(join_data, is.factor)]
-      # join_data <- join_data[,(fix_cols):= lapply(.SD, as.character), .SDcols = fix_cols]
-      # wide_data <- dcast(as.data.table(rv_data$de),
-      #                    names ~ group+test_type,
-      #                     value.var = c("logfoldchanges", "scores" ,"pvals","pvals_adj","versus"))
-      # #
-      # comp_data <- join_data[wide_data,on=c("omics_name"="names"),nomatch=0]
+   #proxy = dataTableProxy('table_over_info')
+    observe({
+      print("made omic_table$dt")
+      req(rv_data$anndata)
+      rv_selections$GO
 
+      # create the table to render
+      omics <- rv_selections$selected_omics$all_omics
+      omics_idx <- which(rv_data$anndata$var_names %in% omics)
 
-      join_data <- rv_data$ad$var %>% dplyr::mutate(dplyr::across(where(is.factor), as.character ))
+      join_data <- rv_data$anndata$var %>%
+                        dplyr::mutate(dplyr::across(where(is.factor), as.character ))
 
-      wide_data <- rv_data$de %>% tidyr::pivot_wider(
-                    id_cols = names,
-                    names_from = c(group,test_type),
-                    values_from = c(logfoldchanges, scores ,pvals,pvals_adj,versus),
-                    names_repair = "check_unique"
-                  )
+      wide_data <- rv_data$de %>%
+                        tidyr::pivot_wider(id_cols = names,
+                                            names_from = c(group,test_type),
+                                            values_from = c(logfoldchanges, scores ,pvals,pvals_adj,versus),
+                                            names_repair = "check_unique"
+                                          )
       comp_data <- join_data %>%
-        dplyr::inner_join(wide_data,by = c("omics_name"="names") )
-
+                        dplyr::inner_join(wide_data,by = c("omics_name"="names") )
       #comp_data <- as.data.frame(comp_data1)
       rownames(comp_data) <- comp_data$omics_name
 
-      return(comp_data)
+      # SET THE DATA
+      omic_table$dt <- comp_data
+
+      #reset hover if we have a new dataset
+      table_sel_values$omic_expr_values =NULL
+      table_sel_values$omic_name =NULL
     })
 
-   #proxy = dataTableProxy('table_over_info')
 
+    # Prepare data for boxplots
+    omic_expr_values <- reactive({
+      print("omic_expr_values()  reactive")
+
+      validate(
+        need(
+          input$table_over_info_rows_selected,
+          "Select an omic to view plots"
+        )
+      )
+
+      selected <- input$table_over_info_rows_selected
+      omic_name <- omic_table$dt$omics_name[selected]
+
+      data_vec <- active_layer_data$data[,omic_name]
+
+      grouping_var <- rv_selections$observ_group_by
+
+      # have NOT subsetted samples
+      omic_counts <- data.frame( rv_data$anndata$obs_names,
+                                 data_vec,
+                                 rv_data$anndata$obs[[grouping_var]] )
+
+
+      colnames(omic_counts) <- c("id", "val","grp")
+
+
+      return(omic_counts)
+
+
+    })
+
+
+    # force waiting for a selection row
+    table_sel_values <- reactiveValues(
+      omic_expr_values = NULL,
+      omic_name =NULL
+    )
+
+    observeEvent(input$table_over_info_rows_selected, {
+      print("EVENT >> input$table_over_info_rows_selected")
+      table_sel_values$omic_expr_values <- omic_expr_values()
+      table_sel_values$omic_name <- omic_table$dt$omics_name[input$table_over_info_rows_selected]
+    })
 
     output$table_over_info <- renderDT({
-      req(rv_data$omics)
-
-      dat <- my_table()
+      req(rv_data$de,
+          omic_table$dt)
+      print("in renderDT (pg_table)")
+      dt <- omic_table$dt
 
       # this is a stub for collecting for teh side selector...
-      #data.table(dat)
+      #dta.table(dt)
       # # re-index based on our side-selector proteins... and highlight them
       # # after reindexing dataset, highlight rows of already selected proteins
-      # proxy %>% selectRows(row.names(dat)[dat$omics_name %in% isolate(rv_data$omics)])
-      #order_col <- c(which(colnames(dat)=="omics_name"), which(colnames(data)==rv_selections$plot_var_x))
+      # proxy %>% selectRows(row.names(dt)[dt$omics_name %in% isolate(rv_data$omics)])
+      #order_col <- c(which(colnames(dt)=="omics_name"), which(colnames(data)==rv_selections$plot_var_x))
 
       # only text fields might be too long....
-      select_char_target <-  which(sapply(dat, is.character))  #filter these ones..
+      select_char_target <-  which(sapply(dt, is.character))  #filter these ones..
       names(select_char_target) <- NULL
-      select_num_target <-  which(sapply(dat, is.numeric))  #filter these ones..
+      select_num_target <-  which(sapply(dt, is.numeric))  #filter these ones..
       names(select_num_target) <- NULL
 
       #dynamically display the shortened version
@@ -147,7 +196,7 @@ mod_pg_table_server <- function(id, rv_data, rv_selections) {
       #   "}",
       #   "}")
 
-      datatable(dat,
+      datatable(dt,
               class   = 'row-border order-column stripe hover display',
               rownames = TRUE, # need to add +1 to column indexes
               extensions = "Buttons",
@@ -182,69 +231,38 @@ mod_pg_table_server <- function(id, rv_data, rv_selections) {
     )
 
     output$table_header <- renderUI({
-      req(rv_data$omics_type)
-      datname <- rv_data$omics_type
+      req(rv_data$db_meta$omics_type)
+      datname <- rv_data$db_meta$omics_type
       tagList(tags$h3(paste(datname, "Table"))
       )
     })
 
 
 
-    # Prepare data for boxplots
-    omic_expr_values <- reactive({
-      validate(
-        need(
-          input$table_over_info_rows_selected,
-          "Select an omic to view plots"
-        )
-      )
-
-      selected <- input$table_over_info_rows_selected
-
-      omic_name <- my_table()$omics_name[selected]
-      # we have the active layer in a reative in the pg: e.t.
-      #data_vec <- active_layer_data$data[,omic_name]
-
-      data_vec <- rv_data$ad$X[,omic_name]
-      grouping_var <- rv_selections$plot_x
-      omic_counts <- data.frame( rv_data$ad$obs_names,
-                                   data_vec,
-                                   rv_data$ad$obs[[grouping_var]] )
-      colnames(omic_counts) <- c("id", "val","grp")
-      return(omic_counts)
-
-    })
-
-
-    # force waiting for a selection row
-    table_values <- reactiveValues()
-    observeEvent(input$table_over_info_rows_selected, {
-      table_values$omic_expr_values <- omic_expr_values()
-      table_values$omic_name <- my_table()$omics_name[input$table_over_info_rows_selected]
-
-    })
 
     # Reading distribution plot ouput
     output$omic_bp <- renderPlotly({
-      req(table_values$omic_expr_values)
+      req(table_sel_values$omic_expr_values)
+
+      print("in renderPlotly: omic_bp")
       # Plot by CACO status
       # TODO:  make this into a boxplot function
-      #omic_name <- my_table()$omics_name[input$table_over_info_rows_selected]
-      bx_data <- table_values$omic_expr_values
+      #omic_name <- omic_table$dt$omics_name[input$table_over_info_rows_selected]
+      bx_data <- table_sel_values$omic_expr_values
       plot_ly(
-        data = bx_data, #table_values$omic_expr_values, #omic_expr_values(),
+        data = bx_data, #table_sel_values$omic_expr_values, #omic_expr_values(),
         y = ~val,
         color = ~grp,
         type = "box",
         boxpoints = "all",
         pointpos = 0,
         text = paste("Vals: ",
-                     format(table_values$omic_expr_values$val, digits = 3)),
+                     format(table_sel_values$omic_expr_values$val, digits = 3)),
         hoverinfo = list("median", "text"),
         colors = "Dark2"
       ) %>%
         plotly::layout(
-          title = table_values$omic_name,#my_table()$omics_name[input$table_over_info_rows_selected],
+          title = table_sel_values$omic_name,#omic_table$dt$omics_name[input$table_over_info_rows_selected],
           yaxis = list(title = "value",
                        hoverformat = ".2f"),
           showlegend = FALSE
@@ -256,10 +274,13 @@ mod_pg_table_server <- function(id, rv_data, rv_selections) {
 
     # Information on metabolite selected on table
     output$omic_info <- renderText({
-      req(table_values$omic_name)
-      omic_name <- table_values$omic_name # my_table()$omics_name[input$table_over_info_rows_selected ]
+      req(table_sel_values$omic_name)
+
+      print("in renderText: omic_info")
+
+      omic_name <- table_sel_values$omic_name # omic_table$dt$omics_name[input$table_over_info_rows_selected ]
       omic_details <- rv_data$default$omic_details
-      annots <- rv_data$ad$var[omic_name,]
+      annots <- rv_data$anndata$var[omic_name,]
 
       deet <- paste("<b> Name </b>: ", omic_name, "</br>")
 

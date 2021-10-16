@@ -9,10 +9,6 @@
 #' @importFrom configr write.config
 #' @examples TODO
 write_config <- function(in_options, in_path=NULL) {
-  # TODO: add a path arg?
-  # this should update ad in place with the diff_exp data...
-  # OPTIONS_FILE <- system.file('omicser_options.yml',
-  #                             package = 'omicser')
   if ( is.null(in_path) ) {
     in_path <- getwd()
   }

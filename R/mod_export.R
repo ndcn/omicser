@@ -85,7 +85,7 @@ mod_export_server <- function(id, rv_in, p){
       })
 
     output$rv_2 <-  renderText({
-      paste0(isolate( rv_in$ad$var[[ rv_in$ad$var_keys()[1] ]] )[1:20],collapse = ", ")
+      paste0(isolate( rv_in$anndata$var[[ rv_in$anndata$var_keys()[1] ]] )[1:20],collapse = ", ")
       })
 
   })
