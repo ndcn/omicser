@@ -15,16 +15,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Creating and running your own browser requires both Python and R.
-We provide two different options for installing and setting up 
-the environment you'll use when creating your browser:
+We recommend using R to install Python and setup your environment.
 
-- [Setup via R](#setup-via-r)
-- [Setup via command line](#setup-via-command-lin)
-
-Regardless of which approach you use,
-you'll also need to install [R](https://www.r-project.org/)
-and [RStudio](https://www.rstudio.com/products/rstudio/download/)
-for later steps in this tutorial.
+First ensure you have [R](https://www.r-project.org/)
+and [RStudio](https://www.rstudio.com/products/rstudio/download/) installed.
 This project was developed using R version 4.1.0 and RStudio v1.4.1717.
 
 ## Setup via R
@@ -65,11 +59,14 @@ reticulate::conda_install(envname= YOUR_CONDA_ENV,
 If you have successfully complete all steps in this section,
 you are now ready for [Installation](02_install.md). 
 
-## Setup via command line
+## Troubleshooting
 
-If you prefer to work on the command line,
+### Command line installation
+
+If you have difficulty installing Miniconda via R,
+or prefer to work on the command line,
 the following instructions demonstrate how to use the shell to set up your environment
-(examples for MacOSX):
+(examples for MacOSX).
 
 First, download and install Miniconda:
 
@@ -81,18 +78,17 @@ bash ~/miniconda.sh -p $HOME/miniconda
 You may need to respond to some prompts in your Console to complete this installation.
 
 Now we can use conda to install a python 3.9 environment to use with `reticulate`. 
-For this example we've called the environment `omxr`.
 Installing the python packages `scanpy` and `leidenalg` will ensure all additional python requirements are installed:
 
 ```{bash, conda_env, eval = FALSE}
-conda create --name omxr python=3.9 -c conda-forge scanpy leidenalg                                                                           
-conda activate omxr
+conda create -n omxr python=3.9
+conda install -c conda-forge scanpy leidenalg                                                                       
 ```
 
-If you have successfully complete all steps in this section,
-you are now ready for [Installation](02_install.md).
-
-## Troubleshooting
+Note that we do not use `conda activate` to load the environment.
+Because we'll be working in R,
+we recommend loading the environment through R
+(see next section for more information).
 
 ### `reticulate` and `conda`
 
