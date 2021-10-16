@@ -89,6 +89,7 @@ Note that we do not use `conda activate` to load the environment.
 Because we'll be working in R,
 we recommend loading the environment through R
 (see next section for more information).
+Please also remember to install `devtools` and `reticulate`.
 
 ### `reticulate` and `conda`
 
