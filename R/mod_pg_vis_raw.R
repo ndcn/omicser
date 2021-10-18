@@ -17,8 +17,11 @@ mod_pg_vis_raw_ui <- function(id){
    "multiple omics grouped by categorical cell information (e.g. library / cluster).", br(),
    "The normalised expression values are group averaged and scaled/thresholded (?)).",
    br(),br(),
+
+
    fluidRow(
      hr(style = "border-top: 1px solid #000000;"),
+     # these are things that affect both "agg" and "full"
      column(
        3, style="border-right: 2px solid black",
        shinyjs::disabled(
@@ -52,6 +55,15 @@ mod_pg_vis_raw_ui <- function(id){
    ),
    fluidRow(
      hr(style = "border-top: 1px dashed grey;"),
+     column(
+       2, style="border-right: 2px solid black",
+       br(),
+       # this selector for aggregated heatmap
+       # A
+       #uiOutput(outputId = ns("UI_comp_group_selection"))
+
+     ), # End of column (6 space)
+     column(10,
             uiOutput(ns("UI_heatmap_agg"))
             # downloadButton("Van_d1oup.pdf", "Download pDF"),
             # downloadButton("Van_d1oup.png", "Download pNG"), br(),
@@ -62,6 +74,7 @@ mod_pg_vis_raw_ui <- function(id){
             #     numericInput("Van_d1oup.w", "pDF / pNG width:", width = "138px",
             #                  min = 4, max = 20, value = 10, step = 0.5))
      #)  # End of column (6 space)
+     )
    ),    # End of fluidRow (4 space)
    fluidRow(
      hr(style = "border-top: 1px dashed grey;"),
@@ -92,7 +105,7 @@ mod_pg_vis_raw_ui <- function(id){
 #' @param varbox_data var boxplot data
 #'
 #' @noRd
-mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
+mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, agg_heat){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -114,6 +127,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
       # -limit levels of clustering columns
       # -
       #
+      message("starting: plot_heatmap_agg_out packer")
 
       #input_data <- heat_data$data
       #
@@ -125,7 +139,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
 
 
       #in_mat <- paste0("factor: ",heat_data$mat)
-      in_mat <- heat_data$mat
+      agg_mat <- agg_heat()
 
       # zero NAs?
       #
@@ -135,25 +149,11 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
       units_label <- 'omic\nexpr'
 
       if(input$CB_scale){
-        in_mat <- scale(in_mat) # scale operates on columns... and for now we have omics in the columns
+        agg_mat <- scale(agg_mat) # scale operates on columns... and for now we have omics in the columns
         units_label <-  'omic\nexpr\n(Z-score)'
       }
 
 
-
-# START FIX HERE
-      # use data.table to do the aggregating over the grouping variable
-      in_hdata <- as.data.table(in_mat)
-      in_hdata$grp <- as.character(heat_data$x_names)
-
-      # in_hdata$X_ID <- rownames(heat_data$mat)
-      # om_cols <- colnames(in_hdata)
-      # agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp, .SDcols = -c("X_ID")]
-      agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp]
-      tmp <- agg_hdata$grp
-      agg_mat <- t(as.matrix(agg_hdata[,grp:=NULL]))
-      colnames(agg_mat) <- tmp
-      # make sure we have colunn names...
 
       if (dim(agg_mat)[2] < 3){
         in_clust_col <- FALSE
@@ -185,6 +185,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
                                    color_scheme, plot_size, grp, save = FALSE)
 
       } else {
+        message("plot_heatmap_agg_out: calling ComplexHeatmap::Heatmap")
 
         ht <- ComplexHeatmap::Heatmap(agg_mat,
                                       cluster_rows = in_clust_row,
@@ -199,9 +200,13 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
                                       name = units_label,
                                       column_title = x_title,
                                       row_title = omics_title,
-                                      show_parent_dend_line = TRUE)
+                                      #show_parent_dend_line = TRUE,
+                                      use_raster = FALSE)
+        # ,
+        #                               raster_device = "png")
 
       }
+      message("plot_heatmap_agg_out: FINISHED ComplexHeatmap::Heatmap")
 
       return(ht)
 
@@ -265,6 +270,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
       #TODO:
       # -limit levels of clustering columns
       # -
+      message("plot_heatmap_all_out: CALLING ComplexHeatmap::Heatmap")
       ht <- ComplexHeatmap::Heatmap(in_mat,
                                     cluster_rows = in_clust_row,
                                     cluster_columns = in_clust_col,
@@ -280,7 +286,9 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){
                                     column_title = x_title,
                                     row_title = omics_title,
                                     show_parent_dend_line = TRUE,
-                                    use_raster = FALSE)
+                                    use_raster = FALSE) #,
+                                    #raster_device = "png")
+      message("plot_heatmap_all_out: FINISHED ComplexHeatmap::Heatmap")
 
       #top_annotation = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:4))),
 #

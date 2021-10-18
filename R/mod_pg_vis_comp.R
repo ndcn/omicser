@@ -113,8 +113,8 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
           rv_data$default,
           rv_data$de)
 
-      cfg <- isolate(rv_data$config)
-      test_choices <- levels(factor(isolate(rv_data$de$test_type)))
+      cfg <- rv_data$config
+      test_choices <- levels(factor(rv_data$de$test_type))
       #comp_types <- levels(factor(isolate(rv_data$de$comp_type)))
 
       to_return <-  tagList(
@@ -153,7 +153,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
       req(rv_data$config,
           rv_data$default)
       # get the groups
-      cfg <- isolate(rv_data$config)
+      cfg <- rv_data$config
       subs <- strsplit(cfg[UI == "diff_exp_comps"]$fID, "\\|")[[1]]
       subs <- sort(subs)
 
@@ -270,9 +270,9 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
       data_vec <- active_layer_data$data[,omic_name]
 
       grouping_var <- filtered_de()$obs_name[1]
-      omic_counts <- data.frame( rv_data$ad$obs_names,
+      omic_counts <- data.frame( rv_data$anndata$obs_names,
                                  data_vec,
-                                 rv_data$ad$obs[[grouping_var]] )
+                                 rv_data$anndata$obs[[grouping_var]] )
       colnames(omic_counts) <- c("id", "val","grp")
       return(omic_counts)
     })
@@ -324,7 +324,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
 
 
       omic_details <- rv_data$default$omic_details
-      annots <- rv_data$ad$var[omic_name,]
+      annots <- rv_data$anndata$var[omic_name,]
 
       deet <- paste("<b> Name </b>: ", annots$omics_name, "</br>")
 

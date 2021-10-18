@@ -15,21 +15,20 @@ app_server <- function(input, output, session) {
 
 
   CONFIG <- omicser::get_config()
-  # CONFIG <- configr::read.config(system.file('omicser_options.yml', package = "omicser"))
 
   DB_NAMES <- CONFIG$database_names
   CONDA_ENV <- CONFIG$conda_environment
   DB_ROOT_PATH <- CONFIG$db_root_path
-
-  #TODO: curate CONDA_PATH?  Maybe set up an environment variable?
-  #
+  #CODA_EXE <- CONFIG$conda_exe
+  #TODO: curate CONDA_EXE?  Maybe set up an environment variable?
+  #      is there a tool to read from sys env?
 
   #required = TRUE, or explicitly set the RETICULATE_PYTHON environment variable.
 
   reticulate::use_condaenv(
       required = TRUE,
       condaenv = CONDA_ENV,
-      conda = "auto")
+      conda = "auto") #TODO: change this to CONFIG$conda_exe
 
   ############################ +
   ## Module 4 : "Ingest" Data
@@ -38,7 +37,7 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     # Call module "ingest" - returns reactive data values
-    rv_data <- mod_ingestor_server("ingestor_ui_1", DB_NAMES=DB_NAMES, DB_ROOT_PATH=DB_ROOT_PATH)
+    rv_data <- mod_ingestor_server("ingestor_ui_1", db_names=DB_NAMES, db_root_path=DB_ROOT_PATH)
 
   }
 
@@ -124,6 +123,6 @@ app_server <- function(input, output, session) {
     db_name = reactiveValues(name=NULL)
     observe({ db_name$name <- rv_data$db_meta$name})
 
-    mod_additional_info_server("additional_info_ui_1", db_name = db_name, DB_ROOT_PATH = DB_ROOT_PATH)
+    mod_additional_info_server("additional_info_ui_1", db_name = db_name, db_root_path = DB_ROOT_PATH)
   }
 }

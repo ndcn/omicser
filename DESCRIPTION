@@ -19,6 +19,7 @@ Imports:
     ggplot2,
     golem,
     gridExtra,
+    magick,
     magrittr,
     Matrix,
     plotly,
@@ -40,4 +41,3 @@ Suggests:
 VignetteBuilder: knitr
 Remotes: 
     jokergoo/ComplexHeatmap
-
