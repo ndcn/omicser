@@ -35,8 +35,10 @@ mod_side_selector_ui <- function(id){
       ),
       column(width = 4, offset = 1,#style="border-right: 2px solid black",
              #style='padding-left:0px; padding-right:1px',
-             actionButton(ns("AB_plot_now"), "Plot Now!", class = "btn btn-primary btn-large" ) #class="hidableDefault"
-      )
+             actionButton(ns("AB_plot_now"), "Plot Now!", class = "btn btn-large btn-danger" ), #btn-primary class="hidableDefault"
+            br(),
+            "(activate)"
+            )
     ),
 
     hr(style = "border-top: 1px solid #000000;"),
@@ -147,21 +149,24 @@ mod_side_selector_server <- function(id, rv_data){
     all_omics <- reactive( rv_data$anndata$var_names )  #only changes when new database is loaded
     def_omics <- reactive( rv_data$default$omics )
 
+
     # filter omics from subsetting
     active_omics <- reactive({
       #this is the maybe subsetting
+
+      omic_out <- all_omics()
       # subset var (omics)
       if (!is.null( var_sub$set ) ) {
         if (!is.null( var_sub$select )) {
           if (length(var_sub$select)>0) {
-            return (all_omics()[ rv_data$anndata$var[[ var_sub$set ]]  %in% var_sub$select ])
+            return ( omic_out[ rv_data$anndata$var[[ var_sub$set ]]  %in% var_sub$select ] )
           } else {
             print("everything unselected...")
           }
         }
         }
 
-        return( all_omics() )
+        return( omic_out )
 
     })
 
@@ -171,18 +176,21 @@ mod_side_selector_server <- function(id, rv_data){
 
     ### Outputs =========================================================
     output$ui_curr_database <- renderUI({
-      if (is.null(rv_data$database_name)) {
+      if ( is.null(rv_data$db_meta$name) ) {
         out_text <- "No data loaded"
       } else {
-          out_text <- paste("Current databse: ", rv_data$database_name)
+          out_text <- paste("<i>",rv_data$db_meta$omics_type,
+                            "</i> databse:  <b>", rv_data$db_meta$name,
+                            "</b>")
       }
-      out_text <- h4(out_text)
+      out_text <- HTML(out_text)
       return(out_text)
     })
 
+
     # Warning if no data loaded
     output$ui_DIV_warn <- renderUI( {
-      if (is.null(rv_data$database_name)) {
+      if (is.null(rv_data$db_meta$name)) {
         div(
           tags$br(),
           span(class = "warn", "No dataset loaded")

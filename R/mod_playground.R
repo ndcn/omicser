@@ -87,7 +87,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       req(heat_data$mat)
       # START FIX HERE
       # use data.table to do the aggregating over the grouping variable
-      print("aggregating agg_heat()")
+      message("aggregating agg_heat()")
       in_hdata <- as.data.table(heat_data$mat)
       in_hdata$grp <- as.character(heat_data$x_names)
 
@@ -99,6 +99,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       agg_mat <- t(as.matrix(agg_hdata[,grp:=NULL]))
       colnames(agg_mat) <- tmp
       # make sure we have colunn names...
+      message("finished agg_heat()")
 
       return( agg_mat )
     }
@@ -111,7 +112,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
     observe({
       req(rv_data$anndata,
           rv_selections$data_layer)
-print("start observer: active_layer")
+message("start observer: active_layer")
       layer <- rv_selections$data_layer
       if (layer=="X") {
         X_data <- rv_data$anndata$X
@@ -124,7 +125,7 @@ print("start observer: active_layer")
           #X_data <- isolate(rv_data$anndata$layers[[dat_loc]]) #isolate
           X_data <- rv_data$anndata$layers$get(layer)
         } else {
-          print("data not found")
+          message("data not found")
           X_data <- NULL
         }
       }
@@ -135,7 +136,7 @@ print("start observer: active_layer")
 
       active_layer_data$layer <- layer
       active_layer_data$data <- X_data # is a matrix
-      print("set -------> active_layer")
+      message("set -------> active_layer")
 
     })
 
@@ -157,7 +158,7 @@ print("start observer: active_layer")
       #
       #  have already set a reactive active_layer_data$data -> X_data
       #
-    print("in observer: heat_data packer")
+    message("in observer: heat_data packer")
       in_conf <- rv_data$config
       dat_source <- rv_selections$data_layer
       # not using the viz_now... for now
@@ -256,7 +257,7 @@ print("start observer: active_layer")
 #       xtab2$group_x <- samp_grp
 #
 
-      print("---->  finishing: heat_data packer")
+      message("---->  finishing: heat_data packer")
 
 
       heat_data$x_names <- samp_grp
@@ -270,7 +271,7 @@ print("start observer: active_layer")
        heat_data$ready <- TRUE
        heat_data$selected_omics <- rv_selections$selected_omics
 
-       print("---->  DONE: heat_data packer")
+       message("---->  DONE: heat_data packer")
 
     })
 

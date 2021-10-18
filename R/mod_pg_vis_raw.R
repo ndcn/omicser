@@ -17,8 +17,11 @@ mod_pg_vis_raw_ui <- function(id){
    "multiple omics grouped by categorical cell information (e.g. library / cluster).", br(),
    "The normalised expression values are group averaged and scaled/thresholded (?)).",
    br(),br(),
+
+
    fluidRow(
      hr(style = "border-top: 1px solid #000000;"),
+     # these are things that affect both "agg" and "full"
      column(
        3, style="border-right: 2px solid black",
        shinyjs::disabled(
@@ -52,6 +55,15 @@ mod_pg_vis_raw_ui <- function(id){
    ),
    fluidRow(
      hr(style = "border-top: 1px dashed grey;"),
+     column(
+       2, style="border-right: 2px solid black",
+       br(),
+       # this selector for aggregated heatmap
+       # A
+       #uiOutput(outputId = ns("UI_comp_group_selection"))
+
+     ), # End of column (6 space)
+     column(10,
             uiOutput(ns("UI_heatmap_agg"))
             # downloadButton("Van_d1oup.pdf", "Download pDF"),
             # downloadButton("Van_d1oup.png", "Download pNG"), br(),
@@ -62,6 +74,7 @@ mod_pg_vis_raw_ui <- function(id){
             #     numericInput("Van_d1oup.w", "pDF / pNG width:", width = "138px",
             #                  min = 4, max = 20, value = 10, step = 0.5))
      #)  # End of column (6 space)
+     )
    ),    # End of fluidRow (4 space)
    fluidRow(
      hr(style = "border-top: 1px dashed grey;"),
@@ -114,7 +127,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, agg_hea
       # -limit levels of clustering columns
       # -
       #
-      print("starting: plot_heatmap_agg_out packer")
+      message("starting: plot_heatmap_agg_out packer")
 
       #input_data <- heat_data$data
       #
@@ -172,7 +185,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, agg_hea
                                    color_scheme, plot_size, grp, save = FALSE)
 
       } else {
-        print("plot_heatmap_agg_out: calling ComplexHeatmap::Heatmap")
+        message("plot_heatmap_agg_out: calling ComplexHeatmap::Heatmap")
 
         ht <- ComplexHeatmap::Heatmap(agg_mat,
                                       cluster_rows = in_clust_row,
@@ -188,11 +201,12 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, agg_hea
                                       column_title = x_title,
                                       row_title = omics_title,
                                       #show_parent_dend_line = TRUE,
-                                      use_raster = TRUE,
-                                      raster_device = "png")
+                                      use_raster = FALSE)
+        # ,
+        #                               raster_device = "png")
 
       }
-      print("plot_heatmap_agg_out: FINISHED ComplexHeatmap::Heatmap")
+      message("plot_heatmap_agg_out: FINISHED ComplexHeatmap::Heatmap")
 
       return(ht)
 
@@ -256,7 +270,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, agg_hea
       #TODO:
       # -limit levels of clustering columns
       # -
-      print("plot_heatmap_all_out: CALLING ComplexHeatmap::Heatmap")
+      message("plot_heatmap_all_out: CALLING ComplexHeatmap::Heatmap")
       ht <- ComplexHeatmap::Heatmap(in_mat,
                                     cluster_rows = in_clust_row,
                                     cluster_columns = in_clust_col,
@@ -272,9 +286,9 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, agg_hea
                                     column_title = x_title,
                                     row_title = omics_title,
                                     show_parent_dend_line = TRUE,
-                                    use_raster = TRUE,
-                                    raster_device = "png")
-      print("plot_heatmap_all_out: FINISHED ComplexHeatmap::Heatmap")
+                                    use_raster = FALSE) #,
+                                    #raster_device = "png")
+      message("plot_heatmap_all_out: FINISHED ComplexHeatmap::Heatmap")
 
       #top_annotation = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:4))),
 #

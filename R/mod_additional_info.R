@@ -101,8 +101,8 @@ mod_additional_info_server <- function(id,db_name, db_root_path){
     # show the factors that have been loaded
     output$additional_info_md <- renderUI({
       req(db_name$name)
-
-      md_path <- file.path(db_root_path,db_name$name,"additional_info.Rmd")
+      message(paste0("loading additional_info: ", db_name$name))
+      md_path <- file.path(db_root_path,db_name$dir,"additional_info.Rmd")
       #TODO:  allow a .docx file instead which will need to be rendered and then output
       #
       if (!file.exists(md_path)) { #LOAD DEFAULT MESSAGE
@@ -113,7 +113,6 @@ mod_additional_info_server <- function(id,db_name, db_root_path){
       out_htm <- display_document(md_path)
 
       #out_htm <- shiny::includeMarkdown(md_path)
-
 
       return(out_htm)
     })
