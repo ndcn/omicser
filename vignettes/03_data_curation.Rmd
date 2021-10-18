@@ -14,143 +14,243 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The most crucial step is _curating_ your data into a database that can be loaded by the browser.  As the _curator_ you will have the responsibility to make some choices about what and how the data can be seen.  
-This process results in specifying the location of the data, and creating files which are formatted for the browser.
+The most crucial step when setting up your own app is _curating_ your data in preparation for loading into the browser.
+There are two reasons for these steps:
 
-As an example there is the [`curate_domenico_stem_cell.R`](examples/curate_domenico_stem_cell.R) script in the /examples subdirectory, which illustrates the steps and some of the choices required to curate your data into a browsable _database_. 
+- formatting the data into `AnnData` files, which creates a database accessible by the browser
+- identifying the variables (e.g., columns in a table) that will be browsable, which specifies how data can be selected and/or manipulated in the browswer interface
 
-The process as illustrated in the example can be broken into the following steps:
+As the _Curator_ you have the responsibility to understand the specific research questions involved in your data,
+and how to allow these questions to be explored using a visualization tool.
 
-1. *provenance & meta data setup* - define the meta-data and context for the dataset
-3. *raw data ingest* - translate the outputs of your QC to our database format
-  3a. *define helper function* - any helpers you need to read and process the outputs of your QC
-  3b.*load the raw data*
-4. *pack into the browser data format* - pack into the anndata structure (scanpy/python)
-5. *post-processing* - compute relavent marginal quantities, define additional annotation and grouping variables, etc.
-  5a. *dimension reduction* - compute and cluster if needed
-6. *differential expression tables* - compute and/or formate existing tables
-7. *write database *- write the files to the database location
+The process of curating your data generally includes the following steps:
 
-#### Database Path 
+1. **Metadata documentation** - define the metadata and context for the dataset
+2. **Format and ingest raw data** - translate the outputs of your quality-controlled (QC) data to database format and pack data into scanpy's `AnnData` structure
+3. **Post-processing** - dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.
+4. **Differential expression tables** - compute and/or format existing tables
+5. **Write database** - create database and configuration files and store in a location the browser can locate
 
-The first step will be to make a folder to contain your data.  We will call this folder and contents the _DATABASE_ .   Each _DATABASE_ folder that one might want to load into the browser should be in the same path.  e.g. the with the repositories `vignettes/` path there is a `test_db` folder which contains several sub-folder _DATABASES_
+Each step of data curation is generally described below,
+referencing the PBMC3k dataset from 10X Genomics as an example.
+The complete script used for curation can be found in [`examples/browse_pbmc3k.R`](https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R).
+Additional examples of how the data curation process is applied to various data types and use cases can be found in the 
+[`examples/` subdirectory](https://github.com/ndcn/omicser/tree/main/examples).
 
-              
-#### `AnnData` Schema
+## Data organization
 
+There are three main locations you'll need to specify while curating your data and otherwise preparing your browser app:
 
-The AnnData scheme requires us to define three pieces of data:
+- **run directory**: location from which the browser is launched. For the PBMC3k example, we will refer to this as `OMICSER_RUN_DIR`, and create a new directory named `omicser_test/` which will contain the other content for this project. If you plan to make more extensive modifications to the browser, we recommend cloning the [`omicser`](https://github.com/ndcn/omicser) package and using the top level folder for your run directory.
+- **location of data**: folder containing your -omics data, referred to as `RAW_DIR` and set to `raw_data/` in the PBMC3k example. This location is only used in the data curation steps.
+- **location of database**: folder containing the formatted data produced by the data curation steps, packaged to be ingested for visualization in a browser. For the PBMC3k example, it is referred to as `DB_ROOT_PATH` and set as `test_db/` we will be working with a single dataset (and single dataset), though it is possible to visualize multiple datasets with the same browser configuration (i.e., this folder can potentially contain multiple databases).
 
-  1. *DATA* (\$X): a matrix  of measurements - e.g. transcriptomics - count matrix of cells by genes.
+### Example data from 10X Genomics
+
+The example data used for this tutorial are from 
+~3000 peripheral blood mononuclear cells (PBMCs) from a healthy donor.
+Further information about the data is available at the [10X Genomics website](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k).
+These data have also been used in tutorials from [scanpy](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html)
+and [Seurat](https://satijalab.org/seurat/archive/v3.0/pbmc3k_tutorial.html).
+
+The [PBMC3k example script](https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R)
+includes code sections to help you install software/environments, download/organize data, and otherwise prepare for the data curation steps below.
+Please note that the data files from 10X Genomics need to be saved as `.gz` files for them to be read correctly when importing the data.
+
+## 1. Metadata setup
+
+Given your intended use for the browser you are developing,
+you may choose develop documentation accessible through the browser itself
+for referencing information about the data's source(s).
+In this step, 
+you can create a list of metadata about your dataset,
+then use `write_db_meta()` to save the information as `db_meta.yml`.
+
+## 2. Format and ingest raw data
+
+The exact steps required to ingest raw data vary widely depending on your data type
+and how these data are formatted.
+The general goal is to obtain the data necessary to create an  `AnnData` object
+containing all data and metadata required for visualization.
+
+### `AnnData` Schema
+
+The `AnnData` format includes three types of data:
+
+  1. *DATA* (\$X): a matrix  of measurements - e.g. count matrix of cells by genes (for transcriptomic data).
   2. *_FEATURE_ METADATA* (\$var): a table of `omic` annotation  -  e.g. gene/protein names, families, "highly variable genes", "is marker gene", etc.
-  3. *_SAMPLE_ METADATA* (\$obs): a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experiemntal condition, etc.
+  3. *_SAMPLE_ METADATA* (\$obs): a table of sample annotations - e.g.  cell types, sample #, batch ID sex, experimental condition, etc.
 
-More info here https://cran.r-project.org/web/packages/anndata/readme/README.html 
+More information on this format is available on the [AnnData for R website](https://cran.r-project.org/web/packages/anndata/readme/README.html).
 
-![Anndata scheme](../inst/anndata_for_r.png)
+![](../inst/anndata_for_r.png)
 
+### Ingesting raw data
 
-#### Loading the data
+For our example, we'll read the PBMC3k data files using the `read_10x_mtx()` function
+from Python's `scanpy` package,
+then writing the data to file in `.h5ad` format.
+We'll access `scanpy` using the `reticulate` R package.
+If you have difficulty accessing `scanpy` in this section,
+please see the [Troubleshooting section of 1-Environment Setup](04_configuration.md#troubleshooting).
 
-In addition to these three pieces differential expression tables need to be pre-computed.
+Please see the other [example curation scripts](https://github.com/ndcn/omicser/tree/main/examples)
+to understand how other data can be processed at this step.
+This may include writing custom helper scripts to standardize data manipulation
+from files resulting from your data generation processes.
 
-Here are some of the key helper functions and he section they fall into.
+### Formatting as `AnnData`
 
-Here is an example of loading three data files and then pakaging them with a "helper function" (defined in section #2 of the example curation script) into the `data_list` which will be used by the next stage.
+Our next step will use the raw database we just created
+and add the consistent structure we'll need to orient the browser features later.
+The `omicser::setup_database()` function incorporates the three separate data sources
+(DATA matrix, omic FEATURE METADATA annotations, and SAMPLE METADATA)
+into the `AnnData` object.
 
-#### `setup_database()`
+For our PBMC3k example, 
+we'll apply the `omicser::setup_database()` function:
 
-The `omicser::setup_database()` function packages the separate tables -- DATA matrix, omic FEATURE METADATA annotations, and SAMPLE METADATA -- into the anndata object.  This function can also take the name of a seurat object file.  
+```{r, 3-anndata, eval=FALSE}
+# identify location of raw data
+data_list <- list(object = path(DB_ROOT_PATH, DB_NAME, "core_data.h5ad"))
 
-
-``` {r , RM-prep-3, eval=FALSE}
-adata <- omicser::setup_database(database_name=DB_NAME,
-                              data_in=data_list,
-                              db_meta=NULL ,
-                              re_pack=TRUE)
+# create database formatted as AnnData
+adata_2 <- omicser::setup_database(database_name = DB_NAME,
+                                 db_path = DB_ROOT_PATH,
+                                 data_in = data_list,
+                                 db_meta = NULL,
+                                 re_pack = TRUE)
 ```
 
+In this case, all data necessary was ingested in the previous step.
+This results in a database that is consistently formatted,
+and thus able to potentially be combined with other datasets in the future.
+If there were additional metadata files,
+they could be indicated here (e.g., instead of `db_meta = NULL`).
+              
+## 3. Post-processing 
 
-Once we have packed the data into the `anndata` object we can leverage `scanpy` and the `reticulate` python backend to do dimension reduction and clustering. 
-Although this stage is not nescessary, it demonstrates the bridge to `cellxgene`.
+Now that the data are packed into the the `AnnData` object,
+we can leverage additional functions from `scanpy` and `reticulate` to do perform additional data manipulation,
+such as dimension reduction and clustering.
 
-``` {r, RM-prep-4, eval=FALSE}
-#==== 5-a. dimension reduction - PCA / umap ========================================================
+> You have flexibility in the data curation process regarding which approaches you use,
+> and when those steps are performed.
+> For example, clustering and dimension reduction isn't required to browse data,
+> but is a useful step if you'd like to work with your data in other tools,
+> like [`cellxgene`](https://github.com/chanzuckerberg/cellxgene).
+
+The example below demonstrates dimension reduction with the `AnnData` object using `scanpy`.
+For more information on using `scanpy` in R,
+please see the [troubleshooting section](#troubleshooting).
+
+```{r, RM-prep-4, eval=FALSE}
 sc <- import("scanpy")
-# scanpy pre-processing - sc$pp
+# run PCA
 sc$pp$pca(adata)
+# compute neighbor graph
 sc$pp$neighbors(adata)
+## infer clusters
 sc$tl$leiden(adata)
+# compute umap
 sc$tl$umap(adata)
-
 ```
 
-#### Differential Expression Tables 
-This is probably the trickiest part of the curation  Fortunately we have some helper functions to help us compute them.  Often -- especially for _prote-_ omic databases -- differential expressions are computed as the output of the instrumentataion by a commercial software.  These algorithms leverage bespoke statistics, so it will be best to reformat those tables. 
+In addition to dimension reduction, 
+post-processing for the PMBC3k data includes steps to filter, annotate,
+and otherwise prepare the data for visualization.
+The data are periodically saved at intermediate steps,
+which is useful for optimizing visualizations.
 
+## 4. Create differential expression tables
 
+The ability to identify which -omics features differ among categories is perhaps the most important part of data curation.
+However, it is also one of the trickiest parts,
+as some data generation services (especially for proteomics)
+compute differential expression (DE) using commercial software associated with instrumentation.
+These algorithms leverage bespoke statistics,
+with unknown assumptions about the statistical tests involved,
+so it will be best to reformat those tables. 
+Additionally, the schema below provides a way to standardize comparisons across datasets,
+which is important for browsers drawing from multi-omics data.
 
-##### DE Table Schema
+### DE Table Schema
 
-Most proteomic, metabelomic and lipidomic data will have differential calculations at the output of the instrumentation (which leverages know statastical assumptions of the quantifications) we can also use scanpys tools to compute differential expression.  The diff_exp tables will be needed for volcano plots either way.
+The differential expression table has the following fields:
 
-The differential expression table has these fields:
-
-   - `group` - the comparison   {names}V{reference}
+   - `group` - the comparison, using the format {names}V{reference} from fields below
    - `names` - what are we comparing?
-   - `obs_name`  - name of the meta data variable
-   - `test_type` - what statistic are we using
-   - `reference` - the denomenator. or the condition we are comparing expressions values to
-   - `comp_type` - grpVref or grpVrest. rest is all other conditions
+   - `obs_name`  - name of the metadata variable
+   - `test_type` - what statistic are we using?
+   - `reference` - the denominator, or the condition against which we are comparing expressions values
+   - `comp_type` - same format as `group`, as grpVref or grpVrest, with rest representing all other conditions
    - `logfoldchanges` - log2(name/reference)
    - `scores` - statistic score
-   - `pvals` - pvalues from the stats test. e.g. t-test
+   - `pvals` - pvalues from the statisticals test, e.g. t-test
    - `pvals_adj` - adjusted pvalue (Q)
    - `versus` - label which we will choose in the browser
-   
-   
-   
-##### omicser::compute_de_table()
 
-In [`R/pre_process_helpers.R`](../R/pre_process_helpers.R) theres a function which leverages `scanpy` and the `anndata` format we have packed to do differential expression.  We just need to pass a few quantites and it returns a properly formatted differential expression table.
+### Computing the DE table
 
-parameters:
+The `omicser::compute_de_table()` leverages `scanpy` functions and the `AnnData` object to compute differential expression and provide a properly formatted DE table.
+We will need to provide the function with the following parameters:
 
   - `adata` - the anndata object
-  - `comp_types` - what kind of comparisons? there are two types
+  - `comp_types` - what kind of comparisons? there are two types:
     - "allVrest" which takes each of our experimental conditions in turn and compares against the "rest" of the data.
     - "{a}V{b}" or "firstgroupVsecondgroup" which compares the experimental condition "firstgroup" against "secondgroup"
-  - `test_types` - statistical tests.  See the examples or `scanpy` documentation for which test types are available.
-  - `obs_names` -name of the adata$obs column defining the comparision groups
+  - `test_types` - statistical tests. See our examples or `scanpy` documentation for which test types are available.
+  - `obs_names` - name of the `adata$obs` column defining the comparision groups
   - `sc` - the scanpy data object we imported with `reticulate`
 
 Here's an example which computes a differential expression with a `wilcoxon` test of significance for each _disease_ with respect to the rest of the distease states, AND for each _cell_type_ with-respect-to the "rest of" the _cell_type_ s. 
 
-``` {r RM-prep-5, eval=FALSE}
+```{r, RM-prep-5, eval=FALSE}
 sc <- reticulate::import("scanpy")
 test_types <- c('wilcoxon')
 comp_types <- c('allVrest')
 obs_names <- c('disease','cell_type')
 diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc)
-
 ```
 
+The DE table output from this function should be saved to the database folder as `db_de_table.rds`:
 
-#### Save the data to the _DATABASE_
+```{r, 3-saverds, eval = FALSE}
+saveRDS(diff_exp, file = file.path(DB_ROOT_PATH, DB_NAME, "db_de_table.rds"))
+```
 
-Finally we write this the anndata data object to our _database_DATABASE_ folder.   In the examples contained in the `vignettes/` folder we defined `DS_ROOT_PATH <- "test_db"`, and `DB_NAME <- "domenico_stem_cell"` .
+## 5. Write database
 
-``` {r, RM-prep-6, eval=FALSE}
+The last step of data curation is to write the final database to the database directory as `db_data.h5ad`:
+
+```{r, RM-prep-6, eval=FALSE}
 adata$write_h5ad(filename=file.path(DS_ROOT_PATH,DB_NAME,"db_data.h5ad"))
 ```
 
-In the end each DATABASE folder should now these three files:
-1. `db_data.h5ad` - the anndata object          
+At this point,
+each folder in your database directory should include at least three files.
+Shiny will look for these files when creating the browser,
+so their names and location are important:
+
+1. `db_data.h5ad` - the `AnnData` object          
 2. `db_de_table.rds` - differntial expression table
 3, `db_meta.yml` - list of database 'meta' information
 
-You might also want to save some _intermediate_ files such as in the [examples](examples/curate_pbmc3k.R) which also generate: `normalized_data.h5ad`,`core_data.h5ad`,and `norm_data_plus_dr.h5ad`.
+You may also have intermediate database files created during post-processing: `normalized_data.h5ad`,`core_data.h5ad`,and `norm_data_plus_dr.h5ad`.
+They are available for your reference,
+but are not required for further app development.
 
-We are almost there.  In the next section we will cover the configuration which will add a `db_config.yml` files to the _DATABASE_ directory, and create an [`omicser_options.yml`](omicser_options.yml) in the directory where the app will be executed.
+Now that the data are formatted and organized appropriately,
+we'll continue to the next step and [configure the browser](04_configuration.md).
 
-On to [CONFIGURATION](04_configuration.md)
+## Troubleshooting
+
+### `scanpy` in R 
+
+`scanpy` was originally written as a Python package,
+but we are using it within R courtesy of the `reticulate` R package.
+The [original `scanpy` documentation](https://scanpy-tutorials.readthedocs.io/en/latest/index.html)
+can help you understand the assumptions and requirements of functions,
+which retain the same names between Python and R.
+For more information on syntax for `scanpy` in R,
+please see [this documentation](https://theislab.github.io/scanpy-in-R/#using-scanpy-functions).

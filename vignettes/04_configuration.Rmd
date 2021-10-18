@@ -1,5 +1,5 @@
 ---
-title: "4-Database Configuration"
+title: "4-Configuration"
 author: "andy henrie"
 date: "9/14/2021"
 output:
@@ -14,76 +14,83 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-> **This vignette is currently under active development.**
-There are two parts to configuring the browser:
+In the last section, we formatted and configured our data to make it accessible to the browser.
+In this section, we'll create two sets of configuration instructions:
+- `db_config.yml` - located with the database files, and specific to each database
+- `omicser_options.yml` - located in the run directory, provides top-level configuration and identifies the database(s) accessible for visualization in the browser
 
-1. top level configuration _DATABASE_ name and location configuration 
-2. _DATABASE_ specific configuration
+We'll continue to refer to the [PBMC3k example script](https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R)
+as our example.
 
-First, we have to tell the browser where our _DATABASE_ is, and what its called.  A _DATABASE_ is simply a directory containing or -omics data object and meta-information. Multiple _DATABASES_ can be configured to make them available via the dropdown in the "Ingest" tab.   These will be sub-directories in the same `db_root_path`.  These need to be recorded in the  `omicser_options.yml` which is written in the directory where the browser is initiated from ( via `omicser::run_app()`).
+## Database configuration
 
-```{r, setup-1, eval=FALSE}
+Creating the configuration file for a database provides the basic instructions 
+to the browser for how data will be represented to and manipulated 
+by the viewers of the application while browsing.
+This involves defining the experimental factors as well as visualization parameters.
 
-# Now move to the directory where you want to execute the omicser
-# and make the omicser_options.yml
+The example below matches the PBMC3k.
+Please see the [`examples/`](https://github.com/ndcn/omicser/tree/main/examples) for alternative configurations.
 
-OMICSER_RUN_DIR <- "full/path/to/where/omicser_options.yml/goes"
-
-db_root_path <- "full/path/to/folder/where/DATABASES/go"
-
-database_names <- list(
-  "hello database" = "hello_database"
-)
-
-conda_environment = 'omxr'
-omicser_options <- list(database_names=database_names,
-                        db_root_path=db_root_path,
-                        conda_environment=conda_environment)
-
-omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
-
-```
-
-Second, the experimental factors to be selected for visualization parameters need to be specified in the `db_config.yml`
-
-
-``` {r, 3-config-1, eval=FALSE}
-#==== 7. create configs =========================================================================
-# differentials  #if we care we need to explicitly state. defaults will be the order...
+``` {r, 4-config-1, eval=FALSE}
+# differentials: the order here dictates the order in which they will appear in the browser
 conf_list <- list(
-  x_obs = c("Is.Reference","Condition","Replicate", "Label"),
-  y_obs =  c("expr_var", "expr_mean", "expr_frac", "sample_ID", "leiden"), #MEASURES
-  obs_groupby = c("Is.Reference","Condition","Replicate", "Label"),
-  obs_subset = c("Is.Reference","Condition","Replicate", "Label"),
+  x_obs = c("leiden"),
+  # measures
+  y_obs =  c('n_genes', 'n_genes_by_counts', 'total_counts', 'total_counts_mt', 'pct_counts_mt'),
+  obs_groupby = c("leiden"),
+  obs_subset = c("leiden"),
 
-  x_var = character(0),
-  y_var = c("expr_geomean", "expr_mean", "expr_var", "expr_frac" ),
+  x_var = c("decile","highly_variable"),
+  y_var = c( 'n_cells', 'mt', 'n_cells_by_counts', 'mean_counts',
+            'pct_dropout_by_counts', 'total_counts',
+            'means', 'dispersions', 'dispersions_norm', 'mean', 'std'),
 
-  var_groupby = character(0),
-  var_subset = character(0),
+  var_groupby = c("decile","highly_variable"),
+  var_subset = c("decile","highly_variable"),
 
   diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
-               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
+               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this
                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
-               diff_exp_tests =  levels(factor(diff_exp$test_type))
-  ),
+               diff_exp_tests =  levels(factor(diff_exp$test_type))),
 
-  layers = c("X","raw","X_is_scaled_na_to_0","scaled","zro_na"),
+  layers = c("X","raw"),
 
-  # Dimred
+  # dimension reduction
   dimreds = list(obsm = ad$obsm_keys(),
                  varm = ad$varm_keys()),
 
-  # what ad$obs do we want to make default values for...
-  # # should just pack according to UI?
-  default_factors = c("Condition","Color","Replicate")
+  # setting defaults for ad$obs 
+  default_factors = default_factors,
+  target_omics = target_omics,
+  omic_details = c('gene_ids', 'n_cells', 'mt', 'n_cells_by_counts',
+                   'mean_counts', 'pct_dropout_by_counts', 'total_counts',
+                   'highly_variable', 'means', 'dispersions',
+                   'dispersions_norm', 'mean', 'std', 'var_rank', 'decile')))
 
-)
-configr::write.config(config.dat = conf_list, file.path = file.path(DS_ROOT_PATH,DB_NAME,"db_config.yml" ),
+# write db_config.yml to database directory
+configr::write.config(config.dat = conf_list, 
+                      file.path = file.path(DS_ROOT_PATH, DB_NAME, "db_config.yml"),
                       write.type = "yaml", indent = 4)
-
-
 ```
 
+## Browser configuration
 
+Top-level configuration lets the browser know where the database can be found.
+The following code 
 
+```{r, omicser-options, eval=FALSE}
+# define omicser options
+omicser_options <- list(database_names = DB_NAME,
+                        db_root_path = DB_ROOT_PATH,
+                        conda_environment = CONDA_ENV)
+
+# write omicser_options.yml to run directory
+omicser::write_config(omicser_options, in_path = OMICSER_RUN_DIR)
+```
+
+To configure a the browser for multiple databases,
+please see the [Visualizing multiple datasets](multiple_databases.md) information.
+
+We're done preparing our data and configuration!
+The next step is, of course, to [initialize and browse](05-browsing.md).
