@@ -96,7 +96,7 @@ Please also remember to install `devtools` and `reticulate`.
 If you have difficulty loading `scanpy` (e.g., "ModuleNotFoundError: No module named 'scanpy'"),
 you can check the details of your Python environment:
 
-```{r}
+```{r, eval = FALSE}
 reticulate::py_discover_config()
 ```
 
@@ -109,7 +109,7 @@ listed in the Python paths
 If you do not see your environment listed in the paths,
 you can load your environment:
 
-```{r}
+```{r, eval = FALSE}
 reticulate::use_condaenv(condaenv = "omxr", required = TRUE)
 ```
 
