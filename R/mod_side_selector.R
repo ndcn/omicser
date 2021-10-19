@@ -23,7 +23,7 @@ mod_side_selector_ui <- function(id){
     uiOutput( ns( "ui_DIV_warn" )),
     htmlOutput( ns( "ui_db_type" )),
 
-    h1("Variables & *-Omics Selector"),
+    h1("Variables & -omic Features Selector"),
     hr(style = "border-top: 1px solid #000000;"),
 
     fluidRow(
@@ -58,11 +58,11 @@ mod_side_selector_ui <- function(id){
 
     # omics selection --------------------
     hr(style = "border-top: 1px solid #000000;"),
-    h4("*-Omics"),
+    h4("-omic features"),
     fluidRow(
       column(width = 2,
              offset = 0,
-             "*-Omics",br(),
+             "Feature",br(),
              "meta-",
              "data"),
       column(width = 10,

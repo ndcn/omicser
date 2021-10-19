@@ -55,7 +55,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 # MODULES =================================
     mod_pg_table_server("pg_pg_table_ui_1",rv_data, rv_selections, active_layer_data)
 
-    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections, heat_data, agg_heat) #,box_data,varbox_data)
+    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections, heat_data)#, agg_heat) #,box_data,varbox_data)
     mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_data, rv_selections, active_layer_data)
     mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_data, rv_selections)
 
@@ -83,27 +83,6 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
     )
 
 
-    agg_heat <- reactive({
-      req(heat_data$mat)
-      # START FIX HERE
-      # use data.table to do the aggregating over the grouping variable
-      message("aggregating agg_heat()")
-      in_hdata <- as.data.table(heat_data$mat)
-      in_hdata$grp <- as.character(heat_data$x_names)
-
-      # in_hdata$X_ID <- rownames(heat_data$mat)
-      # om_cols <- colnames(in_hdata)
-      # agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp, .SDcols = -c("X_ID")]
-      agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp]
-      tmp <- agg_hdata$grp
-      agg_mat <- t(as.matrix(agg_hdata[,grp:=NULL]))
-      colnames(agg_mat) <- tmp
-      # make sure we have colunn names...
-      message("finished agg_heat()")
-
-      return( agg_mat )
-    }
-    )
 
 
 
