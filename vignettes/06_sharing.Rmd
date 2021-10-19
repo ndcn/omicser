@@ -24,7 +24,7 @@ There's a few more responsibilities that need to be addressed:
 2. data safety
 
 
-## Context & Docuementation
+## Documenting the data and analysis
 
 The NDCN Omics browser has a tab to render an .Rmd file containing additional information about your data.  This could include such things as a publication or pre-print, "thank-you"s, acknowledgements, links to the lab, etc.  The goal is to have all the nescessary background and caveats in one place. 
 
