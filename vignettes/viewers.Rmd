@@ -1,0 +1,32 @@
+---
+title: "Launching a shared browser"
+output:
+  html_document: 
+    keep_md: yes
+    toc: true
+  md_document:
+    variant: gfm
+---
+
+> **This vignette is currently under active development.**
+
+- unzip folder with configuration and database files
+
+
+```{r}
+install.packages("devtools")
+install.packages("omicser")
+
+devtools::install_github("ndcn/omicser")
+```
+
+Follow prompts in console to install and update all associated packages.
+
+Load the `omicser` package (and ensure it installed properly)
+
+```{r}
+library(omicser)
+```
+
+
+
