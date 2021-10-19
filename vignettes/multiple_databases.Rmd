@@ -1,0 +1,29 @@
+---
+title: "Visualizing multiple datasets"
+output:
+  html_document: 
+    keep_md: yes
+    toc: true
+  md_document:
+    variant: gfm
+---
+
+> **This vignette is currently under active development.**
+
+It is possible to visualize multiple datasets in the same initialized browser.
+
+Guidelines for similarity of datasets in the same browser?
+
+## Data curation
+
+- database folder will contain one subdirectory for each database 
+
+## Configuration 
+
+- each database has a separate configuration file, located in the folder for the respective database 
+- browser configuration file 
+
+## Browsing
+
+- multiple options from which to select in the drop down menu of the Ingest tab
+- additional info tab?
