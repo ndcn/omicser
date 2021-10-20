@@ -23,7 +23,7 @@ mod_side_selector_ui <- function(id){
     uiOutput( ns( "ui_DIV_warn" )),
     htmlOutput( ns( "ui_db_type" )),
 
-    h1("Variables & *-Omics Selector"),
+    h1("Variables & -omic Features Selector"),
     hr(style = "border-top: 1px solid #000000;"),
 
     fluidRow(
@@ -58,11 +58,11 @@ mod_side_selector_ui <- function(id){
 
     # omics selection --------------------
     hr(style = "border-top: 1px solid #000000;"),
-    h4("*-Omics"),
+    h4("-omic features"),
     fluidRow(
       column(width = 2,
              offset = 0,
-             "*-Omics",br(),
+             "Feature",br(),
              "meta-",
              "data"),
       column(width = 10,
@@ -76,19 +76,21 @@ mod_side_selector_ui <- function(id){
       )
     ),
 
-    hr(style = "border-top: 1px dashed grey;"),
-
     fluidRow(
-      uiOutput(ns("ui_text_warn"), width = "100%")
-        ), #fluidRow
+      column(width = 10,
+             offset = 2,
+                h4("Filter Features"),
+                sliderInput(ns("SLD_restr_feats"), "feature filter:",
+                          min=0, max = 100, value = 85, round=TRUE),
+                br(),
+                uiOutput(ns("ui_n_feats"), width = "60%")
 
-    fluidRow(
-      column(
-        width = 10,
-        offset = 1,
-        uiOutput(ns("ui_groupB"))
       )
-    )
+    ),
+
+    hr(style = "border-top: 1px dashed grey;")
+
+
 
   ) #taglist
 
@@ -120,21 +122,25 @@ mod_side_selector_server <- function(id, rv_data){
       feat_subset = NULL,   # NOT ENABLEDj, using omics selector
       feat_subsel = NULL,  # NOT ENABLED
 
-      # #DISABLED.
-      # #TODO: depricate all these
-      # group_action = NULL,
-      # data_source = NULL,
-      # plot_x = NULL,
-      # plot_y = NULL,
-      # plot_var_x = NULL,
-      # plot_var_y = NULL,
-      # plot_feats = NULL,
-      # # TODO:  make this conditional on what kind of data is loaded.. and just a single plot type
-      # raw_plot_type = NULL,
-      # comp_plot_type = NULL,
-      GO = FALSE
+      GO = FALSE,
+
+      feat_filt = NULL
 
     )
+
+
+
+
+    observe({
+      #req(active_omics())  # set when database is chosen ... this is essentially a reset...
+
+      # need to order and rank the variance vector... and then
+      selected_omics$all_omics <- active_omics()
+      selected_omics$freeze <- 0 #reset ffreeze?
+      output$ui_n_feats <- renderUI({ NULL })
+    })
+
+
     ### OMICS  =========================================================
 
     #new_db_trig <- reactive( rv_data$trigger )
@@ -150,28 +156,54 @@ mod_side_selector_server <- function(id, rv_data){
     def_omics <- reactive( rv_data$default$omics )
 
 
+
     # filter omics from subsetting
     active_omics <- reactive({
       #this is the maybe subsetting
 
       omic_out <- all_omics()
       # subset var (omics)
-      if (!is.null( var_sub$set ) ) {
-        if (!is.null( var_sub$select )) {
-          if (length(var_sub$select)>0) {
-            return ( omic_out[ rv_data$anndata$var[[ var_sub$set ]]  %in% var_sub$select ] )
-          } else {
-            print("everything unselected...")
-          }
-        }
-        }
 
-        return( omic_out )
+      subsetted <- if ( !is.null( var_sub$set ) &
+                        !is.null( var_sub$select ) &
+                        length(var_sub$select)>0 )  rv_data$anndata$var[[ var_sub$set ]] %in% var_sub$select
+                  else !is.na(omic_out)
 
-    })
+      filtered_subsetted <- if (!is.null(rv_selections$feat_filt))
+                                          (dplyr::percent_rank(rv_selections$feat_filt)*100 >= input$SLD_restr_feats) & subsetted
+                           else subsetted
+        # #filt_vect <- rv_selections$feat_filt
+        # if (!is.null(rv_selections$feat_filt)) {
+        #   filt_vect <- dplyr::percent_rank(rv_selections$feat_filt)*100
+        #   cutoff <- input$SLD_restr_feats
+        #   filtered_subsetted <- filt_vect >= cutoff & subsetted
+        # } else {
+        #   filtered_subsetted <- subsetted
+        # }
+
+
+
+        return ( omic_out[filtered_subsetted] )
+
+      })
+
+
+    # if (!is.null( var_sub$set ) ) {
+    #     if (!is.null( var_sub$select )) {
+    #       if (length(var_sub$select)>0) {
+    #         return ( omic_out[ rv_data$anndata$var[[ var_sub$set ]]  %in% var_sub$select ] )
+    #       } else {
+    #         print("everything unselected...")
+    #       }
+    #     }
+    #     }
+    #     return( omic_out )
+
+
 
 
     selected_omics <- mod_omic_selector_server("omic_selector_ui_1", active_omics, def_omics) #, new_db_trig)
+
 
 
     ### Outputs =========================================================
@@ -205,6 +237,27 @@ mod_side_selector_server <- function(id, rv_data){
       out_text <- HTML(out_text)
       return(out_text)
       })
+
+
+    observe({
+      req(rv_data$shaddow_defs$feature_filter)
+
+      # figure out the vector we are filtering by
+      if (rv_data$shaddow_defs$feature_filter == "fano factor") { #use the fano_factor
+        filt_name <- "fano factor"
+        filt_vect <- rv_data$fano_factor
+      } else {
+        filt_name <- rv_data$shaddow_defs$feature_filter
+        filt_vect <- rv_data$var[[filt_name]]
+      }
+      # infer what type of vector we have
+
+      rv_selections$feat_filt <- filt_vect
+      # update slider accordingly...
+      updateSliderInput(session, inputId="SLD_restr_feats",
+                        label=paste("select top % via ", filt_name))
+
+    })
 
 
     # observeEvent(
@@ -244,6 +297,19 @@ mod_side_selector_server <- function(id, rv_data){
       group_obs <- rv_data$config[grp == TRUE & field=="obs"]$UI # <- choices_x
       group_obs2 <- rv_data$config[grp == TRUE & field=="obs"]$UI
       def_grp_o <- rv_data$default$obs_subset
+
+
+      #hack nynamic choices in for now...]
+      #
+      #
+      # to_return$shaddow_defs <- shaddow_defs
+      # to_return$fano_factor <- temp_rv$fano_factor
+
+      group_obs <- rv_data$shaddow_defs$exp_fact
+      group_obs2 <- group_obs
+      def_grp_o <- group_obs[1]
+
+
 
       to_return <-  tagList(
         fluidRow(
@@ -293,6 +359,11 @@ mod_side_selector_server <- function(id, rv_data){
       group_var <- rv_data$config[grp == TRUE & field=="var"]$UI                                         #
       def_grp_v <- group_var[1]
 
+      group_var <-rv_data$shaddow_defs$omic_feat
+      def_grp_v <- group_var[1]
+
+
+
       to_return <-  tagList(
 
           fluidRow(
@@ -330,6 +401,10 @@ mod_side_selector_server <- function(id, rv_data){
         shinyjs::disable("SI_group_obs2")
       }
     })
+
+
+
+
 
 
 

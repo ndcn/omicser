@@ -36,14 +36,14 @@ mod_pg_vis_comp_ui <- function(id){
       ),
       fluidRow(
         box(id = ns("omic_boxplot"),
-            title = "Omic Distribution",
+            title = "Expression Distribution",
             solidHeader = TRUE,
             status = "primary",
             plotlyOutput(outputId = ns("test_boxplot")),
             width = 8),
         # Info on metab selected on volcano plot
         box(id = ns("omic_info"),
-            title = "Omic Details",
+            title = "Feature Meta-info",
             solidHeader = TRUE,
             status = "primary",
             htmlOutput(ns("UI_meta_box")),
@@ -319,11 +319,16 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
         )
       )
 
+
+
+
       selected <- event_data(event = "plotly_click")$pointNumber + 1
       omic_name <- filtered_de()$names[selected]
 
+      # TODO: replace.
+      #omic_details <- rv_data$default$omic_details
+      omic_details <- rv_data$shaddow_defs$feat_deets
 
-      omic_details <- rv_data$default$omic_details
       annots <- rv_data$anndata$var[omic_name,]
 
       deet <- paste("<b> Name </b>: ", annots$omics_name, "</br>")

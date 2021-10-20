@@ -15,7 +15,7 @@ mod_omic_selector_ui <- function(id){
   omic_sel_tags <- tagList(
 
 
-    h4("Target *-Omics"),
+    h4("Target Features"),
     fluidRow(
          selectizeInput(
                         ns("SI_omics_select"), "Select (<100)", "",
@@ -126,6 +126,8 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
       return( strsplit(isolate(input$text_omic_add), ",| |;|, ")[[1]] )
 
     })
+
+
 
 
 

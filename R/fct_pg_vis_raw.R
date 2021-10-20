@@ -417,3 +417,64 @@ unit_name = "scaled 'X'"
   return(ht)
 
 }
+
+
+
+make_cx_heatmap = function(in_mat,
+                        cluster_rows, row_split, show_row_names, omics_title,
+                        cluster_columns, column_split,show_column_names, x_aggregated, x_title,x_grp,
+                        units_label, omics, omics_at) {
+
+    if (x_aggregated)
+      grp_x <- colnames(in_mat) #make sure its not a factor
+    else {
+      grp_x <- as.character(x_grp) #make sure its not a factor
+    }
+
+    if (cluster_columns) {
+      column_split = NULL
+      ha <- ComplexHeatmap::HeatmapAnnotation(groups = ComplexHeatmap::anno_block(labels = levels(grp_x)))
+    } else {
+      column_split = grp_x
+      ha <- NULL
+    }
+
+
+
+
+    ha2 <- ComplexHeatmap::rowAnnotation(feats = ComplexHeatmap::anno_mark(at = omics_at, labels = omics))
+
+
+    ht <- ComplexHeatmap::Heatmap(in_mat,
+                                  cluster_rows = cluster_rows,
+                                  cluster_columns = cluster_columns,
+                                  top_annotation = ha,
+                                  show_row_names = show_row_names,
+                                  show_column_names = show_column_names,
+                                  row_names_side = "right",
+                                  row_names_gp = grid::gpar(fontsize = 7),
+                                  column_split = column_split,
+                                  row_split = row_split,
+                                  # border = border,
+                                  name = units_label,
+                                  column_title = x_title,
+                                  row_title = omics_title) + ha2
+
+    # ,
+    #                               raster_quality = 1,
+    #                               #show_parent_dend_line = TRUE,
+    #                               use_raster = FALSE)
+    # # ,
+    # #                               raster_device = "png")
+
+    message("plot_heatmap_out: FINISHED ComplexHeatmap::Heatmap")
+
+    ht <- ComplexHeatmap::draw(ht, merge_legend = TRUE)
+}
+#
+#
+#   env$row_index = which(l)
+#
+#
+#   ht = draw(ht,
+

@@ -18,53 +18,41 @@ mod_pg_vis_raw_ui <- function(id){
    "The normalised expression values are group averaged and scaled/thresholded (?)).",
    br(),br(),
 
-
-   fluidRow(
-     hr(style = "border-top: 1px solid #000000;"),
-     # these are things that affect both "agg" and "full"
-     column(
-       3, style="border-right: 2px solid black",
-       shinyjs::disabled(
-         radioButtons(ns("RB_heat_plot_type"), "plot type:",
-                    choices = c("Bubbleplot", "Heatmap"),
-                    selected = "Heatmap", inline = TRUE)
-         ),
-       hr(style = "border-top: 1px dashed grey;"),
-       checkboxInput(ns("CB_scale"), "Scale values?", value = TRUE),
-       br()
-
-     ), # End of column (6 space)
-     column(
-       3, style="border-right: 2px solid black",
-       checkboxInput(ns("CB_target_omics"), "target -omics only?", value = FALSE),
-       br(),br()
-     ),
-     column(
-       3, style="border-right: 2px solid black",
-       checkboxInput(ns("CB_cluster_rows"), "Cluster rows (omics)", value = TRUE),
-       checkboxInput(ns("CB_cluster_cols"), "Cluster columns (samples)", value = TRUE),
-       br()
-     ),
-     column(
-       3,
-       checkboxInput(ns("CB_show_grp_rows"), "Show row groupings (omics)", value = FALSE),
-       checkboxInput(ns("CB_show_grp_cols"), "Show col groupings (samples)", value = FALSE),
-       #checkboxInput(ns("CB_group_agg"), "aggregate groupings? (samples)", value = FALSE),
-       br()
-     )
-   ),
    fluidRow(
      hr(style = "border-top: 1px dashed grey;"),
      column(
        2, style="border-right: 2px solid black",
+
+       checkboxInput(ns("CB_aggregate_conditions"), "aggregate conditions?", value = FALSE),
+       checkboxInput(ns("CB_scale"), "Scale values?", value = TRUE),
+
+       hr(style = "border-top: 1px dashed grey;"),
+       checkboxInput(ns("CB_cluster_rows"), "Cluster rows (omics)", value = TRUE),
+       checkboxInput(ns("CB_cluster_cols"), "Cluster columns (samples)", value = TRUE),
+
        br(),
+       checkboxInput(ns("CB_show_grp_rows"), "Show row groupings (omics)", value = FALSE),
+       checkboxInput(ns("CB_show_grp_cols"), "Show col groupings (samples)", value = FALSE),
+
+       # Input: Decimal interval with step value ----
+       hr(style = "border-top: 1px dashed grey;"),
+       checkboxInput(ns("CB_show_all_feats"), "show all features?", value = TRUE),
+       "warning! this will be slow",
+
+       shinyjs::disabled(
+         radioButtons(ns("RB_heat_plot_type"), "plot type:",
+                      choices = c("Bubbleplot", "Heatmap"),
+                      selected = "Heatmap", inline = TRUE)
+       )
        # this selector for aggregated heatmap
        # A
        #uiOutput(outputId = ns("UI_comp_group_selection"))
 
      ), # End of column (6 space)
      column(10,
-            uiOutput(ns("UI_heatmap_agg"))
+            uiOutput(ns("UI_heatmap_header")),
+            plotOutput(ns("plot_heatmap_out"), height = "1200px")
+
             # downloadButton("Van_d1oup.pdf", "Download pDF"),
             # downloadButton("Van_d1oup.png", "Download pNG"), br(),
             # div(style="display:inline-block",
@@ -75,21 +63,21 @@ mod_pg_vis_raw_ui <- function(id){
             #                  min = 4, max = 20, value = 10, step = 0.5))
      #)  # End of column (6 space)
      )
-   ),    # End of fluidRow (4 space)
-   fluidRow(
-     hr(style = "border-top: 1px dashed grey;"),
-     h4(htmlOutput(ns("HTML_header"))),
-     uiOutput(ns("UI_heatmap_all"))
-     # downloadButton("Van_d1oup.pdf", "Download pDF"),
-     # downloadButton("Van_d1oup.png", "Download pNG"), br(),
-     # div(style="display:inline-block",
-     #     numericInput("Van_d1oup.h", "pDF / pNG height:", width = "138px",
-     #                  min = 4, max = 20, value = 10, step = 0.5)),
-     # div(style="display:inline-block",
-     #     numericInput("Van_d1oup.w", "pDF / pNG width:", width = "138px",
-     #                  min = 4, max = 20, value = 10, step = 0.5))
-     #)  # End of column (6 space)
-   )    # End of fluidRow (4 space)
+   # ),    # End of fluidRow (4 space)
+   # fluidRow(
+   #   hr(style = "border-top: 1px dashed grey;"),
+   #   h4(htmlOutput(ns("HTML_header"))),
+   #   uiOutput(ns("UI_heatmap_all"))
+   #   # downloadButton("Van_d1oup.pdf", "Download pDF"),
+   #   # downloadButton("Van_d1oup.png", "Download pNG"), br(),
+   #   # div(style="display:inline-block",
+   #   #     numericInput("Van_d1oup.h", "pDF / pNG height:", width = "138px",
+   #   #                  min = 4, max = 20, value = 10, step = 0.5)),
+   #   # div(style="display:inline-block",
+   #   #     numericInput("Van_d1oup.w", "pDF / pNG width:", width = "138px",
+   #   #                  min = 4, max = 20, value = 10, step = 0.5))
+   #   #)  # End of column (6 space)
+    )    # End of fluidRow (4 space)
    )
 
   return(tag_list)
@@ -105,7 +93,7 @@ mod_pg_vis_raw_ui <- function(id){
 #' @param varbox_data var boxplot data
 #'
 #' @noRd
-mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, agg_heat){
+mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, agg_heat){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -117,178 +105,213 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, agg_hea
     color_scheme = color_schemes[2]
 
 
-
-    # plot_heatmap_out renderPlot---------------------------------
-    output$plot_heatmap_agg_out <- renderPlot({
-
-      req(heat_data$mat)
-
-      #TODO:
-      # -limit levels of clustering columns
-      # -
-      #
-      message("starting: plot_heatmap_agg_out packer")
-
-      #input_data <- heat_data$data
-      #
-      plot_type <- input$RB_heat_plot_type
-      in_clust_row <- input$CB_cluster_rows
-      in_clust_col <- input$CB_cluster_cols
-
-      in_agg_grp <- input$CB_group_agg
-
-
-      #in_mat <- paste0("factor: ",heat_data$mat)
-      agg_mat <- agg_heat()
-
-      # zero NAs?
-      #
-      # Log? (assume all the counts tables are normalized prior to aggregation...)
-      #
-      # Scale if required
-      units_label <- 'omic\nexpr'
-
-      if(input$CB_scale){
-        agg_mat <- scale(agg_mat) # scale operates on columns... and for now we have omics in the columns
-        units_label <-  'omic\nexpr\n(Z-score)'
-      }
-
-
-
-      if (dim(agg_mat)[2] < 3){
-        in_clust_col <- FALSE
-      }
-
-      omics <- heat_data$selected_omics$target_omics
-
-      x_title <- heat_data$x_group
-
-      if (input$CB_target_omics) {
-        agg_mat <- agg_mat[omics,]
-        show_row_names = TRUE
-        ha2 <- NULL
-        omics_title <- "target *-omics"
+    observe({
+      req(input$SLD_nfeats)
+      if ( input$CB_show_all_feats ) {
+        shinyjs::enable("SLD_nfeats")
       } else {
-        omics_at <- which(rownames(agg_mat) %in% omics)
-        show_row_names = FALSE
-        ha2 <- ComplexHeatmap::rowAnnotation(foo = ComplexHeatmap::anno_mark(at = omics_at,
-                                                                            labels = omics))
-        omics_title <- "*-omics"
-
+        shinyjs::disable("SLD_nfeats")
       }
+    })
 
-      plot_type <- "Heatmap"  # depricate Bubbleplot for now
-      if (plot_type=="Bubbleplot") {
-        grp <- heat_data$x_group
-        ht <- bubble_heatmap2(in_hdata, agg_mat, plot_type,
-                                   in_do_scale, in_clust_row, in_clust_col,
-                                   color_scheme, plot_size, grp, save = FALSE)
 
-      } else {
-        message("plot_heatmap_agg_out: calling ComplexHeatmap::Heatmap")
 
-        ht <- ComplexHeatmap::Heatmap(agg_mat,
-                                      cluster_rows = in_clust_row,
-                                      cluster_columns = in_clust_col,
-                                      show_row_names = show_row_names,
-                                      show_column_names = TRUE,
-                                      right_annotation = ha2,
-                                      row_names_side = "right",
-                                      row_names_gp = grid::gpar(fontsize = 7),
-                                      #column_split = grp_x,
-                                      #row_split = grp_y,
-                                      name = units_label,
-                                      column_title = x_title,
-                                      row_title = omics_title,
-                                      #show_parent_dend_line = TRUE,
-                                      use_raster = FALSE)
-        # ,
-        #                               raster_device = "png")
+    output$UI_heatmap_header <- renderUI({
+      #if (rv_selections$target_omics$viz_now) {
+      req(heat_data$mat,
+          heat_data$selected_omics$target_omics)
 
-      }
-      message("plot_heatmap_agg_out: FINISHED ComplexHeatmap::Heatmap")
+      out_text1 <- paste("hm dim: ",
+                         paste(dim(heat_data$mat),collapse = " x "))
+      out_text2 <-  paste("n target features: ",
+                          length(heat_data$selected_omics$target_omics))
 
-      return(ht)
-
+      to_return <-  tagList(
+        h4("*-omic expression"),
+        out_text1,
+        ",", out_text2,
+        br(),
+      )
+      return(to_return)
     })
 
 
 
     # plot_heatmap_out renderPlot---------------------------------
-    output$plot_heatmap_all_out <- renderPlot ({
-
+    output$plot_heatmap_out <- renderPlot( {
       req(heat_data$mat)
-      plot_type <- input$RB_heat_plot_type
-      in_clust_row <- input$CB_cluster_rows
-      in_clust_col <- input$CB_cluster_cols
+      message("starting: plot_heatmap_out packer")
 
-      in_agg_grp <- input$CB_group_agg
+      #TODO:  turn this list of "annotations" into heathmap annotations...
+      #rv_data$exp_annot
+      #rv_data$feat_annot
 
-      in_mat <- heat_data$mat
 
-      # zero NAs?
-      #
-      # Log? (assume all the counts tables are normalized prior to aggregation...)
-      #
+      in_mat <- heat_data$mat  #imported as samples X features
       # Scale if required
       units_label <- 'omic\nexpr'
-
-      if ( input$CB_scale ) {
+      if(input$CB_scale) {
         in_mat <- scale(in_mat) # scale operates on columns... and for now we have omics in the columns
         units_label <-  'omic\nexpr\n(Z-score)'
+        if ( dim(in_mat)[1]<5)   {
+          message("warning!!! small number of groups... could be indeterminate...")
+        }
       }
 
 
-      # START FIX HERE
+      # aggregate if required
+      if( input$CB_aggregate_conditions ) {
+        in_hdata <- as.data.table(in_mat)
+        in_hdata$grp <- as.character(heat_data$x_names)
+
+        agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp]
+        tmp <- agg_hdata$grp
+        agg_mat <- as.matrix(agg_hdata[,grp:=NULL])
+        rownames(agg_mat) <- tmp
+
+        in_mat <- agg_mat
+
+        x_aggregated <- TRUE
+        x_grp <- NULL
+
+        x_title <- heat_data$x_group
+
+      } else {
+        x_aggregated <- FALSE
+        x_grp <- heat_data$x_names
+
+        x_title <- heat_data$x_group
+
+      }
+
       in_mat <- t(in_mat)
 
-      x_title <- "samples" #heat_data$x_group
 
-      grp_x <- as.character(heat_data$x_names) #make sure its not a factor
-      grp_x <- heat_data$x_names #make sure its not a factor
+
+      #  depricated bubbleplot
+      # plot_type <- input$RB_heat_plot_type
 
       omics <- heat_data$selected_omics$target_omics
-      omics_at <- which(rownames(in_mat) %in% omics)
 
-      omics_title <- "*-omics"
+      # if we are trying to show everything we need to wubset...
+      if (input$CB_show_all_feats) {
 
-      if (input$CB_cluster_cols) {
-        ha <- NULL
-        grp_x <- NULL
-        #ha = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:6), labels = LETTERS[1:5]))
+
+        omics_at <- which(rownames(in_mat) %in% omics)
+        show_row_names <- FALSE #replace with annotation
+        omics_title <- "all (sampled) features"
+
+        # if (input$CB_cluster_rows){
+        #   cluster_rows <- cluster_within_group(t(in_mat), mygroup[samp_omics_at])
+        # } else {
+        #   cluster_rows <- FALSE
+        # }
+
       } else {
-        ha <- ComplexHeatmap::HeatmapAnnotation(foo = ComplexHeatmap::anno_block(labels = levels(grp_x)))
+        in_mat <- in_mat[omics,]
+        show_row_names = TRUE
+        ha2 <- NULL
+        omics_at <- which(rownames(in_mat) %in% omics)
+
+        # if (input$CB_cluster_rows){
+        #   cluster_rows <- hclust(dist(in_mat))
+        # } else {
+        #   cluster_rows <- FALSE
+        # }
+
+        show_row_names <- TRUE
+        omics_title <- "target features"
+
       }
 
-      ha2 <- ComplexHeatmap::rowAnnotation(foo = ComplexHeatmap::anno_mark(at = omics_at,
-                                          labels = omics))
-      show_row_names = FALSE
+      cluster_rows <- if (input$CB_cluster_rows) hclust(dist(in_mat)) else FALSE
 
 
-      # need to fix the raster here...
-      # suppress the "colnames" when we are plotting all the samples... all the genes
-      #TODO:
-      # -limit levels of clustering columns
-      # -
-      message("plot_heatmap_all_out: CALLING ComplexHeatmap::Heatmap")
-      ht <- ComplexHeatmap::Heatmap(in_mat,
-                                    cluster_rows = in_clust_row,
-                                    cluster_columns = in_clust_col,
-                                    column_split = grp_x,
-                                    #row_split = grp_y,
-                                    top_annotation = ha,
-                                    show_row_names = show_row_names,
-                                    right_annotation = ha2,
-                                    row_names_side = "right",
-                                    #row_names_side = "left",
-                                    row_names_gp = grid::gpar(fontsize = 7),
-                                    name = units_label,
-                                    column_title = x_title,
-                                    row_title = omics_title,
-                                    show_parent_dend_line = TRUE,
-                                    use_raster = FALSE) #,
-                                    #raster_device = "png")
-      message("plot_heatmap_all_out: FINISHED ComplexHeatmap::Heatmap")
+      cluster_columns <- input$CB_cluster_cols
+      if (dim(in_mat)[2] < 3){
+        cluster_columns <- FALSE
+      }
+      row_split <- NULL
+      show_column_names <- TRUE
+
+      hm <- make_cx_heatmap(in_mat,
+                          cluster_rows, row_split, show_row_names, omics_title,
+                          cluster_columns, column_split,show_column_names, x_aggregated, x_title,x_grp,
+                          units_label, omics, omics_at)
+
+
+      return(hm)
+
+    })
+
+
+
+
+#
+#
+#       # zero NAs?
+#       #
+#       # Log? (assume all the counts tables are normalized prior to aggregation...)
+#       #
+#       # Scale if required
+#       units_label <- 'omic\nexpr'
+#
+#       if ( input$CB_scale ) {
+#         in_mat <- scale(in_mat) # scale operates on columns... and for now we have omics in the columns
+#         units_label <-  'omic\nexpr\n(Z-score)'
+#       }
+#
+#
+#       # START FIX HERE
+#       in_mat <- t(in_mat)
+#
+#       x_title <- "samples" #heat_data$x_group
+#
+#       grp_x <- as.character(heat_data$x_names) #make sure its not a factor
+#       grp_x <- heat_data$x_names #make sure its not a factor
+#
+#       omics <- heat_data$selected_omics$target_omics
+#       omics_at <- which(rownames(in_mat) %in% omics)
+#
+#       omics_title <- "*-omics"
+#
+#       if (input$CB_cluster_cols) {
+#         ha <- NULL
+#         grp_x <- NULL
+#         #ha = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:6), labels = LETTERS[1:5]))
+#       } else {
+#         ha <- ComplexHeatmap::HeatmapAnnotation(foo = ComplexHeatmap::anno_block(labels = levels(grp_x)))
+#       }
+#
+#       ha2 <- ComplexHeatmap::rowAnnotation(foo = ComplexHeatmap::anno_mark(at = omics_at,
+#                                           labels = omics))
+#       show_row_names = FALSE
+#
+#
+#       # need to fix the raster here...
+#       # suppress the "colnames" when we are plotting all the samples... all the genes
+#       #TODO:
+#       # -limit levels of clustering columns
+#       # -
+#       message("plot_heatmap_all_out: CALLING ComplexHeatmap::Heatmap")
+#       ht <- ComplexHeatmap::Heatmap(in_mat,
+#                                     cluster_rows = in_clust_row,
+#                                     cluster_columns = in_clust_col,
+#                                     column_split = grp_x,
+#                                     #row_split = grp_y,
+#                                     top_annotation = ha,
+#                                     show_row_names = show_row_names,
+#                                     right_annotation = ha2,
+#                                     row_names_side = "right",
+#                                     #row_names_side = "left",
+#                                     row_names_gp = grid::gpar(fontsize = 7),
+#                                     name = units_label,
+#                                     column_title = x_title,
+#                                     row_title = omics_title,
+#                                     show_parent_dend_line = TRUE,
+#                                     use_raster = FALSE) #,
+#                                     #raster_device = "png")
+#       message("plot_heatmap_all_out: FINISHED ComplexHeatmap::Heatmap")
 
       #top_annotation = HeatmapAnnotation(foo = anno_block(gp = gpar(fill = 2:4))),
 #
@@ -325,36 +348,10 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data, agg_hea
       # column_names_gp = gpar(fontsize = 10, fontface = 'bold'),
       # column_names_max_height = unit(10, 'cm'),
       # column_dend_height = unit(25,'mm'),
-
-      return(ht)
-    })
-
-
-    output$UI_heatmap_agg <- renderUI({
-      #if (rv_selections$target_omics$viz_now) {
-      req(heat_data$mat,
-          heat_data$selected_omics$target_omics)
-
-      out_text1 <- paste("hm dim: ",
-                        paste(dim(heat_data$mat),collapse = " x "))
-
-      out_text2 <-  paste("n target_omics: ",
-                        length(heat_data$selected_omics$target_omics))
-
-      to_return <-  tagList(
-        h4("grouped average  expression"),
-        "(Aggregated)",
-        out_text1,
-        br(),
-        out_text2,
-        br(),
-        plotOutput(ns("plot_heatmap_agg_out"), height = "1200px")
-      )
-
-      return(to_return)
-
-
-    })# Panel sizes
+#
+#       return(ht)
+#     })
+# Panel sizes
     # pList = c("400px", "600px", "800px")
     # names(pList) = c("Small", "Medium", "Large")
     # pList2 = c("500px", "700px", "900px")

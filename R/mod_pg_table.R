@@ -31,14 +31,14 @@ mod_pg_table_ui <- function(id){
     ),
     fluidRow(
       box(id = ns("omic_bp_bx"),
-          title = "Omic Distribution",
+          title = "Expression Distribution",
           status = "warning",
           solidHeader = TRUE,
           plotlyOutput(ns("omic_bp")),
           width = 8),
       # Info on metab selected in table
       box(id = ns("omic_info_bx"),
-          title = "Omic Details",
+          title = "Feature Meta-info",
           status = "warning",
           solidHeader = TRUE,
           htmlOutput(ns("omic_info")),
@@ -279,7 +279,13 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
       print("in renderText: omic_info")
 
       omic_name <- table_sel_values$omic_name # omic_table$dt$omics_name[input$table_over_info_rows_selected ]
-      omic_details <- rv_data$default$omic_details
+
+
+
+      # TODO: replace.
+      #omic_details <- rv_data$default$omic_details
+      omic_details <- rv_data$shaddow_defs$feat_deets
+
       annots <- rv_data$anndata$var[omic_name,]
 
       deet <- paste("<b> Name </b>: ", omic_name, "</br>")
