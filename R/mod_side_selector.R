@@ -137,7 +137,11 @@ mod_side_selector_server <- function(id, rv_data){
       # need to order and rank the variance vector... and then
       selected_omics$all_omics <- active_omics()
       selected_omics$freeze <- 0 #reset ffreeze?
-      output$ui_n_feats <- renderUI({ NULL })
+      output$ui_n_feats <- renderUI({
+        n_all <- length(all_omics())
+        n_select <- length(selected_omics$all_omics)
+        HTML(paste0("filtered <b>",n_all,"</b> to N =<b> ",n_select,"</b> features"))
+        })
     })
 
 
@@ -181,11 +185,9 @@ mod_side_selector_server <- function(id, rv_data){
         #   filtered_subsetted <- subsetted
         # }
 
+      return ( omic_out[filtered_subsetted] )
 
-
-        return ( omic_out[filtered_subsetted] )
-
-      })
+    })
 
 
     # if (!is.null( var_sub$set ) ) {
@@ -244,14 +246,15 @@ mod_side_selector_server <- function(id, rv_data){
 
       # figure out the vector we are filtering by
       if (rv_data$shaddow_defs$feature_filter == "fano factor") { #use the fano_factor
-        filt_name <- "fano factor"
+        filt_name <- "fano factor (computed)"
         filt_vect <- rv_data$fano_factor
       } else {
         filt_name <- rv_data$shaddow_defs$feature_filter
-        filt_vect <- rv_data$var[[filt_name]]
+        filt_vect <- rv_data$anndata$var[[filt_name]]
+        # check that the polarity is right....
+
       }
       # infer what type of vector we have
-
       rv_selections$feat_filt <- filt_vect
       # update slider accordingly...
       updateSliderInput(session, inputId="SLD_restr_feats",
@@ -433,7 +436,7 @@ mod_side_selector_server <- function(id, rv_data){
           # req(input$CB_obs_subsel,
           #     input$SI_obs_subset)
           #
-print("mod_side_selector:  pack rv_selections")
+        message("mod_side_selector:  pack rv_selections")
         rv_selections$data_layer <- input$SI_data_layer
 
         rv_selections$observ_subset <- obs_sub$set #input$SI_obs_subset

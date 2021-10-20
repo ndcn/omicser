@@ -46,6 +46,7 @@ usethis::use_package("anndata")
 usethis::use_package("magick")
 usethis::use_package("Cairo")
 
+usethis::use_package("waiter")
 
 # DISABLED for now
 # usethis::use_package("BiocManager")

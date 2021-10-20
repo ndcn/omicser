@@ -73,6 +73,11 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
     color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
     color_scheme = color_schemes[2]
 
+    vwtr <- waiter::Waiter$new(
+      id = ns("volcano_plot"),
+      html = waiter::spin_loaders(id=12,color="red"),
+      color = waiter::transparent(.5)  #waiter::transparent(.5)
+    )
 
     #### compare samples
     #### TODO: change name to diff_exp_filter or something since we are no longer testing here
@@ -176,6 +181,8 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
     output$volcano_plot <- renderPlotly({
       req(filtered_de, #input$SI_comp_type,
           input$SI_comp_fact)
+
+      vwtr$show()
 
       #colorby_group <- input$SI_color_grp
       de <- filtered_de()

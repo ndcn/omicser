@@ -8,13 +8,12 @@ app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
-
+    shinyjs::useShinyjs(),
+    waiter::useWaiter(),
     # golem::activate_js(), #already loaded in your golem by `bundle_resources()`
 
     # Your application UI logic
     fluidPage(
-      shinyjs::useShinyjs(),
-
       titlePanel(
         fluidRow(
           col_4(
