@@ -104,6 +104,19 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
     color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-purple")
     color_scheme = color_schemes[2]
 
+    wtr <- waiter::Waiter$new(
+      id = ns("plot_heatmap_out"),
+      html = waiter::spin_loaders(id=12,color="red"),
+      color = waiter::transparent(.5)  #waiter::transparent(.5)
+    )
+
+    observeEvent(input$plot_heatmap_out_waiter_hidden, {
+      message(paste0("hide: ",input$plot_heatmap_out_waiter_hidden))
+    })
+
+    observeEvent(input$plot_heatmap_out_waiter_shown, {
+      message(paste0("hide: ",input$plot_heatmap_out_waiter_shown))
+    })
 
     observe({
       req(input$SLD_nfeats)
@@ -146,6 +159,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
       #rv_data$exp_annot
       #rv_data$feat_annot
 
+      wtr$show()
 
       in_mat <- heat_data$mat  #imported as samples X features
       # Scale if required
