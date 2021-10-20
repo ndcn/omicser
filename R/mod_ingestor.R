@@ -16,29 +16,91 @@ mod_ingestor_ui <- function(id) {
     h4("Load databases for browsing and exploration"),
 
     fluidRow(
-        selectizeInput(ns("SI_database"),
-                            "Database",
+    column(width = 3,
+           offset = 0,
+           selectizeInput(ns("SI_database"),
+                            "Choose Database",
                             "", multiple=FALSE, options = list(placeholder = " database first")
-                            ),
-        shinyjs::disabled(
+                            )
+           ),
+        column(width = 6,
+               offset = 0,
+               shinyjs::disabled(
                actionButton(ns("AB_ingest_load"), label = "Load Data", class = "btn btn-large btn-danger")
-                      )
-
+                      ),
+               "loaded data |------> ",
+               br(),
+               uiOutput(ns("ui_data_meta")),
+        )
       ),
 
     hr(style = "border-top: 1px dashed grey;"),
     fluidRow(
-      column(width = 2,
+
+
+      column(width = 4,
              offset = 0,
-             "loaded data |------> ",
-             br()
-      ),
-      column(width = 10,
-             offset = 0,
-             uiOutput(ns("ui_data_meta")),
-      )
-    ),
-    mod_additional_info_ui(id = ns("additional_info_ui_ingest"))
+
+             h4("Select the relavent meta-table columns:"),
+             hr(style = "border-top: 1px dashed grey;"),
+
+             h4("sample meta (obs)"),
+             fluidRow(
+               column(6,
+                      selectizeInput(
+                               ns("SI_exp_fact"), "experimental factors (grouping)", "",
+                               multiple=TRUE, options = list(placeholder = "Choose sample factors")
+                             )),
+               column(6,
+                      selectizeInput(
+                           ns("SI_exp_annot"), "sample annotation (heatmap)", "",
+                           multiple=TRUE, options = list(placeholder = "Choose sample-meta annotations (heatmap)")
+                         )
+               )
+             ),
+             hr(style = "border-top: 1px dashed grey;"),
+             h4("feature meta (var)"),
+             fluidRow(
+               column(6,
+               selectizeInput(
+                 ns("SI_omic_feat"), "omic feature groups", "",
+                 multiple=TRUE, options = list(placeholder = "Choose omic feature groups")
+               )),
+               column(6,
+                 selectizeInput(
+                 ns("SI_feat_annot"), "feature annotation (heatmap)", "",
+                 multiple=TRUE, options = list(placeholder = "Choose omic feature annotatins (heatmap)")
+               ))
+              ),
+               hr(style = "border-top: 1px dashed grey;"),
+
+             fluidRow(
+               column(6,
+                      selectizeInput(
+                             ns("SI_feat_deets"), "feature details", "",
+                             multiple=TRUE, options = list(placeholder = "Choose omic feature meta-info")
+                           )
+               ),
+
+
+               column(6,
+                      HTML("<b>feature filtering variable</b>"),br(),
+                      checkboxInput(ns("CB_fano_fact"), "calculate? (relative variance)", value = TRUE),
+
+                    shinyjs::disabled(
+                           selectizeInput(
+                             ns("SI_feature_filter"), "filter variable", "",
+                             multiple=FALSE, options = list(placeholder = "Choose omic feature for filtering `highly variable`")
+                           ))
+               )
+             )
+          ),
+
+          column(width = 8,
+                 offset = 0,
+                 mod_additional_info_ui(id = ns("additional_info_ui_ingest"), title = "Databse Information")
+          )
+     ) #fluidrow
   ) #tagList
 }
 
@@ -87,10 +149,42 @@ mod_ingestor_server <- function(id,db_names, db_root_path) {
       default = NULL,
 
 
-      trigger = 0
+      trigger = 0,
+
+      shaddow_defs = NULL,
+      fano_factor = NULL
     )
 
     updateSelectizeInput(session, "SI_database", choices = db_names, selected = db_names[1], server=TRUE)
+
+
+    idx_of_disp <- reactive({
+        matrixStats::colVars(raw,na.rm = TRUE)/colMeans(raw,na.rm = TRUE)
+    })
+
+
+  shaddow_defs <- reactiveValues(
+    # holding the interactive selected factors and features which supercede what is from the defaults/configs
+    expr_annot = NULL,
+    exp_fact = NULL,
+    exp_annot = NULL,
+    omic_feat = NULL,
+    feat_annot = NULL,
+    feat_deets = NULL,
+    feature_filter = NULL
+
+   )
+
+  temp_rv <- reactiveValues(
+    # holding the interactive selected factors and features which supercede what is from the defaults/configs
+    anndata = NULL,
+    de = NULL,
+    config = NULL,
+    default = NULL,
+    fano_factor = NULL
+
+  )
+
 
 
     ## load dataset (observeEvent) ===================
@@ -98,11 +192,65 @@ mod_ingestor_server <- function(id,db_names, db_root_path) {
     observe({
         req(input$SI_database)
 
-      print("making loaded_data rv")
       db_name$dir <- input$SI_database
       db_name$name <- names(which(db_names==input$SI_database))
       # zero out the data_meta until we "load"
       output$ui_data_meta <- renderUI({h4("Press `LOAD` to activate data") })
+
+
+      # load data
+      temp_rv$de <- readRDS(file = file.path(db_root_path,db_name$dir,"db_de_table.rds"))
+      anndata <- anndata::read_h5ad(filename=file.path(db_root_path,db_name$dir,"db_data.h5ad"))
+      temp_rv$anndata <- anndata
+      conf_def <- gen_config_table(anndata, db_name$dir, db_root_path)
+      #update reactives...
+      temp_rv$config <- conf_def$conf
+      temp_rv$default <- conf_def$def
+
+      # computed index of dispersion
+      # TODO: fix this HACK
+      # computer no-matter what,
+      temp_rv$fano_factor <- (matrixStats::colVars(anndata$X,na.rm = TRUE)/(colMeans(anndata$X,na.rm = TRUE)+10^-40))
+
+      obs_choices <- anndata$obs_keys()
+
+      group_obs <- temp_rv$config[grp == TRUE & field=="obs"]$UI # <- choices_x
+      def_grp_o <- temp_rv$default$obs_subset
+
+      #will still be disabled if we are calculating...
+
+
+      updateSelectInput(inputId = "SI_exp_fact", #label="Choose sample factors"
+                        choices = obs_choices, #multiple=TRUE
+                        selected = group_obs)
+
+
+
+      updateSelectInput(inputId = "SI_exp_annot", #label="Choose sample-meta annotations (heatmap)"
+                        choices = obs_choices, #multiple=TRUE
+                        selected = group_obs)
+
+
+      var_choices <- anndata$var_keys()
+      group_var <- temp_rv$config[grp == TRUE & field=="var"]$UI # <- choices_x
+      def_grp_v <- temp_rv$default$var_subset
+
+
+      updateSelectInput(inputId = "SI_omic_feat", #label="Choose omic feature groups"
+                        choices = var_choices, #multiple=TRUE
+                        selected = def_grp_v)
+
+      updateSelectInput(inputId = "SI_feat_annot", #label= "Choose omic feature annotatins (heatmap)"
+                        choices = var_choices, #multiple=TRUE
+                        selected = group_var)
+
+      updateSelectInput(inputId = "SI_feat_deets", #label= "Choose omic feature meta-info"
+                        choices = var_choices, #multiple=TRUE
+                        selected = var_choices)
+
+      updateSelectInput(inputId = "SI_feature_filter",# label="Choose omic feature for filtering `highly variable`"
+                        choices = var_choices, #multiple=FALSE
+                        selected = "")
 
     })
 
@@ -111,7 +259,6 @@ mod_ingestor_server <- function(id,db_names, db_root_path) {
     # is there overhead to store these in a reactive conduit?
 
     ## render info (TODO:) ===================
-
 
 
 
@@ -127,37 +274,67 @@ mod_ingestor_server <- function(id,db_names, db_root_path) {
     })
 
 
+
+
+
+
+
+
+    observe({
+      if ( input$CB_fano_fact ) {
+        shinyjs::disable("SI_feature_filter")
+        # compute and set ? value??
+
+      } else {
+        shinyjs::enable("SI_feature_filter")
+        message(" choose.. .")
+      }
+    })
+
+
+
+
     # keep these up to date for side_select..
     # # Should this just be done in     observeEvent(input$SI_database,?
 
     # load button :: send the reactive object over to the side selector.
     observeEvent(input$AB_ingest_load, {
       # all other return values set with SI_database
+      # TODO: FIXE CONF_DEF TABLE with the new selections...
+      to_return$de <- temp_rv$de
+      to_return$anndata <- temp_rv$anndata
+      to_return$config <- temp_rv$config
+      to_return$default <- temp_rv$default
 
-      # load data
-      to_return$de <- readRDS(file = file.path(db_root_path,db_name$dir,"db_de_table.rds"))
-      ad <- anndata::read_h5ad(filename=file.path(db_root_path,db_name$dir,"db_data.h5ad"))
-      to_return$anndata <- ad
-      conf_def <- gen_config_table(ad, db_name$dir, db_root_path)
-
-      #update reactives...
-      to_return$config <- conf_def$conf
-      to_return$default <- conf_def$def
 
       to_return$db_meta$name<-db_name$name
       to_return$db_meta$db_dir<-db_name$dir
 
-      to_return$db_meta$omics_type<-conf_def$def$db_meta$omic_type
-      to_return$db_meta$measurment<-conf_def$def$db_meta$measurement
-      to_return$db_meta$organism<-conf_def$def$db_meta$organizm
-      to_return$db_meta$publication<-conf_def$def$db_meta$pub
-      to_return$db_meta$etc<-conf_def$def$db_meta$annotation_database
+      to_return$db_meta$omics_type<-temp_rv$default$db_meta$omic_type
+      to_return$db_meta$measurment<-temp_rv$default$db_meta$measurement
+      to_return$db_meta$organism<-temp_rv$default$db_meta$organizm
+      to_return$db_meta$publication<-temp_rv$default$db_meta$pub
+      to_return$db_meta$etc<-temp_rv$default$db_meta$annotation_database
 
       to_return$trigger <- to_return$trigger + 1
 
+
+
+      shaddow_defs$exp_fact <- input$SI_exp_fact
+      shaddow_defs$exp_annot <- input$SI_exp_annot
+      shaddow_defs$omic_feat <- input$SI_omic_feat
+      shaddow_defs$feat_annot <- input$SI_feat_annot
+      shaddow_defs$feat_deets  <- input$SI_feat_deets
+      shaddow_defs$feature_filter  <- if (input$CB_fano_fact) "fano factor" else input$SI_feature_filter
+
+
+      to_return$shaddow_defs <- shaddow_defs
+      to_return$fano_factor <- temp_rv$fano_factor
+
+
       # will this work?  or is the "observing" affecting a reactive with this render?
       output$ui_data_meta <- renderUI({
-        out_text <- HTML(paste("from the <i>", conf_def$def$db_meta$lab),"</i> lab")
+        out_text <- HTML(paste("from the <i>", temp_rv$default$db_meta$lab),"</i> lab")
         ret_tags <-  tagList(
           h4(to_return$db_meta$omics_type),
           #"some more text",

@@ -76,11 +76,13 @@ display_document <- function(file) {
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_additional_info_ui <- function(id){
+mod_additional_info_ui <- function(id, title = ""){
   ns <- NS(id)
   tagList(
     wellPanel(
       id = ns("about"),
+      title = title,
+      h4(title),
       htmlOutput(outputId = ns("additional_info_md")),
 
     )

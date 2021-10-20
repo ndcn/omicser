@@ -420,12 +420,11 @@ unit_name = "scaled 'X'"
 
 
 
-make_heatmap = function(in_mat,
+make_cx_heatmap = function(in_mat,
                         cluster_rows, row_split, show_row_names, omics_title,
                         cluster_columns, column_split,show_column_names, x_aggregated, x_title,x_grp,
                         units_label, omics, omics_at) {
 
-  browser()
     if (x_aggregated)
       grp_x <- colnames(in_mat) #make sure its not a factor
     else {

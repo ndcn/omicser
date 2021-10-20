@@ -38,9 +38,6 @@ mod_pg_vis_raw_ui <- function(id){
        hr(style = "border-top: 1px dashed grey;"),
        checkboxInput(ns("CB_show_all_feats"), "show all features?", value = TRUE),
        "warning! this will be slow",
-       sliderInput(ns("SLD_nfeats"), "sub sample features (+target feats):",
-                   min = 1000, max = 50000,
-                   value = 2000),
 
        shinyjs::disabled(
          radioButtons(ns("RB_heat_plot_type"), "plot type:",
@@ -117,48 +114,6 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
       }
     })
 
-    sampled_omics <- reactive({
-          targs_ <- heat_data$selected_omics$target_omics
-          all_ <- heat_data$selected_omics$all_omics
-          samp_ <- sample(all_,input$SLD_nfeats)
-          #full_ <- unique(append(targs_,samp_))
-          ret_ <- all_[((all_ %in% targs_) |  (all_ %in% samp_))]
-          return( ret_ )
-      })
-
-    observe({
-      max_samp <- length(heat_data$selected_omics$all_omics)
-      # Control the value, min, max, and step.
-      # Step size is 2 when input value is even; 1 when value is odd.
-      updateSliderInput(session, "SLD_nfeats", value = 2000,
-                        min = 1000, max = max_samp)
-    })
-
-
-
-    #
-    # agg_heat <- reactive({
-    #   req(heat_data$mat)
-    #   # START FIX HERE
-    #   # use data.table to do the aggregating over the grouping variable
-    #   message("aggregating agg_heat()")
-    #   in_hdata <- as.data.table(heat_data$mat)
-    #   in_hdata$grp <- as.character(heat_data$x_names)
-    #
-    #   # in_hdata$X_ID <- rownames(heat_data$mat)
-    #   # om_cols <- colnames(in_hdata)
-    #   # agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp, .SDcols = -c("X_ID")]
-    #   agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp]
-    #   tmp <- agg_hdata$grp
-    #   agg_mat <- t(as.matrix(agg_hdata[,grp:=NULL]))
-    #   colnames(agg_mat) <- tmp
-    #   # make sure we have colunn names...
-    #   message("finished agg_heat()")
-    #
-    #   return( t(agg_mat) )
-    # }
-    # )
-
 
 
     output$UI_heatmap_header <- renderUI({
@@ -187,7 +142,12 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
       req(heat_data$mat)
       message("starting: plot_heatmap_out packer")
 
-      in_mat <- heat_data$mat
+      #TODO:  turn this list of "annotations" into heathmap annotations...
+      #rv_data$exp_annot
+      #rv_data$feat_annot
+
+
+      in_mat <- heat_data$mat  #imported as samples X features
       # Scale if required
       units_label <- 'omic\nexpr'
       if(input$CB_scale) {
@@ -197,6 +157,8 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
           message("warning!!! small number of groups... could be indeterminate...")
         }
       }
+
+
       # aggregate if required
       if( input$CB_aggregate_conditions ) {
         in_hdata <- as.data.table(in_mat)
@@ -204,10 +166,10 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
 
         agg_hdata <-   in_hdata[, lapply(.SD, mean), by = grp]
         tmp <- agg_hdata$grp
-        agg_mat <- t(as.matrix(agg_hdata[,grp:=NULL]))
-        colnames(agg_mat) <- tmp
+        agg_mat <- as.matrix(agg_hdata[,grp:=NULL])
+        rownames(agg_mat) <- tmp
 
-        in_mat <- t(agg_mat)
+        in_mat <- agg_mat
 
         x_aggregated <- TRUE
         x_grp <- NULL
@@ -222,28 +184,20 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
 
       }
 
+      in_mat <- t(in_mat)
+
+
 
       #  depricated bubbleplot
       # plot_type <- input$RB_heat_plot_type
 
       omics <- heat_data$selected_omics$target_omics
 
-
       # if we are trying to show everything we need to wubset...
       if (input$CB_show_all_feats) {
 
-        #first cluster on everything
-        if (input$CB_cluster_rows){
-          hc <- hclust(dist(t(in_mat)))
-          myk <- as.integer(length(isolate(heat_data$selected_omics$all_omics))/500)
-          mygroup = cutree(hc, k = myk)
-        }
 
-
-        samp_omics <- sampled_omics() #heat_data$selected_omics$target_omics
-        in_mat <- t(in_mat)[samp_omics,]
         omics_at <- which(rownames(in_mat) %in% omics)
-        samp_omics_at <- which(rownames(in_mat) %in% samp_omics)
         show_row_names <- FALSE #replace with annotation
         omics_title <- "all (sampled) features"
 
@@ -252,14 +206,12 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
         # } else {
         #   cluster_rows <- FALSE
         # }
-        cluster_rows <- if (input$CB_cluster_rows) {
-                                  ComplexHeatmap::cluster_within_group(t(in_mat), mygroup[samp_omics_at])
-                                  } else FALSE
 
       } else {
-        in_mat <- t(in_mat)[omics,]
+        in_mat <- in_mat[omics,]
         show_row_names = TRUE
         ha2 <- NULL
+        omics_at <- which(rownames(in_mat) %in% omics)
 
         # if (input$CB_cluster_rows){
         #   cluster_rows <- hclust(dist(in_mat))
@@ -267,11 +219,13 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
         #   cluster_rows <- FALSE
         # }
 
-        cluster_rows <- if (input$CB_cluster_rows) hclust(dist(in_mat)) else FALSE
         show_row_names <- TRUE
         omics_title <- "target features"
 
       }
+
+      cluster_rows <- if (input$CB_cluster_rows) hclust(dist(in_mat)) else FALSE
+
 
       cluster_columns <- input$CB_cluster_cols
       if (dim(in_mat)[2] < 3){
@@ -280,10 +234,12 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
       row_split <- NULL
       show_column_names <- TRUE
 
-      hm <- make_heatmap(in_mat,
+      hm <- make_cx_heatmap(in_mat,
                           cluster_rows, row_split, show_row_names, omics_title,
                           cluster_columns, column_split,show_column_names, x_aggregated, x_title,x_grp,
                           units_label, omics, omics_at)
+
+
       return(hm)
 
     })

@@ -129,6 +129,8 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
 
 
 
+
+
     # observeEvent(
     #   new_db_trig(),  # new database loaded
     #   {

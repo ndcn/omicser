@@ -91,7 +91,6 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
     observe({
       req(rv_data$anndata,
           rv_selections$data_layer)
-message("start observer: active_layer")
       layer <- rv_selections$data_layer
       if (layer=="X") {
         X_data <- rv_data$anndata$X
@@ -118,6 +117,9 @@ message("start observer: active_layer")
       message("set -------> active_layer")
 
     })
+
+
+
 
 # heat_data observe =================================
     observe({
