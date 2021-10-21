@@ -18,7 +18,7 @@ mod_tables_tab_ui <- function(id){
       id = 'tab',
 
       tabPanel(
-        title = "Omic Meta", value = 'var',
+        title = "Feature Meta", value = 'var',
         mod_table_ui(ns("pg_table_var"))
       ),
 
@@ -28,7 +28,7 @@ mod_tables_tab_ui <- function(id){
       ),
 
       tabPanel(
-        title = "diff expr", value='de',
+        title = "Diff. Expr.", value='de',
         mod_table_ui(ns("pg_table_de"))
       )
 

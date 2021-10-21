@@ -421,15 +421,19 @@ unit_name = "scaled 'X'"
 
 
 make_cx_heatmap = function(in_mat,
-                        cluster_rows, row_split, show_row_names, omics_title,
-                        cluster_columns, column_split,show_column_names, x_aggregated, x_title,x_grp,
-                        units_label, omics, omics_at) {
+                           cluster_rows, row_split, show_row_names, omics_title,
+                           cluster_columns, column_split,show_column_names, x_aggregated, x_title,x_grp,x_names,
+                           units_label, omics, omics_at, top_annotations, right_annotations){
 
     if (x_aggregated)
       grp_x <- colnames(in_mat) #make sure its not a factor
+      #x_names are what went into x_grp
     else {
       grp_x <- as.character(x_grp) #make sure its not a factor
     }
+
+
+    #top_annotations and ha below should work together (and x_names)
 
     if (cluster_columns) {
       column_split = NULL
@@ -441,7 +445,7 @@ make_cx_heatmap = function(in_mat,
 
 
 
-
+    #right_annotations and ha2 below should work together (and x_names)
     ha2 <- ComplexHeatmap::rowAnnotation(feats = ComplexHeatmap::anno_mark(at = omics_at, labels = omics))
 
 

@@ -113,16 +113,4 @@ app_server <- function(input, output, session) {
   #   mod_export_server("export_ui_1", rv_in = rv, p = p_vis)
   # }
 
-  ############################ +
-  ## Module 8 : Additional Info   ####
-  ##
-  ##
-  ############################ +
-  {
-    #db_name <- reactiveVal(value=rv_data$db_meta$name)
-    db_name = reactiveValues(name=NULL)
-    observe({ db_name$name <- rv_data$db_meta$name})
-
-    mod_additional_info_server("additional_info_ui_1", db_name = db_name, db_root_path = DB_ROOT_PATH)
-  }
 }

@@ -6,10 +6,11 @@ output: html_document
 
 ### 1. Ingest 
 * In the Ingest tab - choose database
+* choose the data columns to browse
 * Click "Load Database"
 
 ### 2. Consider the Context
-* read the welcom message
+* read the welcome message
 * click the "Additional Info" tab for more info about the loaded database
   - i.e. metadata
   
@@ -17,14 +18,16 @@ output: html_document
 * Using the  selector on the left sidebar you can choose what variables and measures you would like to visualize.  
   * e.g. choosing a bunch of "target omics" 
 * There are a variety of plots in the "Playground"
-  - Quantities 
-    * box/violin plots for marginal statistics
-    * heatmap / dot-plot for visualizing the aggregated measures for chosen -omics
-  - Differential plots
+  - Expression tab 
+    * heatmaps for visualizing the expression measures for chosen features
+  - Differential Expression tab
     * volcano plots of differential expression 
     * plus interactive auxuilary distributions and meta 
-  - Table browsing
+  - Table tab
+    * browse -omic features via a data-table
   - (FUTURE) a pre-computed QC report of the data
+* Data Table tab
+  - allows for browsing the details of the data
 
   
 © 2021 DataTecnica, Inc., CZI, NDCN, 

@@ -73,11 +73,6 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
     color_schemes = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
     color_scheme = color_schemes[2]
 
-    vwtr <- waiter::Waiter$new(
-      id = ns("volcano_plot"),
-      html = waiter::spin_loaders(id=12,color="red"),
-      color = waiter::transparent(.5)  #waiter::transparent(.5)
-    )
 
     #### compare samples
     #### TODO: change name to diff_exp_filter or something since we are no longer testing here
@@ -87,23 +82,24 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
           input$SI_comp_fact,
           input$RB_select_test)
 
+      # add coding for target genes to be red...
       diff_exp <- as.data.table(rv_data$de)
       # # TODO: change to data.frame
       # # filter according to current "cases"
-      #
       #filter
       de <- diff_exp[test_type == input$RB_select_test & versus == input$SI_comp_fact
                  ][,f := 1
-                  ][, significant := pvals >0.01
-                  ][,point_color := ifelse(significant, "#1F78B4", "#FF7F00")
-                    ]
+                  ][, significant := pvals_adj < 0.01
+                  ][,point_color := ifelse(significant,"#FF7F00", "#1F78B4")
+                    ][,neglogpval := -log10(pvals_adj)
+                      ]
 
+      selected_ <- de$names %in% rv_selections$selected_omics$target_omics
+      de$point_color[selected_] <- "#FF6347"
 
       # de <- diff_exp %>%
-      #
       #   dplyr::filter(test_type == input$RB_select_test &
       #                    versus == input$SI_comp_fact) %>%
-      #
       #   dplyr::mutate(f=1,
       #                 significant = pvals_adj < 0.01,
       #                 point_color =  dplyr::recode(as.character(.data$significant), "TRUE" = "#FF7F00", "FALSE" = "#1F78B4"))
@@ -138,15 +134,6 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
                     choices =  strsplit(cfg[ID=="diff_exp_comps"]$fID, "\\|")[[1]],
                     selected = rv_data$default$comp_fact)
 
-        # shinyjs::disabled(selectInput(inputId = ns("SI_color_grp"),
-        #             label = "Color by:",
-        #             choices = rv_data$config[grp == TRUE]$UI,
-        #             selected = rv_data$default$color_grp)
-        # ),
-        # checkboxInput(inputId = ns("CB_drop_bottom"),
-        #                        label = "drop non-sigs?:",
-        #                        value = TRUE)
-
       )
 
       return(to_return)
@@ -178,14 +165,24 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
     })
 
 
+    # make a waiter to signal when the volcano is rendering
+    vwtr <- waiter::Waiter$new(
+      id = ns("volcano_plot"),
+      html = waiter::spin_loaders(id=12,color="red"),
+      color = waiter::transparent(.5)  #waiter::transparent(.5)
+    )
+
+
     output$volcano_plot <- renderPlotly({
       req(filtered_de, #input$SI_comp_type,
           input$SI_comp_fact)
 
       vwtr$show()
 
-      #colorby_group <- input$SI_color_grp
       de <- filtered_de()
+      y_leg <- max(de$neglogpval)
+      x_leg <- max(de$logfoldchanges)
+
       # title_text <- paste0(input$SI_comp_type, " || ", input$SI_comp_fact)
       if( dim(de)[1]>0 ) {
         # pg_volcano_ly(in_data = filtered_de(),
@@ -214,11 +211,12 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
         # return(volc)
         volc <- plot_ly(
           x = de$logfoldchanges,
-          y = -log10(de$pvals),
-          name = "FDR > 0.01",
+          y = de$neglogpval,
+          name = "FDR < 0.01",
           type = "scatter",
           showlegend = FALSE,
           mode = "markers",
+          alpha = 0.5,
           # Hovertext
           text = paste(de$names,
                        "</br></br>log2FC: ",
@@ -238,19 +236,60 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
           # It's hacky but it works better for animation and plotly_click purposes.
 
           # Blue/not significant
-          plotly::add_markers(x=3.0, y = 9.5, color = I("#1F78B4"), showlegend = FALSE, hoverinfo = "skip") %>%
-          plotly::add_annotations(x=3.0, y=9.5, xref = "x", yref = "y", text = "FDR > 0.01",
+          plotly::add_markers(x= 0.75*x_leg ,
+                              y = 0.80*y_leg,
+                              color = I("#1F78B4"), showlegend = FALSE, hoverinfo = "skip") %>%
+          plotly::add_annotations(x= 0.75*x_leg ,
+                                  y = 0.80*y_leg,
+                                  xref = "x", yref = "y", text = "FDR > 0.01",
                                   xanchor = 'left', showarrow = F, xshift = 10) %>%
           # Orange/significant
-          plotly::add_markers(x=3.0, y = 9.0, color = I("#FF7F00"), showlegend = FALSE, hoverinfo = "skip") %>%
-          plotly::add_annotations(x=3.0, y=9.0, xref = "x", yref = "y", text = "FDR < 0.01",
+          plotly::add_markers(x= 0.75*x_leg ,
+                              y = 0.75*y_leg,
+                              color = I("#FF7F00"), showlegend = FALSE, hoverinfo = "skip") %>%
+          plotly::add_annotations(x= 0.75*x_leg ,
+                                  y = 0.75*y_leg,
+                                  xref = "x", yref = "y", text = "FDR < 0.01",
+                                  xanchor = 'left', showarrow = F, xshift = 10) %>%
+          # red target features
+          plotly::add_markers(x= 0.75*x_leg,
+                              y = 0.85*y_leg,
+                              color = I("#FF6347"), showlegend = FALSE, hoverinfo = "skip") %>%
+          plotly::add_annotations(x= 0.75*x_leg ,
+                                  y = 0.85*y_leg,
+                                  xref = "x", yref = "y", text = "target feature",
                                   xanchor = 'left', showarrow = F, xshift = 10) %>%
 
+          # plotly::add_trace(
+          #   x = de[point_color == "#FF6347"]$logfoldchanges,
+          #   y = de[point_color == "#FF6347"]$neglogpval,
+          #   marker = list(
+          #     color = "#FF6347",
+          #     size = 10,
+          #     line = list(
+          #       color = 'rgb(231, 99, 250)',
+          #       width = 1
+          #     )
+          #   ),
+          #   showlegend = FALSE) %>%
+
           plotly::layout(
-            title = title_text,
-            xaxis = list(title = "Effect (logFC)", range = c(-8, 8)),
-            yaxis = list(title = "-log10 rv_selections-value", range = c(-0.1, 60.25))
-          ) %>%
+            title = list(text = title_text,
+                         x = 0),
+            xaxis = list(zeroline = FALSE,
+                         title = "log2FC"), #, range = c(-8, 8)),
+            yaxis = list(title = "-log10 p-val"), #, range = c(-0.1, 60.25))
+            shapes = list(vline(-1),
+                          vline(1),
+                          hline(-log10(0.01))),
+            legend = list(orientation = "h",x = 0.1, y = 0.9)) %>%
+
+
+          # plotly::layout(
+          #   title = title_text,
+          #   xaxis = list(title = "Effect (logFC)", range = c(-8, 8)),
+          #   yaxis = list(title = "-log10 p-value", range = c(-0.1, 60.25))
+          # ) %>%
           # Disable the legend click since our traces do not correspond to the
           # actual legend labels
           htmlwidgets::onRender("function(el,x){el.on('plotly_legendclick', function(){ return false; })}") %>%
@@ -309,8 +348,9 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
       ) %>%
         plotly::layout(
           title = filtered_de()[event_data(event = "plotly_click")$pointNumber + 1,1],
-          yaxis = list(title = "value",
-                       hoverformat = ".2f"),
+          yaxis = list( title = "value",
+                        hoverformat = ".2f" ),
+          xaxis = list( title = filtered_de()$obs_name[1] ),
           showlegend = FALSE
         ) %>%
         plotly::config(displayModeBar = FALSE)
@@ -328,7 +368,6 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
 
 
 
-
       selected <- event_data(event = "plotly_click")$pointNumber + 1
       omic_name <- filtered_de()$names[selected]
 
@@ -338,7 +377,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
 
       annots <- rv_data$anndata$var[omic_name,]
 
-      deet <- paste("<b> Name </b>: ", annots$omics_name, "</br>")
+      deet <- paste("<b>", rv_data$db_meta$omics_type, " </b> features </br>")
 
       for (detail in omic_details) {
         value <- annots[[detail]]

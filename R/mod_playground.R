@@ -32,13 +32,14 @@ mod_playground_ui <- function(id){
         title = "Table", value='table',
         mod_pg_table_ui(id=ns("pg_pg_table_ui_1"))
 
-      ),
-      # QC tab
-      tabPanel(
-        title = "QC",value = 'qc',
-        mod_pg_vis_qc_ui(id=ns("pg_vis_qc_ui_1"))
-
       )
+      #,
+      # # QC tab DEPRICATED FOR NOW
+      # tabPanel(
+      #   title = "QC",value = 'qc',
+      #   mod_pg_vis_qc_ui(id=ns("pg_vis_qc_ui_1"))
+      #
+      # )
       ) #tabsetpanel
 
 
@@ -57,7 +58,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
     mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections, heat_data)#, agg_heat) #,box_data,varbox_data)
     mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_data, rv_selections, active_layer_data)
-    mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_data, rv_selections)
+    #mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_data, rv_selections)
 
 # REACTIVEVALUES =================================
     heat_data <- reactiveValues(
@@ -139,7 +140,9 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       #
       #  have already set a reactive active_layer_data$data -> X_data
       #
-    message("in observer: heat_data packer")
+      message("in observer: heat_data packer")
+
+
       in_conf <- rv_data$config
       dat_source <- rv_selections$data_layer
       # not using the viz_now... for now
@@ -147,28 +150,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
       # this is all of the "active" omics (subsetting in side-selector)
       omics <- rv_selections$selected_omics$all_omics
-      # # send signal back to side selector...
-      # rv_selections$selected_omics$freeze <- FALSE
       omics_idx <- which(rv_data$anndata$var_names %in% omics)
-
-      #   - subset omics... bug above :: heat_data observe =================================
-      #omics_idx <- which(rv_data$anndata$var[[rv_selections$feat_subset]] %in% rv_selections$feat_subsel)
-      #omics <- rv_data$anndata$var_names[omics_idx]
-
-      # omic_grp_nm <- rv_selections$feat_group_by
-      # # st var (omics)
-      # if (!is.na( omic_grp_nm ) | !is.null(omic_grp_nm)) {
-      #   omic_grp <- rv_data$anndata$var[[ omic_grp_nm ]][omics_idx]
-      # } else { #subset to selected_omics since there was NO meta-category to subset against
-      #   omic_grp <- (omics_idx>0) #hack a single group...
-      # }
-
-      # samples...
-      # 1. subset
-      # 2. grouping
-
-      # FILTER the data matrix
-      #
 
       #   - subset samples :: heat_data observe =================================
       samples_idx <- which(rv_data$anndata$obs[[rv_selections$observ_subset]] %in% rv_selections$observ_subsel)
@@ -185,62 +167,19 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
       X_filtered <- X_data[samples,omics]
 
-      X_tab <- as.data.table(X_filtered)
 
-      # convert to table for bubbleplot?
-      #always keep the sample_ID column
-      X_ID = "sample_ID"
-      # ---------- : prep data_matrix for heat_map/bubble
-      X_fact <- rv_selections$observ_group_by
+      obs_meta <- as.data.table(rv_data$anndata$obs) # can probably just access anndata$obs directly since we don' tneed it to be a data_table?
+      obs_meta <- obs_meta[samples_idx,]
+      samp_annot <- obs_meta[ ,rv_data$shaddow_defs$exp_annot, with=FALSE]
 
-      tmp_meta <- as.data.table(rv_data$anndata$obs) # can probably just access anndata$obs directly since we don' tneed it to be a data_table?
-      #row.names(tmp_meta) <- rv_data$anndata$obs_names
-      tmp_meta <- tmp_meta[samples_idx,]
-      #row.names(tmp_meta) <- samples
-      #tmp_meta$sample_ID <- samples
+      var_meta <- as.data.table(rv_data$anndata$var)
+      feat_annot <- var_meta[omics_idx,rv_data$shaddow_defs$feat_annot,with=FALSE]
 
-
-      # # create the table
-      # hm_data = data.table()
-      # #TODO:  we already subsetted, so don't need to loop?  # can't enable "transpose" version until
-      # # loop over sample_IDs / subset category
-      # # this will be for bubbleplots?
-      # keep_cols <- c( in_conf[UI == X_ID]$ID,
-      #                 in_conf[UI == samp_grp_nm]$ID,
-      #                 in_conf[UI == rv_selections$observ_subset]$ID,
-      #                 in_conf[UI == samp_grp_nm]$ID)
-      #
-      #
-      # grp_ys <- omic_grp
-      # names(grp_ys) <- omics
-      # for(omic_j in omics){
-      #   tmp <- tmp_meta[, keep_cols, with = FALSE]
-      #   colnames(tmp) <- c("X_ID", "X_nm", "sub","group_x")
-      #   #tmp$X_ID = tmp_meta[[in_conf[UI == X_fact]$ID]]
-      #   tmp$Y_nm <- omic_j
-      #
-      #   tmp$group_y <- grp_ys[omic_j]
-      #   tmp$val = X_filtered[,omic_j ]
-      #
-      #   hm_data = rbindlist(list(hm_data, tmp))
-      # }
-
-# browser()
-#       # TODO:  use data.table melt (or something rather than loop)
-#       # melt(DT, id.vars = c("family_id", "age_mother"),
-#       #      measure.vars = c("dob_child1", "dob_child2", "dob_child3"))
-#       #
-#       xtab <- as.data.table(t(X_filtered))
-#       xtab$group_y <- omic_grp
-#       xtab$omic <- omics
-#
-#       xtab2 <- as.data.table(X_filtered)
-#       xtab2$group_x <- samp_grp
-#
 
       message("---->  finishing: heat_data packer")
 
-
+      heat_data$x_annot <- samp_annot
+      heat_data$y_annot <- feat_annot
       heat_data$x_names <- samp_grp
       heat_data$y_names <- omics
       heat_data$x_group <- samp_grp_nm
@@ -248,7 +187,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
        heat_data$type <- active_layer_data$layer #   dat_loc
        heat_data$data <- NULL #hm_data
        heat_data$mat <- X_filtered
-       heat_data$obs_meta <- tmp_meta
+       heat_data$obs_meta <- obs_meta  #might not need this any more
        heat_data$ready <- TRUE
        heat_data$selected_omics <- rv_selections$selected_omics
 

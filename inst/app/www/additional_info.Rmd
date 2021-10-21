@@ -6,16 +6,16 @@ editor_options:
     wrap: 72
 ---
 
-### PLACEHOLDER WARNING!!
+### WARNING!!
 
-> > > > WARNING!! \<\<\<\<\<
+> > This is a PLACEHOLDER!! 
 
 > WIP template
 
 ### This Information HAS NOT been curated
 
 CURATORS: Please _curate_ a detailed explanation of the database
-e.g. the informatin in `db_config.yml` could be configured here, such as:
+e.g. the information in `db_config.yml` could be configured here, such as:
 
 -   organism: human?
 -   lab: ?
@@ -40,6 +40,6 @@ e.g. the informatin in `db_config.yml` could be configured here, such as:
 ### _CONTACT INFO_ for Questions and Comments
 
 Please write to Sir Isaac Newton at the following email address:
-[henrie\@datatecnica.com](mailto:henrie@datatecnica.com){.email}
+[sombody\@somewher.es](mailto:sombody@somewher.es){.email}
 
-© 2021 Biology is solved with wave equations, Inc.
+© 2099 Biology is solved with wave equations, Inc.

@@ -156,12 +156,10 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
       message("starting: plot_heatmap_out packer")
 
       #TODO:  turn this list of "annotations" into heathmap annotations...
-      #rv_data$exp_annot
-      #rv_data$feat_annot
-
       wtr$show()
 
       in_mat <- heat_data$mat  #imported as samples X features
+
       # Scale if required
       units_label <- 'omic\nexpr'
       if(input$CB_scale) {
@@ -171,6 +169,12 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
           message("warning!!! small number of groups... could be indeterminate...")
         }
       }
+
+
+      # need to figure out the types of annotations here.?..
+      top_annotations <- heat_data$x_annot
+
+      right_annotations <- heat_data$y_annot
 
 
       # aggregate if required
@@ -250,8 +254,8 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
 
       hm <- make_cx_heatmap(in_mat,
                           cluster_rows, row_split, show_row_names, omics_title,
-                          cluster_columns, column_split,show_column_names, x_aggregated, x_title,x_grp,
-                          units_label, omics, omics_at)
+                          cluster_columns, column_split,show_column_names, x_aggregated, x_title,x_grp,x_names,
+                          units_label, omics, omics_at, top_annotations, right_annotations)
 
 
       return(hm)
