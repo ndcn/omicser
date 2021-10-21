@@ -23,7 +23,7 @@ mod_side_selector_ui <- function(id){
     uiOutput( ns( "ui_DIV_warn" )),
     htmlOutput( ns( "ui_db_type" )),
 
-    h1("Variables & -omic Features Selector"),
+    h1("Experimental Factor & *-omic Feature Selector"),
     hr(style = "border-top: 1px solid #000000;"),
 
     fluidRow(
@@ -58,7 +58,7 @@ mod_side_selector_ui <- function(id){
 
     # omics selection --------------------
     hr(style = "border-top: 1px solid #000000;"),
-    h4("-omic features"),
+    h4("*-omic Features"),
     fluidRow(
       column(width = 2,
              offset = 0,
@@ -70,23 +70,18 @@ mod_side_selector_ui <- function(id){
 
              uiOutput(ns("ui_omic_select")),
              hr(style = "border-top: 1px dashed grey;"),
+             h4("Filter Features"),
+             sliderInput(ns("SLD_restr_feats"), "feature filter:",
+                         min=0, max = 100, value = 85, round=TRUE),
+             br(),
+             uiOutput(ns("ui_n_feats"), width = "60%"),
+             hr(style = "border-top: 1px dashed grey;"),
              #TODO: CHANGE THIS "TARGET OMICS" OR SOMETHING
-             mod_omic_selector_ui(ns("omic_selector_ui_1")),
+             mod_omic_selector_ui(ns("omic_selector_ui_1"))
 
       )
     ),
 
-    fluidRow(
-      column(width = 10,
-             offset = 2,
-                h4("Filter Features"),
-                sliderInput(ns("SLD_restr_feats"), "feature filter:",
-                          min=0, max = 100, value = 85, round=TRUE),
-                br(),
-                uiOutput(ns("ui_n_feats"), width = "60%")
-
-      )
-    ),
 
     hr(style = "border-top: 1px dashed grey;")
 

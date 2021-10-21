@@ -29,7 +29,7 @@ app_ui <- function(request) {
           sidebarPanel(
             width = 3,
             conditionalPanel(
-              ' input.top_tab === "welcome" || input.top_tab === "add_info" ', #
+              ' input.top_tab === "welcome" ', #
               mod_side_info_ui("side_info_ui_1")
             ),
             conditionalPanel(
@@ -57,11 +57,7 @@ app_ui <- function(request) {
               title = "Playground", value = "playground",
               mod_playground_ui(id = "playground_ui_1")
             ),
-            # Additional Info tab
-            tabPanel(
-              title = "Additional Info", value = "add_info",
-              mod_additional_info_ui(id = "additional_info_ui_1")
-            ),
+
             # # Export tab
             # tabPanel(
             #   title = "Export", value = "export",

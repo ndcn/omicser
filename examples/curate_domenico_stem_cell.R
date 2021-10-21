@@ -349,14 +349,14 @@ file.exists(file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
 #==== 7. create configs =========================================================================
 # what ad$obs do we want to make default values for...
-default_factors <- c("Condition","Color","Replicate")
+default_factors <- c("Condition","leiden","Color")
 
 # differentials  #if we care we need to explicitly state. defaults will be the order...
 config_list <- list(
-  x_obs = c("Is.Reference","Condition","Replicate", "Label"),
-  y_obs =  c("expr_var", "expr_mean", "expr_frac", "sample_ID", "leiden"), #MEASURES
-  obs_groupby = c("Is.Reference","Condition","Replicate", "Label"),
-  obs_subset = c("Is.Reference","Condition","Replicate", "Label"),
+  x_obs = c("Condition","leiden","Is.Reference","Replicate", "Label"),
+  y_obs =  c("expr_var", "expr_mean", "expr_frac"), #MEASURES
+  obs_groupby = c("Condition","leiden","Is.Reference","Replicate", "Label"),
+  obs_subset =  c("Condition","leiden","Is.Reference","Replicate", "Label"),
 
   x_var = c("decile"),
   y_var = c("expr_geomean", "expr_mean", "expr_var", "expr_frac" ),
@@ -378,7 +378,7 @@ config_list <- list(
 
   # what ad$obs do we want to make default values for...
   # # should just pack according to UI?
-  default_factors = c("Condition","Color","Replicate"),
+  default_factors = default_factors, #c("Condition","leiden","Color"),
   target_omics = target_omics,
   omic_details = c("Genes",
                    "ProteinDescriptions",

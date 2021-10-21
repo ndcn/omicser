@@ -116,9 +116,9 @@ pack_anndata_from_csv <- function(data_in){
     omics_col <- colnames(var_)[1]
 
     if ( all(var_[[omics_col]] == data_in$omics) ) {
-      var_ <- var_ %>% dplyr::rename(omics_name=all_of(omics_col))
+      var_ <- var_ %>% dplyr::rename(feature_name=all_of(omics_col))
     } else {
-      var_ <- var_ %>% dplyr::mutate(omics_name=data_in$omics)
+      var_ <- var_ %>% dplyr::mutate(feature_name=data_in$omics)
     }
     if(is.null(rownames(var_)) ){
       rownames(var_) <- data_in$omics
@@ -195,10 +195,10 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
     #enforce sample_ID
     # TODO:
     #      replace dplyr with data.table
-    if ( !("omics_name" %in% adata$var_keys()) ){
+    if ( !("feature_name" %in% adata$var_keys()) ){
       var_ <- adata$var
-      var_ <- var_ %>% dplyr::mutate(omics_name=adata$var_names) %>%
-        dplyr::relocate(omics_name)
+      var_ <- var_ %>% dplyr::mutate(feature_name=adata$var_names) %>%
+        dplyr::relocate(feature_name)
 
       adata$var <- var_
 
@@ -213,8 +213,8 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
         dplyr::relocate(sample_ID)
       adata$raw$obs <- obs
       var_ <- adata$raw$var
-      var_ <- var_ %>% dplyr::mutate(omics_name=adata$raw$var_names) %>%
-        dplyr::relocate(omics_name)
+      var_ <- var_ %>% dplyr::mutate(feature_name=adata$raw$var_names) %>%
+        dplyr::relocate(feature_name)
 
       adata$raw$var <- var_
 
@@ -304,10 +304,10 @@ setup_database <- function(database_name, db_path, data_in, db_meta , re_pack=TR
       #enforce sample_ID
       # TODO:
       #      replace dplyr with data.table
-      if ( !("omics_name" %in% adata$var_keys()) ){
+      if ( !("feature_name" %in% adata$var_keys()) ){
         var_ <- adata$var
-        var_ <- var_ %>% dplyr::mutate(omics_name=adata$var_names) %>%
-                        dplyr::relocate(omics_name)
+        var_ <- var_ %>% dplyr::mutate(feature_name=adata$var_names) %>%
+                        dplyr::relocate(feature_name)
 
         adata$var <- var_
 
@@ -322,8 +322,8 @@ setup_database <- function(database_name, db_path, data_in, db_meta , re_pack=TR
           dplyr::relocate(sample_ID)
         adata$raw$obs <- obs
         var_ <- adata$raw$var
-        var_ <- var_ %>% dplyr::mutate(omics_name=adata$raw$var_names) %>%
-          dplyr::relocate(omics_name)
+        var_ <- var_ %>% dplyr::mutate(feature_name=adata$raw$var_names) %>%
+          dplyr::relocate(feature_name)
 
         adata$raw$var <- var_
 

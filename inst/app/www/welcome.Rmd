@@ -1,7 +1,12 @@
 ---
-title: "Welcome to NDCN's Omis-izer"
+title: "Welcome to NDCN's *-omics browser"
 output: html_document
 ---
+## Welcome to NDCN's *-omics browser
+
+This browser was developed as part of the CZI NDCN's _Data Science Concierge_ program.  It grew out of a need to enable quick and consistent data exploration, and for researchers to share curated data with colleagues and collaborators.
+
+Please visit [this project's website](https://ndcn.github.io/omicser/) for more information.
 
 
 ### About CZI NDCN
@@ -15,15 +20,6 @@ The CZI Neurodegeneration Challenge Network aims to take a new approach to tackl
 ### A New Approach to Solving Neurodegeneration
 
 [Find out more](https://cziscience.medium.com/a-new-approach-to-solving-neurodegeneration-2aa50654ed04) about CZI NDCN
-
-
-### Citation
-
-Skeletal Muscle & Stem Cell Aging
-Svenja C. Schüler, Joanna M. Kirkpatrick, Manuel Schmidt, Deolinda Santinha, Philipp Koch, Simone Di Sanzo, Emilio Cirri, Martin Hemberg, Alessandro Ori and Julia von Maltzahn
-
-
-You can find the introductory paper: [here](https://journals.plos.org/plosone/article?id=10.1372).
 
 ### Questions and comments
 

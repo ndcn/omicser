@@ -16,34 +16,32 @@ mod_ingestor_ui <- function(id) {
     h4("Load databases for browsing and exploration"),
 
     fluidRow(
-    column(width = 3,
-           offset = 0,
-           selectizeInput(ns("SI_database"),
-                            "Choose Database",
-                            "", multiple=FALSE, options = list(placeholder = " database first")
-                            )
-           ),
-        column(width = 6,
-               offset = 0,
-               shinyjs::disabled(
-               actionButton(ns("AB_ingest_load"), label = "Load Data", class = "btn btn-large btn-danger")
-                      ),
-               "loaded data |------> ",
-               br(),
-               uiOutput(ns("ui_data_meta")),
-        )
-      ),
-
+      column(width = 3,
+             offset = 0,
+             selectizeInput(ns("SI_database"),
+                              "Choose Database",
+                              "", multiple=FALSE, options = list(placeholder = " database first")
+                              )
+             ),
+      column(width = 2,
+             offset = 0,
+             shinyjs::disabled(
+             actionButton(ns("AB_ingest_load"), label = "Load Data", class = "btn btn-large btn-danger")
+                    ),
+             br(),
+             "   loaded data |------> "
+             ),
+      column(width = 3,
+             offset = 0,
+             uiOutput(ns("ui_data_meta"))
+            )
+    ),
     hr(style = "border-top: 1px dashed grey;"),
     fluidRow(
-
-
       column(width = 4,
              offset = 0,
-
              h4("Select the relavent meta-table columns:"),
              hr(style = "border-top: 1px dashed grey;"),
-
              h4("sample meta (obs)"),
              fluidRow(
                column(6,
@@ -81,8 +79,6 @@ mod_ingestor_ui <- function(id) {
                              multiple=TRUE, options = list(placeholder = "Choose omic feature meta-info")
                            )
                ),
-
-
                column(6,
                       HTML("<b>feature filtering variable</b>"),br(),
                       checkboxInput(ns("CB_fano_fact"), "calculate? (relative variance)", value = TRUE),
@@ -165,7 +161,6 @@ mod_ingestor_server <- function(id,db_names, db_root_path) {
 
   shaddow_defs <- reactiveValues(
     # holding the interactive selected factors and features which supercede what is from the defaults/configs
-    expr_annot = NULL,
     exp_fact = NULL,
     exp_annot = NULL,
     omic_feat = NULL,
@@ -269,14 +264,9 @@ mod_ingestor_server <- function(id,db_names, db_root_path) {
         shinyjs::enable("AB_ingest_load")
       } else {
         shinyjs::disable("AB_ingest_load")
-        print(" no database loaded... .")
+        message(" no database loaded yet... .")
       }
     })
-
-
-
-
-
 
 
 

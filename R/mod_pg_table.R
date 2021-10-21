@@ -67,9 +67,9 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
 
    #proxy = dataTableProxy('table_over_info')
     observe({
-      print("made omic_table$dt")
       req(rv_data$anndata)
-      rv_selections$GO
+
+      rv_selections$GO #forces update on "GO"
 
       # create the table to render
       omics <- rv_selections$selected_omics$all_omics
@@ -77,7 +77,6 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
 
       join_data <- rv_data$anndata$var %>%
                         dplyr::mutate(dplyr::across(where(is.factor), as.character ))
-
       wide_data <- rv_data$de %>%
                         tidyr::pivot_wider(id_cols = names,
                                             names_from = c(group,test_type),
@@ -85,49 +84,37 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
                                             names_repair = "check_unique"
                                           )
       comp_data <- join_data %>%
-                        dplyr::inner_join(wide_data,by = c("omics_name"="names") )
+                        dplyr::inner_join(wide_data,by = c("feature_name"="names") )
       #comp_data <- as.data.frame(comp_data1)
-      rownames(comp_data) <- comp_data$omics_name
+      rownames(comp_data) <- comp_data$feature_name
 
       # SET THE DATA
       omic_table$dt <- comp_data
 
       #reset hover if we have a new dataset
-      table_sel_values$omic_expr_values =NULL
-      table_sel_values$omic_name =NULL
+      table_sel_values$omic_expr_values = NULL
+      table_sel_values$omic_name = NULL
     })
 
 
     # Prepare data for boxplots
     omic_expr_values <- reactive({
-      print("omic_expr_values()  reactive")
-
       validate(
         need(
           input$table_over_info_rows_selected,
           "Select an omic to view plots"
         )
       )
-
       selected <- input$table_over_info_rows_selected
-      omic_name <- omic_table$dt$omics_name[selected]
-
+      omic_name <- omic_table$dt$feature_name[selected]
       data_vec <- active_layer_data$data[,omic_name]
-
       grouping_var <- rv_selections$observ_group_by
-
       # have NOT subsetted samples
       omic_counts <- data.frame( rv_data$anndata$obs_names,
                                  data_vec,
                                  rv_data$anndata$obs[[grouping_var]] )
-
-
       colnames(omic_counts) <- c("id", "val","grp")
-
-
       return(omic_counts)
-
-
     })
 
 
@@ -138,23 +125,14 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
     )
 
     observeEvent(input$table_over_info_rows_selected, {
-      print("EVENT >> input$table_over_info_rows_selected")
       table_sel_values$omic_expr_values <- omic_expr_values()
-      table_sel_values$omic_name <- omic_table$dt$omics_name[input$table_over_info_rows_selected]
+      table_sel_values$omic_name <- omic_table$feature_name[input$table_over_info_rows_selected]
     })
 
     output$table_over_info <- renderDT({
       req(rv_data$de,
           omic_table$dt)
-      print("in renderDT (pg_table)")
       dt <- omic_table$dt
-
-      # this is a stub for collecting for teh side selector...
-      #dta.table(dt)
-      # # re-index based on our side-selector proteins... and highlight them
-      # # after reindexing dataset, highlight rows of already selected proteins
-      # proxy %>% selectRows(row.names(dt)[dt$omics_name %in% isolate(rv_data$omics)])
-      #order_col <- c(which(colnames(dt)=="omics_name"), which(colnames(data)==rv_selections$plot_var_x))
 
       # only text fields might be too long....
       select_char_target <-  which(sapply(dt, is.character))  #filter these ones..
@@ -244,13 +222,10 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
     output$omic_bp <- renderPlotly({
       req(table_sel_values$omic_expr_values)
 
-      print("in renderPlotly: omic_bp")
-      # Plot by CACO status
       # TODO:  make this into a boxplot function
-      #omic_name <- omic_table$dt$omics_name[input$table_over_info_rows_selected]
       bx_data <- table_sel_values$omic_expr_values
       plot_ly(
-        data = bx_data, #table_sel_values$omic_expr_values, #omic_expr_values(),
+        data = bx_data,
         y = ~val,
         color = ~grp,
         type = "box",
@@ -262,10 +237,12 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
         colors = "Dark2"
       ) %>%
         plotly::layout(
-          title = table_sel_values$omic_name,#omic_table$dt$omics_name[input$table_over_info_rows_selected],
+          title = table_sel_values$omic_name,
           yaxis = list(title = "value",
                        hoverformat = ".2f"),
-          showlegend = FALSE
+          showlegend = FALSE,
+          xaxis = list(title = rv_selections$observ_group_by,
+                       hoverformat = ".2f")
         ) %>%
         plotly::config(displayModeBar = FALSE)
     })
@@ -278,17 +255,13 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
 
       print("in renderText: omic_info")
 
-      omic_name <- table_sel_values$omic_name # omic_table$dt$omics_name[input$table_over_info_rows_selected ]
+      omic_name <- table_sel_values$omic_name # omic_table$dt$feature_name[input$table_over_info_rows_selected ]
 
-
-
-      # TODO: replace.
-      #omic_details <- rv_data$default$omic_details
       omic_details <- rv_data$shaddow_defs$feat_deets
 
       annots <- rv_data$anndata$var[omic_name,]
 
-      deet <- paste("<b> Name </b>: ", omic_name, "</br>")
+      deet <- paste("<b>", rv_data$db_meta$omics_type, " </b> features </br>" )
 
       for (detail in omic_details) {
         value <- annots[[detail]]
@@ -302,25 +275,6 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
 
       })
 
-        # "Super Pathway:", metab_meta$`Super Pathway`[metab_meta$Metabolite == metab_name], "</br>",
-        # "Sub Pathway:", metab_meta$`Sub Pathway`[metab_meta$Metabolite == metab_name],
-        # # Link to HMDB, if ID is available
-        # ifelse(
-        #   !is.na(metab_meta$`HMDB ID`[metab_meta$Metabolite == metab_name]),
-        #   paste(
-        #     "</br>HMDB ID: ",
-        #     metab_meta$`HMDB ID`[metab_meta$Metabolite == metab_name]
-        #   ),
-        #   ""
-        # ),
-        # # Link to PubChem, if ID is available
-        # ifelse(
-        #   !is.na(metab_meta$`PubChem ID`[metab_meta$Metabolite == metab_name]),
-        #   paste("</br>PubChem ID: ",
-        #         metab_meta$`PubChem ID`[metab_meta$Metabolite == metab_name]
-        #   ),
-        #   ""
-        #)
 
   })
 }
