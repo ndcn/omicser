@@ -4,31 +4,38 @@ output: html_document
 ---
 ## Instructions
 
-### 1. Ingest 
-* In the Ingest tab - choose database
+### 1. Load the database 
+* In the `Ingest` tab - choose database
 * choose the data columns to browse
-* Click "Load Database"
+* CLICK `Load Data`
 
 ### 2. Consider the Context
-* read the welcome message
-* click the "Additional Info" tab for more info about the loaded database
-  - i.e. metadata
+* spend a minute reading the _Database Information_ curated along with the database which renders on the right
+* read the `Welcome` tab message
+
   
-### 3. Play and Explore
-* Using the  selector on the left sidebar you can choose what variables and measures you would like to visualize.  
-  * e.g. choosing a bunch of "target omics" 
-* There are a variety of plots in the "Playground"
-  - Expression tab 
+### 3. Select variables for visualization
+* Using the selector on the left sidebar you can choose what variables and measures you would like to visualize.  
+  * e.g. choosing a bunch of "target" *-omic features 
+* CLICK `Plot Now!` to activate the selections in the playground
+
+### 4. Play and Explore
+
+* There are a variety of plots in the `Playground`
+  - `Expression` tab 
     * heatmaps for visualizing the expression measures for chosen features
-  - Differential Expression tab
+  - `Diff. Expr.` tab 
     * volcano plots of differential expression 
-    * plus interactive auxuilary distributions and meta 
-  - Table tab
+    * interactive auxuillary distributions and meta 
+  - `Table` tab
     * browse -omic features via a data-table
-  - (FUTURE) a pre-computed QC report of the data
-* Data Table tab
+* `Data Table` tab
   - allows for browsing the details of the data
 
+* `Help` tab (WIP)
+  - links to documentation, github repo, and more
+
+  
   
 © 2021 DataTecnica, Inc., CZI, NDCN, 
 

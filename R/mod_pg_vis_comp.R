@@ -328,7 +328,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
       validate(
         need(
           event_data(event = "plotly_click") & event_data(event = "plotly_click")$curveNumber == 0,
-          "Select a metabolite on the volcano plot above to view distribution among statuses."
+          "Select an *-omic feature on the volcano plot above to view distribution among experimental factors."
         )
       )
 
@@ -347,7 +347,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
         source = "B"
       ) %>%
         plotly::layout(
-          title = filtered_de()[event_data(event = "plotly_click")$pointNumber + 1,1],
+          title = filtered_de()$names[event_data(event = "plotly_click")$pointNumber + 1],
           yaxis = list( title = "value",
                         hoverformat = ".2f" ),
           xaxis = list( title = filtered_de()$obs_name[1] ),
@@ -362,7 +362,7 @@ mod_pg_vis_comp_server <- function(id,rv_data, rv_selections, active_layer_data)
       validate(
         need(
           event_data(event = "plotly_click") & event_data(event = "plotly_click")$curveNumber == 0,
-          "Select an omic on the volcano plot above to view distribution among statuses."
+          "Select an *-omic feature on the volcano plot above to see related meta-info"
         )
       )
 

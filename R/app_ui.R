@@ -29,7 +29,7 @@ app_ui <- function(request) {
           sidebarPanel(
             width = 3,
             conditionalPanel(
-              ' input.top_tab === "welcome" ', #
+              ' input.top_tab === "welcome" || input.top_tab === "help" ', #
               mod_side_info_ui("side_info_ui_1")
             ),
             conditionalPanel(
@@ -58,18 +58,25 @@ app_ui <- function(request) {
               mod_playground_ui(id = "playground_ui_1")
             ),
 
-            # # Export tab
-            # tabPanel(
-            #   title = "Export", value = "export",
-            #   # copy the landing module for now
-            #   mod_export_ui(id = "export_ui_1")
-            # ),
+
             # table tab
             tabPanel(
               title = "Data Table", value = "table",
               # DT::dataTableOutput("my_datatable_0")
               mod_tables_tab_ui("tables_tab_ui_1")
 
+            ),
+
+            # # Export tab
+            # tabPanel(
+            #   title = "Export", value = "export",
+            #   # copy the landing module for now
+            #   mod_export_ui(id = "export_ui_1")
+            # ),
+
+            tabPanel(
+              title = "Help", value = "help",
+              mod_help_ui("help_ui_1")
             )
 
           ) # tabsetpanel

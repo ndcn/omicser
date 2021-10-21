@@ -5,3 +5,4 @@ database_names:
     10x PBMC3k: pbmc3k
 db_root_path: test_db
 conda_environment: omxr
+conda_exe: auto
