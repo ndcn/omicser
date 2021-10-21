@@ -19,16 +19,18 @@ app_server <- function(input, output, session) {
   DB_NAMES <- CONFIG$database_names
   CONDA_ENV <- CONFIG$conda_environment
   DB_ROOT_PATH <- CONFIG$db_root_path
-  #CODA_EXE <- CONFIG$conda_exe
-  #TODO: curate CONDA_EXE?  Maybe set up an environment variable?
-  #      is there a tool to read from sys env?
+  CONDA_EXE <- CONFIG$conda_exe
 
-  #required = TRUE, or explicitly set the RETICULATE_PYTHON environment variable.
+ # CONDA_ENV <-"renv/python/condaenvs/renv-python"
+  # default is "auto"... probably can just pass NULL? for now lets be safe
+  if (is.null(CONDA_EXE)) {
+    CONDA_EXE <- "auto"
+  }
 
-  reticulate::use_condaenv(
-      required = TRUE,
-      condaenv = CONDA_ENV,
-      conda = "auto") #TODO: change this to CONFIG$conda_exe
+  # reticulate::use_condaenv(
+  #     required = TRUE,
+  #     condaenv = CONDA_ENV,
+  #     conda = CONDA_EXE) #TODO: change this to CONFIG$conda_exe
 
   ############################ +
   ## Module 4 : "Ingest" Data
@@ -76,12 +78,7 @@ app_server <- function(input, output, session) {
   {
 
     mod_tables_tab_server("tables_tab_ui_1", rv_data = rv_data, rv_selections = rv_selections)
-    # output$my_datatable_0 <- DT::renderDataTable({
-    #   DT::datatable(rv$data_table)
-    # })
-    #   Should we pass all the reactive values, or just the datatable?
-    #   currently returns a subtable of the datatable
-    # filtered_db <- mod_table_server("table_ui_1", dt = rv$data_table, p = vis_params)
+
   }
   # selected_db <- reactive_selection_function(db,params)
   # mod_playground_server("playground_ui_1",db = data_table)
@@ -104,8 +101,17 @@ app_server <- function(input, output, session) {
     mod_playground_server("playground_ui_1", rv_data = rv_data, rv_selections = rv_selections)
   }
 
+  ############################ +
+  ## Module 7 : Help   ####
+  ##
+  ##
+  ############################ +
+  {
+    mod_help_server("help_ui_1")
+  }
+
   # ############################ +
-  # ## Module 7 : Export   ####
+  # ## Module 8 : Export   ####
   # ##
   # ##
   # ############################ +

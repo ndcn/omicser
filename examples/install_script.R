@@ -5,6 +5,7 @@
 # install R dependencies
 install.packages("devtools")
 install.packages("reticulate")
+install.packages("renv")
 
 # install and configure environment
 reticulate::install_miniconda()

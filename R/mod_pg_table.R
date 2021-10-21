@@ -126,7 +126,7 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
 
     observeEvent(input$table_over_info_rows_selected, {
       table_sel_values$omic_expr_values <- omic_expr_values()
-      table_sel_values$omic_name <- omic_table$feature_name[input$table_over_info_rows_selected]
+      table_sel_values$omic_name <- omic_table$dt$feature_name[input$table_over_info_rows_selected]
     })
 
     output$table_over_info <- renderDT({

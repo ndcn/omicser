@@ -13,6 +13,8 @@ write_config <- function(in_options, in_path=NULL) {
     in_path <- getwd()
   }
 
+  #TODO: check_config_list(in_options)
+
   OPTIONS_FILE <- file.path(in_path,'omicser_options.yml')
   write.config(config.dat = in_options, file.path = OPTIONS_FILE,
                write.type = "yaml", indent = 4)
@@ -21,6 +23,9 @@ write_config <- function(in_options, in_path=NULL) {
 
 
 
+#TODO:  make a check_config_list <- function(in_options)
+#         to ensure that we have everything or we are setting defaults
+#
 
 
 #' get_config: helper for reading the Config file containing information about the databases
@@ -46,7 +51,9 @@ get_config <- function(in_path = NULL, is_running = FALSE) {
     OPTIONS_FILE <- file.path(in_path,'omicser_options.yml')
   }
 
-    options_list <- read.config( file = OPTIONS_FILE )
+  options_list <- read.config( file = OPTIONS_FILE )
+  #TODO: check_config_list(in_options)
+  #
   return(options_list)
 }
 
@@ -97,7 +104,9 @@ get_db_meta <- function(db_name, db_root = NULL)  {
 }
 
 
-
+#TODO:  make a check_db_config_list <- function(config_list)
+#         to ensure that we have everything or we are setting defaults
+#
 
 
 #' write_db_conf: helper for writing the ui config options for the database
@@ -115,6 +124,7 @@ write_db_conf <- function(config_list,db_name, db_root = NULL) {
     db_root <- getwd()
   }
 
+  # TODO:  check_db_config_list(config_list)
   out_fn <-  file.path(db_root,db_name,"db_config.yml")
   write.config(config.dat = config_list, file.path = out_fn,
                write.type = "yaml", indent = 4)
@@ -137,10 +147,12 @@ get_db_conf <- function(db_name, db_root = NULL)  {
   if ( is.null(db_root) ) {
     db_root <- getwd()
   }
-
   DB_CONF_FILE <-  file.path(db_root,db_name,"db_config.yml")
 
   config_list <- read.config( file = DB_CONF_FILE )
+
+  # TODO:  check_db_config_list(config_list)
+
   return(config_list)
 }
 

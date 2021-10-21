@@ -34,7 +34,8 @@ usethis::use_package("configr")
 usethis::use_package("ggplot2")
 usethis::use_package("gridExtra")
 usethis::use_package("ggdendro")
-
+usethis::use_package("markdown")
+usethis::use_package("rmarkdown")
 #devtools::install_github("jokergoo/ComplexHeatmap")
 usethis::use_dev_package("ComplexHeatmap",remote='jokergoo/ComplexHeatmap')
 #usethis::use_dev_package("ComplexHeatmap",remote='bioc::3.13/ComplexHeatmap')
@@ -61,7 +62,6 @@ usethis::use_package("broom")
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module( name = "ingestor" ) # Name of the module
-golem::add_module( name = "export" ) # Name of the module
 golem::add_module( name = "playground" ) # Name of the module
 golem::add_module( name = "pg_vis_raw" ) # Name of the module
 golem::add_module( name = "pg_vis_comp" ) # Name of the module
@@ -72,7 +72,11 @@ golem::add_module( name = "side_info" ) # Name of the module
 golem::add_module( name = "additional_info") # Name of the module
 golem::add_module( name = "omic_selector") # Name of the module
 golem::add_module( name = "subset_selector") # Name of the module
+golem::add_module( name = "help") # Name of the module
+
+# DEPRICATE?
 golem::add_module( name = "pg_vis_qc") # Name of the module
+golem::add_module( name = "export" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
