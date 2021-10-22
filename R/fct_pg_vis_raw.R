@@ -425,10 +425,14 @@ make_cx_heatmap = function(in_mat,
                            cluster_columns, column_split,show_column_names, x_aggregated, x_title,x_grp,x_names,
                            units_label, omics, omics_at, top_annotations, right_annotations){
 
-    if (x_aggregated)
+
+    if (x_aggregated) {
       grp_x <- colnames(in_mat) #make sure its not a factor
+      #disable annotations...
+      top_annotations <- NULL
+      right_annotations <- NULL
       #x_names are what went into x_grp
-    else {
+    } else {
       grp_x <- as.character(x_grp) #make sure its not a factor
     }
 
@@ -436,23 +440,67 @@ make_cx_heatmap = function(in_mat,
     #top_annotations and ha below should work together (and x_names)
 
     if (cluster_columns) {
+      # don't split and add block labels if we are clustering...
       column_split = NULL
-      ha <- ComplexHeatmap::HeatmapAnnotation(groups = ComplexHeatmap::anno_block(labels = levels(grp_x)))
+      hblock <- NULL
     } else {
       column_split = grp_x
-      ha <- NULL
+      hblock <- ComplexHeatmap::HeatmapAnnotation(groups = ComplexHeatmap::anno_block(labels = levels(grp_x)))
     }
+
+    t_annots <- ComplexHeatmap::HeatmapAnnotation(df = top_annotations)
+
+    # annots <- colnames(top_annotations)
+    # t_annots <- list()
+    # for (annot_i in annots){
+    #   # figure out what type (is.char, is.numeric... etc)
+    #
+    #   curr_annot <- top_annotations[[annot_i]]
+    #   if (is.factor(curr_annot)){
+    #     an <- ComplexHeatmap::anno_summary()
+    #   } else if (is.numeric(curr_annot)) {
+    #
+    #   } else {
+    #     message(paste0("skipping ", annot_i," (unknown type)"))
+    #   }
+    #
+    #   # add to list.
+    #   #t_annots <- list()
+
+    #}
 
 
 
     #right_annotations and ha2 below should work together (and x_names)
-    ha2 <- ComplexHeatmap::rowAnnotation(feats = ComplexHeatmap::anno_mark(at = omics_at, labels = omics))
+    #
 
+
+    r_annots <- ComplexHeatmap::rowAnnotation(df = right_annotations,
+                                              feats = ComplexHeatmap::anno_mark(at = omics_at, labels = omics) )
+
+    # annots <- colnames(right_annotations)
+    # r_annots <- list()
+    # for (annot_i in annots){
+    #   # figure out what type (is.char, is.numeric... etc)
+    #
+    #         feats = ComplexHeatmap::anno_mark(at = omics_at, labels = omics)
+    #
+    #   # create the thing...s
+    #   # add to list.
+    #
+    #   r_annots <- append(r_annots, curr_annot)
+    #
+    # }
+    # # add the names to our list.
+    # names(r_annots) <- annots
+#
+#     # pack into a rowAnnotation
+#     h_ra <- ComplexHeatmap::rowAnnotation( r_annots )
 
     ht <- ComplexHeatmap::Heatmap(in_mat,
                                   cluster_rows = cluster_rows,
                                   cluster_columns = cluster_columns,
-                                  top_annotation = ha,
+                                  top_annotation = t_annots,
                                   show_row_names = show_row_names,
                                   show_column_names = show_column_names,
                                   row_names_side = "right",
@@ -462,8 +510,7 @@ make_cx_heatmap = function(in_mat,
                                   # border = border,
                                   name = units_label,
                                   column_title = x_title,
-                                  row_title = omics_title) + ha2
-
+                                  row_title = omics_title) + r_annots
     # ,
     #                               raster_quality = 1,
     #                               #show_parent_dend_line = TRUE,

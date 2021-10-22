@@ -190,22 +190,23 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
         in_mat <- agg_mat
 
         x_aggregated <- TRUE
-        x_grp <- NULL
+        x_grp <- heat_data$x_names # NULL  #TESTING
 
-        x_title <- heat_data$x_group
+        x_title <- paste0("samples X",heat_data$x_group)
 
+        # what to do with top_annotations when grouping?  distributions of each variable?
       } else {
         x_aggregated <- FALSE
         x_grp <- heat_data$x_names
 
-        x_title <- heat_data$x_group
+        x_title <- "samples" #heat_data$x_group
+
+
+
 
       }
 
       in_mat <- t(in_mat)
-
-
-
       #  depricated bubbleplot
       # plot_type <- input$RB_heat_plot_type
 
@@ -213,7 +214,6 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
 
       # if we are trying to show everything we need to wubset...
       if (input$CB_show_all_feats) {
-
 
         omics_at <- which(rownames(in_mat) %in% omics)
         show_row_names <- FALSE #replace with annotation
@@ -240,6 +240,8 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
         show_row_names <- TRUE
         omics_title <- "target features"
 
+        # subset side annotations...?
+        right_annotations <- right_annotations[omics_at,]
       }
 
       cluster_rows <- if (input$CB_cluster_rows) hclust(dist(in_mat)) else FALSE
@@ -249,6 +251,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
       if (dim(in_mat)[2] < 3){
         cluster_columns <- FALSE
       }
+
       row_split <- NULL
       show_column_names <- TRUE
 

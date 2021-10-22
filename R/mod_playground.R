@@ -65,15 +65,18 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       x_names = NULL,
       y_names = NULL,
       x_group = NULL,
-      y_group = NULL,
-      x_source =NULL,
-      subsel = NULL,
-      subset = NULL,
-      type = NULL,
+      y_group = NULL, #DEPRICATE?
+
+
       data = NULL,
       mat = NULL,
-      meta = NULL,
-      ready = FALSE
+      obs_meta = NULL,
+      ready = FALSE,
+
+      x_annot = NULL,
+      y_annot = NULL,
+      selected_omics = NULL
+
     )
 
     # TODO:  get units/label for dat_loc
@@ -104,7 +107,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
           #X_data <- isolate(rv_data$anndata$layers[[dat_loc]]) #isolate
           X_data <- rv_data$anndata$layers$get(layer)
         } else {
-          message("data not found")
+          message("data layer not found")
           X_data <- NULL
         }
       }
@@ -115,8 +118,6 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
       active_layer_data$layer <- layer
       active_layer_data$data <- X_data # is a matrix
-      message("set -------> active_layer")
-
     })
 
 
@@ -145,7 +146,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
       in_conf <- rv_data$config
       dat_source <- rv_selections$data_layer
-      # not using the viz_now... for now
+
       X_data <- active_layer_data$data
 
       # this is all of the "active" omics (subsetting in side-selector)
@@ -162,11 +163,11 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
         samp_grp <- rv_data$anndata$obs[[ samp_grp_nm ]][samples_idx]
       } else { #subset to all samles since there was NO meta-category to subset against (SHOULD NEVER HAPPEN)
         samp_grp <- (samples_idx>0) #hack a single group...
+        message(">>>>>>>>>>>>no sample group !?!")
       }
 
 
       X_filtered <- X_data[samples,omics]
-
 
       obs_meta <- as.data.table(rv_data$anndata$obs) # can probably just access anndata$obs directly since we don' tneed it to be a data_table?
       obs_meta <- obs_meta[samples_idx,]
