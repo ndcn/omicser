@@ -29,7 +29,7 @@ DB_ROOT_PATH <- path(OMICSER_RUN_DIR,"test_db") # location of database
 DB_NAME <- list("10x PBMC3k" = "pbmc3k") # name of database(s)
 RAW_DIR <- path(OMICSER_RUN_DIR,"raw_data", DB_NAME) # location of data
 
-#### Download and organize data ###
+#### Download and organize data ####
 
 # create directory structure for data and databases
 dir_create(c(OMICSER_RUN_DIR, path(DB_ROOT_PATH, DB_NAME), RAW_DIR))
@@ -127,7 +127,7 @@ target_omics <- adata$var_names[which(adata$var$var_rank <= 40)]
 adata$var$decile <- dplyr::ntile(adata$var$dispersions_norm, 10)
 #raw <- ad$raw$to_adata()
 
-# save intermediate database file
+# save intermediate database file (set to TRUE to save)
 if (FALSE){
   adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
 }
@@ -142,7 +142,7 @@ sc$tl$leiden(adata)
 # compute umap
 sc$tl$umap(adata)
 
-# save intermediate database file
+# save intermediate database file (set to TRUE to save)
 if (FALSE){
   adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 }
@@ -156,7 +156,7 @@ obs_names <- c('leiden')
 # calculate DE
 diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc)
 
-# save intermediate database file
+# save intermediate database file (set to TRUE to save)
 if (FALSE){
   adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_with_de.h5ad"))
 }
@@ -171,7 +171,7 @@ adata$write_h5ad(filename = file.path(DB_ROOT_PATH, DB_NAME, "db_data.h5ad"))
 
 #### Configuration 1. Database configuration ####
 
-# load intermediate files if available
+# load intermediate files if available (set to TRUE to load saved versions)
 if (FALSE) {
   adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_with_de.h5ad"))
   diff_exp <- readRDS( file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
