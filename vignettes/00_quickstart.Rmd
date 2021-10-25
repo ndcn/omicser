@@ -1,7 +1,5 @@
 ---
 title: "0-Quickstart Overview"
-author: "andy henrie"
-date: "9/14/2021"
 output:
   html_document: 
     toc: yes

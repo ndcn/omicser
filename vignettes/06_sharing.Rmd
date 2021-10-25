@@ -1,7 +1,5 @@
 ---
 title: "6-Sharing"
-author: "andy henrie"
-date: "9/16/2021"
 output:
   html_document: 
     keep_md: yes
