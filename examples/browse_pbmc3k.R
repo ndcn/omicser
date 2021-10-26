@@ -218,11 +218,11 @@ config_list <- list(
                    'dispersions_norm', 'mean', 'std', 'var_rank', 'decile')
 )
 
+
 # write db_config.yml
 omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
 
 #### Configuration 2. Browser configuration ####
-
 # Now move to the directory where you want to execute the omicser
 # and make the omicser_options.yml
 

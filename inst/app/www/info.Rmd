@@ -1,5 +1,5 @@
 ---
-title: "Quick Start"
+title: "Side-bar Info"
 output: html_document
 ---
 ## Instructions

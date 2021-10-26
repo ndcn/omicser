@@ -6,9 +6,9 @@ editor_options:
     wrap: 72
 ---
 
-### WARNING!!
+## Database Information Document
 
-> > This is a PLACEHOLDER!! 
+> This is a PLACEHOLDER!! 
 
 > WIP template
 
