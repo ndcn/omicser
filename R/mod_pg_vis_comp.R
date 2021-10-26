@@ -16,9 +16,9 @@ mod_pg_vis_comp_ui <- function(id){
 
 
     HTML("Volcano plot"),
-    h4("Relative expression of omics between two conditions"),
-    "In this tab, users can visualise comparative measures of omic-expression in our data",
-    "(e.g. logFC vs rv_selections-value).",
+    h4("Relative expression of -omic features"),
+    "In this tab, users can visualise the expression of one -omic feature in one experimental condition relative to another condition (or baseline set of conditions).",
+    "(i.e. log2(Fold Change) vs -log10(p-value).",
     br(),br(),
     fluidRow(
       column(

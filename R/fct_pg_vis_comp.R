@@ -8,23 +8,22 @@ pg_volc_ly <- function(de, title = "") {
   # create the plot
   # p <- in_data %>%
 
-    plt <- plot_ly(
-                  x = de$logfoldchanges,
-                  y = -log10(de$pvals),
-                  name = "FDR > 0.05",
-                  type = "scatter",
-                  showlegend = FALSE,
-                  mode = "markers",
-                  # Hovertext
-                  text = paste(de$names,
-                               "</br></br>Beta: ",
-                               format( de$logfoldchanges, digits = 3, scientific = TRUE),
-                               " (score: ",
-                               format( de$scores, digits = 3, scientific = TRUE),
-                               "</br>Q-value: ",
-                               format(de$pvals_adj, digits = 3, scientific = TRUE)),
-                  hoverinfo = "text",
-                  color = ~I(de$point_color) )
+    plt <- plot_ly( x = de$logfoldchanges,
+                    y = -log10(de$pvals),
+                    name = "FDR > 0.05",
+                    type = "scatter",
+                    showlegend = FALSE,
+                    mode = "markers",
+                    # Hovertext
+                    text = paste(de$names,
+                                 "</br></br>Beta: ",
+                                 format( de$logfoldchanges, digits = 3, scientific = TRUE),
+                                 " (score: ",
+                                 format( de$scores, digits = 3, scientific = TRUE),
+                                 "</br>Q-value: ",
+                                 format(de$pvals_adj, digits = 3, scientific = TRUE)),
+                    hoverinfo = "text",
+                    color = ~I(de$point_color) )
 
     plt <- plt %>%
       # Adding markers for a custom legend.  Technically,

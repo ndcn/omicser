@@ -62,10 +62,12 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 
 # REACTIVEVALUES =================================
     heat_data <- reactiveValues(
-      x_names = NULL,
-      y_names = NULL,
-      x_group = NULL,
-      y_group = NULL, #DEPRICATE?
+      samp_annot = NULL,
+      feat_annot = NULL,
+      samp_grp = NULL,
+      samp_grp_nm = NULL,
+      feat_grp = NULL, #DEPRICATE?
+      feat_grp_nm = NULL, #DEPRICATE?
 
 
       data = NULL,
@@ -73,10 +75,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       obs_meta = NULL,
       ready = FALSE,
 
-      x_annot = NULL,
-      y_annot = NULL,
       selected_omics = NULL
-
     )
 
     # TODO:  get units/label for dat_loc
@@ -158,7 +157,6 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       samples <- rv_data$anndata$obs_names[samples_idx]
 
       samp_grp_nm <- rv_selections$observ_group_by
-
       if (!is.na( samp_grp_nm ) | !is.null(samp_grp_nm)) {
         samp_grp <- rv_data$anndata$obs[[ samp_grp_nm ]][samples_idx]
       } else { #subset to all samles since there was NO meta-category to subset against (SHOULD NEVER HAPPEN)
@@ -166,6 +164,13 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
         message(">>>>>>>>>>>>no sample group !?!")
       }
 
+      feat_grp_nm <- rv_selections$feat_group_by
+      if (!is.na( feat_grp_nm ) | !is.null(feat_grp_nm)) {
+        feat_grp <- rv_data$anndata$var[[ feat_grp_nm ]][omics_idx]
+      } else { #subset to all samles since there was NO meta-category to subset against (SHOULD NEVER HAPPEN)
+        feat_grp <- (omics_idx>0)  #hack a single group...
+        message(">>>>>>>>>>>>no feature group !?!")
+      }
 
       X_filtered <- X_data[samples,omics]
 
@@ -177,13 +182,18 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
       feat_annot <- var_meta[omics_idx,rv_data$shaddow_defs$feat_annot,with=FALSE]
 
 
+      # TODO: need a function to automatically convert all the _annot columns which are categorical... i.e. <10 levels
+
+
       message("---->  finishing: heat_data packer")
 
-      heat_data$x_annot <- samp_annot
-      heat_data$y_annot <- feat_annot
-      heat_data$x_names <- samp_grp
-      heat_data$y_names <- omics
-      heat_data$x_group <- samp_grp_nm
+      heat_data$samp_annot <- samp_annot
+      heat_data$feat_annot <- feat_annot
+
+      heat_data$samp_grp <- samp_grp
+      heat_data$samp_grp_nm <- samp_grp_nm
+      heat_data$feat_grp <- feat_grp
+      heat_data$feat_grp_nm <- feat_grp_nm
 
        heat_data$type <- active_layer_data$layer #   dat_loc
        heat_data$data <- NULL #hm_data

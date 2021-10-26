@@ -21,7 +21,6 @@ mod_side_selector_ui <- function(id){
     # #TODO:  change these to render prper HTML
 
     uiOutput( ns( "ui_DIV_warn" )),
-    htmlOutput( ns( "ui_db_type" )),
 
     h1("Experimental Factor & *-omic Feature Selector"),
     hr(style = "border-top: 1px solid #000000;"),
@@ -227,14 +226,6 @@ mod_side_selector_server <- function(id, rv_data){
         }
       })
 
-    # show the factors that have been loaded
-    output$ui_db_type <- renderUI({
-      req(rv_data$omics_type)
-      out_text <- paste("<h6>Data type: <i>", rv_data$omics_type, "</i>-omics</h6>")
-      out_text <- HTML(out_text)
-      return(out_text)
-      })
-
 
     observe({
       req(rv_data$shaddow_defs$feature_filter)
@@ -324,16 +315,17 @@ mod_side_selector_server <- function(id, rv_data){
           column(
             width=2,
             offset=0,
-            checkboxInput(ns("CB_sub_grp"),
+            # DISABLE FOR NOW
+            shinyjs::disabled(checkboxInput(ns("CB_sub_grp"),
                          label = "sub-grouping:",
-                         value = FALSE)
+                         value = FALSE))
           ),
           column(
             width=5,
             offset=0,
             shinyjs::disabled(
             selectizeInput(ns("SI_group_obs2"),
-                           label = "sub-group",
+                           label = "sub-group (DISABLED)", #DISABLED FUNCTIONALITY
                            choices = group_obs2,
                            selected = def_grp_o)
             )
@@ -443,7 +435,7 @@ mod_side_selector_server <- function(id, rv_data){
         # group (plotting)
         rv_selections$feat_group_by <- input$SI_group_var
         rv_selections$observ_group_by <- input$SI_group_obs
-        rv_selections$observ_group_by2 <- input$SI_group_obs2  # could be null
+        rv_selections$observ_group_by2 <- input$SI_group_obs2  # DISABLED FOR NOW could be null
 
         rv_selections$selected_omics <- selected_omics  # value & viz_now & all_active
         rv_selections$GO = TRUE

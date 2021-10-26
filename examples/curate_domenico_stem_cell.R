@@ -371,7 +371,7 @@ config_list <- list(
   ),
 
   layers = c("X","raw","X_is_scaled_na_to_0","scaled","zro_na"),
-
+  layer_values = c("arb. expression", )
   # Dimred
   dimreds = list(obsm = ad$obsm_keys(),
                  varm = ad$varm_keys()),
