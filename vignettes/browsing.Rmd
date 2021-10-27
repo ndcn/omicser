@@ -1,5 +1,5 @@
 ---
-title: "5-Browsing"
+title: "Browsing your data"
 date: "10/26/2021"
 output:
   html_document: 
@@ -12,28 +12,6 @@ output:
 ```{r, setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-## Launching the browser
-
-Once both the data and browser are appropriately formatted and configured, 
-you are ready to browse your data!
-
-From the Console of RStudio,
-make sure your working directory contains the `omicser_options.yml` file
-(you can use `setwd()` to change your working directory).
-Then launch the application by executing the following line of code:
-
-```{r, 4-browse-1, eval=FALSE}
-omicser::run_app(options = list(launch.browser = TRUE))
-```
-
-This should launch your application and automatically load it in a browser window.
-Please note that you need to keep RStudio running to work with data in your browser.
-
-> When you are done browsing,
-> you will need to close both the browser window **and** end the process running in RStudio.
-> You can end the process in R by clicking on the red stop sign icon in your Console,
-> or by entering `Control C` in the Console.
 
 ## Getting started visualizing data
 
@@ -81,8 +59,4 @@ then click "Load database."
 
 ## Troubleshooting FAQs
 
-- **The app didn't open in my browser! What do I do?** If the app does not load automatically,
-copy the URL shown into your Console (e.g., `http://127.0.0.1:6422`)
-and paste it into your browser of choice.
-
-- **I closed my browser window! Do I need to relaunch my app?** No, you don't need to relaunch. Follow the instructions for the question above to view your app in a browser. 
+- **My visualization isn't loading!** The performance of the application is contingent on the amount of data it is processing. If the visualizations you have selected are lagging (or not loading at all), select a smaller subset of data. 

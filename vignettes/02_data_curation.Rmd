@@ -1,5 +1,5 @@
 ---
-title: "3-Data Curation"
+title: "2-Data Curation"
 date: "10/26/2021"
 output:
   html_document: 
@@ -59,7 +59,7 @@ Please note that the data files from 10X Genomics need to be saved as `.gz` file
 ## 1. Metadata setup
 
 Given your intended use for the browser you are developing,
-you may choose develop documentation accessible through the browser itself
+you may choose to develop documentation accessible through the browser itself
 for referencing information about the data's source(s).
 In this step, 
 you can create a list of metadata about your dataset,
@@ -91,7 +91,7 @@ from Python's `scanpy` package,
 then writing the data to file in `.h5ad` format.
 We'll access `scanpy` using the `reticulate` R package.
 If you have difficulty accessing `scanpy` in this section,
-please see the [Troubleshooting section of 1-Environment Setup](04_configuration.md#troubleshooting).
+please see the [Troubleshooting section of 1-Installation](04_configuration.md#troubleshooting).
 
 Please see the other [example curation scripts](https://github.com/ndcn/omicser/tree/main/examples)
 to understand how other data can be processed at this step.
@@ -240,11 +240,14 @@ They are available for your reference,
 but are not required for further app development.
 
 Now that the data are formatted and organized appropriately,
-we'll continue to the next step and [configure the browser](04_configuration.md).
+we'll continue to the next step and [configure the browser](03_configuration.md).
 
 ## Troubleshooting
 
 ### `scanpy` in R 
+
+If you have difficulty accessing `scanpy`,
+please see the [Troubleshooting section of 1-Installation](01_installation.md#troubleshooting)
 
 `scanpy` was originally written as a Python package,
 but we are using it within R courtesy of the `reticulate` R package.

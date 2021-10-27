@@ -1,5 +1,5 @@
 ---
-title: "0-Quickstart Overview"
+title: "0-Overview and Quickstart"
 date: "10/26/2021"
 output:
   html_document: 
@@ -20,22 +20,18 @@ knitr::opts_chunk$set(
 )
 ```
 
-These *Quickstart* or *Example* materials are intended to guide curators through the process of creating their own web application and formatting data for visualization in the browser.
-The main vignettes in the Quickstart series include:
+If you would like an overview of the features and functionality of the browser,
+please view the [Browsing vignette](browsing.md).
 
-1. [Environment Setup](01_environment_setup.md)
-2. [Installation](02_install.md)
-3. [Data Curation](03_data_curation.md)
-4. [Configuration](04_configuration.md)
-5. [Browsing](05_browsing.md)
+The following vignettes are intended to guide curators through the process of creating a web application and formatting data for visualization in the browser.
+The main vignettes in the series include:
 
-Please view the [examples directory of the GitHub repository](https://github.com/ndcn/omicser/tree/main/examples)
-for this project to view:
+1. [Installation](01_installation.md): install required software and set up the R and Python environments
+2. [Data curation](02_data_curation.md): pre-process, filter, and format -omics data
+3. [Configuration](03_configuration.md): connect the database(s) with the application
+4. [Launching and sharing](04_sharing.md): prepare the browser for sharing with collaborators
 
-- R scripts used to curate and execute example datasets. e.g.:
-  - a transcriptomics dataset ([browse_pbmc3k.R](https://github.com/ndcn/omicser/tree/main/examples/browse_pbmc3k.R)) from _10X Genomics_ which is used by the `scanpy` and `seurat` packages as an example 
-  - a proteomics dataset (TBD)
-  - a lipidomics dataset (TBD)
-  - MORE TO COME
-- an example configuration file, `omicser_options.yml`
-- example paths for where _raw_ data and curated _DATABASES_ would go as per the example scripts. 
+An additional vignette on [Adding multiple databases](multiple_databases.md) is also available.
+
+Please view the [`examples/` directory of the GitHub repository](https://github.com/ndcn/omicser/tree/main/examples)
+for this project to view files and scripts for a variety of use cases.

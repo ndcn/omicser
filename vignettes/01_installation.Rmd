@@ -1,5 +1,5 @@
 ---
-title: "1-Environment Setup"
+title: "1-Installation"
 date: "10/26/2021"
 output:
   html_document: 
@@ -16,11 +16,13 @@ knitr::opts_chunk$set(echo = TRUE)
 Creating and running your own browser requires both Python and R.
 We recommend using R to install Python and setup your environment.
 
+> If you prefer to work on the command line, please see the troubleshooting section [Command line installation](#command-line-installation).
+
 First ensure you have [R](https://www.r-project.org/)
 and [RStudio](https://www.rstudio.com/products/rstudio/download/) installed.
 This project was developed using R version 4.1.0 and RStudio v1.4.1717.
 
-## Setup via R
+## Setting up R and Python
 
 First, let's install the R tools we'll use to create and manage our other installations:
 
@@ -29,7 +31,7 @@ install.packages("devtools")
 install.packages("reticulate")
 ```
 
-> Installing the `omicser` browser package in the next tutorial will also install additional R packages as dependencies.
+> Installing the `omicser` browser package in the next section will also install additional R packages as dependencies.
 
 We will use a [conda environment](https://conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) 
 to manage the Python packages handling data on the back end of the browser application.
@@ -55,8 +57,26 @@ reticulate::conda_install(envname= YOUR_CONDA_ENV,
                           packages = c("scanpy", "leidenalg") )
 ```
 
+## Installing `omicser`
+
+Now that we've set up our environment,
+we can install the package from which we'll build the browser application.
+We want to receive the most up-to-date version of the package possible,
+so we'll install the current code from GitHub using the `devtools` package:
+
+```{r, RM-install-1, eval=FALSE}
+devtools::install_github("ndcn/omicser")
+```
+
+We are relying on this command to install not only the `omicser` package,
+but a large number of additional packages that will support data formatting and app development.
+If you are prompted to install and/or update any of these packages,
+we recommend you do so.
+
+> If you receive a message indicating a package failed to install (resulting in a failure to install `omicser`), please see the troubleshooting section [R packages failing to load](#r-packages-failing-to-load).
+
 If you have successfully complete all steps in this section,
-you are now ready for [Installation](02_install.md). 
+you are now ready for [data curation](02_data_curation.md). 
 
 ## Troubleshooting
 
@@ -114,3 +134,21 @@ reticulate::use_condaenv(condaenv = "omxr", required = TRUE)
 
 This may also require you to restart your R session.
 For more information, please see the [`reticulate` website](https://rstudio.github.io/reticulate/index.html)
+
+### R packages failing to load
+
+If you receive output in your console indicating one of these additional packages did not install correctly,
+you can manually install it.
+This may also be necessary in a later step of this series of tutorials,
+if you realize a function and/or package are not available.
+
+For example, the download for `vroom` may have stalled,
+resulting in an error in your console saying the package isn't available.
+You can install this package alone using the Packages interface in RStudio,
+or using the following code:
+
+```{r, RM-manual-install, eval=FALSE}
+install.packages("vroom")
+```
+
+You may need to reinstall and/or reload other packages as well (if they are dependent on the package you manually installed).
