@@ -1,5 +1,5 @@
 ---
-title: "4-Configuration"
+title: "3-Configuration"
 date: "10/26/2021"
 output:
   html_document: 
@@ -92,4 +92,4 @@ To configure a the browser for multiple databases,
 please see the [Visualizing multiple datasets](multiple_databases.md) information.
 
 We're done preparing our data and configuration!
-The next step is, of course, to [initialize and browse](05-browsing.md).
+The next step will be to [launch the browser and prepare to share with collaborators](04_sharing.md).

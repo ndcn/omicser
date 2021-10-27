@@ -17,6 +17,6 @@ system(command)
 CWD <- getwd()
 pkgload::load_all("omicser")
 
-REPO_PATH <- fie.path(CWD,"omicser")
+REPO_PATH <- file.path(CWD,"omicser")
 
 

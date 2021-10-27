@@ -1,5 +1,9 @@
 #### Create an app to browse PBMC3k data from 10X Genomics ####
 
+# Usage:
+# - dependencies: R version 4.1.0 and RStudio v1.4.1717, R packages `devtools`, `reticulate`, and `fs` (all others are installed by the script)
+# - run all code in this file in order listed
+
 #### Environment setup ####
 
 library(devtools) # to install omicser package
@@ -29,7 +33,7 @@ DB_ROOT_PATH <- path(OMICSER_RUN_DIR,"test_db") # location of database
 DB_NAME <- list("10x PBMC3k" = "pbmc3k") # name of database(s)
 RAW_DIR <- path(OMICSER_RUN_DIR,"raw_data", DB_NAME) # location of data
 
-#### Download and organize data ###
+#### Download and organize data ####
 
 # create directory structure for data and databases
 dir_create(c(OMICSER_RUN_DIR, path(DB_ROOT_PATH, DB_NAME), RAW_DIR))
@@ -127,7 +131,7 @@ target_omics <- adata$var_names[which(adata$var$var_rank <= 40)]
 adata$var$decile <- dplyr::ntile(adata$var$dispersions_norm, 10)
 #raw <- ad$raw$to_adata()
 
-# save intermediate database file
+# save intermediate database file (set to TRUE to save)
 if (FALSE){
   adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
 }
@@ -142,7 +146,7 @@ sc$tl$leiden(adata)
 # compute umap
 sc$tl$umap(adata)
 
-# save intermediate database file
+# save intermediate database file (set to TRUE to save)
 if (FALSE){
   adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 }
@@ -156,7 +160,7 @@ obs_names <- c('leiden')
 # calculate DE
 diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc)
 
-# save intermediate database file
+# save intermediate database file (set to TRUE to save)
 if (FALSE){
   adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_with_de.h5ad"))
 }
@@ -171,7 +175,7 @@ adata$write_h5ad(filename = file.path(DB_ROOT_PATH, DB_NAME, "db_data.h5ad"))
 
 #### Configuration 1. Database configuration ####
 
-# load intermediate files if available
+# load intermediate files if available (set to TRUE to load saved versions)
 if (FALSE) {
   adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_with_de.h5ad"))
   diff_exp <- readRDS( file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
@@ -218,7 +222,6 @@ config_list <- list(
                    'dispersions_norm', 'mean', 'std', 'var_rank', 'decile')
 )
 
-
 # write db_config.yml
 omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
 
@@ -235,96 +238,3 @@ omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
 #### Launch browser ####
 
 omicser::run_app(options = list(launch.browser = TRUE))
-
-#==== create meta-data narrative for rendering in INGEST  =========================================================================
-
-# ALSO create an `additional_info.Rmd` as in `inst/app/www/additional_info.Rmd`
-
-# ALTERNATE SEURAT STYLE =================
-#'
-#' # FROM SEURAT::
-#' #' Read 10X hdf5 file
-#' #'
-#' #' Read count matrix from 10X CellRanger hdf5 file.
-#' #' This can be used to read both scATAC-seq and scRNA-seq matrices.
-#' #'
-#' #' @param filename Path to h5 file
-#' #' @param use.names Label row names with feature names rather than ID numbers.
-#' #' @param unique.features Make feature names unique (default TRUE)
-#' #'
-#' #' @return Returns a sparse matrix with rows and columns labeled. If multiple
-#' #' genomes are present, returns a list of sparse matrices (one per genome).
-#' #'
-#' #' @export
-#' #' @concept preprocessing
-#' #'
-#' Read10X_h5 <- function(filename, use.names = TRUE, unique.features = TRUE) {
-#'   if (!requireNamespace('hdf5r', quietly = TRUE)) {
-#'     stop("Please install hdf5r to read HDF5 files")
-#'   }
-#'   if (!file.exists(filename)) {
-#'     stop("File not found")
-#'   }
-#'   infile <- hdf5r::H5File$new(filename = filename, mode = 'r')
-#'   genomes <- names(x = infile)
-#'   output <- list()
-#'   if (hdf5r::existsGroup(infile, 'matrix')) {
-#'     # cellranger version 3
-#'     if (use.names) {
-#'       feature_slot <- 'features/name'
-#'     } else {
-#'       feature_slot <- 'features/id'
-#'     }
-#'   } else {
-#'     if (use.names) {
-#'       feature_slot <- 'gene_names'
-#'     } else {
-#'       feature_slot <- 'genes'
-#'     }
-#'   }
-#'   for (genome in genomes) {
-#'     counts <- infile[[paste0(genome, '/data')]]
-#'     indices <- infile[[paste0(genome, '/indices')]]
-#'     indptr <- infile[[paste0(genome, '/indptr')]]
-#'     shp <- infile[[paste0(genome, '/shape')]]
-#'     features <- infile[[paste0(genome, '/', feature_slot)]][]
-#'     barcodes <- infile[[paste0(genome, '/barcodes')]]
-#'     sparse.mat <- sparseMatrix(
-#'       i = indices[] + 1,
-#'       p = indptr[],
-#'       x = as.numeric(x = counts[]),
-#'       dims = shp[],
-#'       giveCsparse = FALSE
-#'     )
-#'     if (unique.features) {
-#'       features <- make.unique(names = features)
-#'     }
-#'     rownames(x = sparse.mat) <- features
-#'     colnames(x = sparse.mat) <- barcodes[]
-#'     sparse.mat <- as(object = sparse.mat, Class = 'dgCMatrix')
-#'     # Split v3 multimodal
-#'     if (infile$exists(name = paste0(genome, '/features'))) {
-#'       types <- infile[[paste0(genome, '/features/feature_type')]][]
-#'       types.unique <- unique(x = types)
-#'       if (length(x = types.unique) > 1) {
-#'         message("Genome ", genome, " has multiple modalities, returning a list of matrices for this genome")
-#'         sparse.mat <- sapply(
-#'           X = types.unique,
-#'           FUN = function(x) {
-#'             return(sparse.mat[which(x = types == x), ])
-#'           },
-#'           simplify = FALSE,
-#'           USE.NAMES = TRUE
-#'         )
-#'       }
-#'     }
-#'     output[[genome]] <- sparse.mat
-#'   }
-#'   infile$close_all()
-#'   if (length(x = output) == 1) {
-#'     return(output[[genome]])
-#'   } else{
-#'     return(output)
-#'   }
-#' }
-# pbmc_data <- Read10X(data.dir = "raw_data/pbmc3k/filtered_gene_bc_matrices/hg19/")

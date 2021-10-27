@@ -1,0 +1,62 @@
+---
+title: "Browsing your data"
+date: "10/26/2021"
+output:
+  html_document: 
+    keep_md: yes
+    toc: true
+  md_document:
+    variant: gfm
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Getting started visualizing data
+
+The browser interface of the application is fairly intuitive.
+Each of the main sections of the browser are described below,
+and reference the tabs available for selection near the top of each page.
+
+> All aspects of the browser are customizable.
+> This means that there may be differences in what you see 
+> compared to the defaults that are described below.
+> Please consult with the person who curated your browser for more information.
+
+### Welcome 
+
+This page is loaded by default when launching the browser.
+It includes some basic information about the browser project,
+as well as a set of instructions in the lefthand side bar.
+
+### Ingest
+
+This page allows you to choose the database you will be browsing.
+Select the database you are visualizing from the drop-down menu
+(if your app is only visualizing a single dataset,
+it should appear by default),
+then click "Load database."
+
+### Playground
+
+- identify comparisons to visualize
+- choose subsets of data 
+- select type of visualization
+
+### Additional info
+
+- context for data and analysis 
+
+### Data table
+
+- view and filter data in tabular format
+- export subset data
+
+## An example browsing session
+
+> **Under construction**
+
+## Troubleshooting FAQs
+
+- **My visualization isn't loading!** The performance of the application is contingent on the amount of data it is processing. If the visualizations you have selected are lagging (or not loading at all), select a smaller subset of data. 
