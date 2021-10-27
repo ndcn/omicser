@@ -46,21 +46,21 @@
     <loc>https://ndcn.github.io/omicser/articles/00_quickstart.html</loc>
   </url>
   <url>
-    <loc>https://ndcn.github.io/omicser/articles/01_environment_setup.html</loc>
+    <loc>https://ndcn.github.io/omicser/articles/01_installation.html</loc>
   </url>
   <url>
-    <loc>https://ndcn.github.io/omicser/articles/02_install.html</loc>
+    <loc>https://ndcn.github.io/omicser/articles/02_data_curation.html</loc>
   </url>
   <url>
-    <loc>https://ndcn.github.io/omicser/articles/03_data_curation.html</loc>
+    <loc>https://ndcn.github.io/omicser/articles/03_configuration.html</loc>
   </url>
   <url>
-    <loc>https://ndcn.github.io/omicser/articles/04_configuration.html</loc>
+    <loc>https://ndcn.github.io/omicser/articles/04_sharing.html</loc>
   </url>
   <url>
-    <loc>https://ndcn.github.io/omicser/articles/05_browsing.html</loc>
+    <loc>https://ndcn.github.io/omicser/articles/browsing.html</loc>
   </url>
   <url>
-    <loc>https://ndcn.github.io/omicser/articles/06_sharing.html</loc>
+    <loc>https://ndcn.github.io/omicser/articles/multiple_databases.html</loc>
   </url>
 </urlset>

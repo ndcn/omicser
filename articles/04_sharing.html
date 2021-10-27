@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>0-Overview and Quickstart • omicser</title>
+<title>4-Launching and sharing • omicser</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="0-Overview and Quickstart">
+<script src="../pkgdown.js"></script><meta property="og:title" content="4-Launching and sharing">
 <meta property="og:description" content="omicser">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -97,40 +97,78 @@
 
       
 
-      </header><script src="00_quickstart_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><script src="04_sharing_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>0-Overview and Quickstart</h1>
+      <h1 data-toc-skip>4-Launching and sharing</h1>
             
             <h4 class="date">10/26/2021</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/master/vignettes/00_quickstart.Rmd"><code>vignettes/00_quickstart.Rmd</code></a></small>
-      <div class="hidden name"><code>00_quickstart.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/master/vignettes/04_sharing.Rmd"><code>vignettes/04_sharing.Rmd</code></a></small>
+      <div class="hidden name"><code>04_sharing.Rmd</code></div>
 
     </div>
 
     
     
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<div id="launching-the-browser" class="section level2">
+<h2 class="hasAnchor">
+<a href="#launching-the-browser" class="anchor"></a>Launching the browser</h2>
+<p>Once both the data and browser are appropriately formatted and configured, you are ready to browse your data!</p>
+<p>Ensuring your working directory contains the <code>omicser_options.yml</code> file, launch the application by executing the following line of code:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/run_app.html">run_app</a></span><span class="op">(</span>options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>launch.browser <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p>Your application should automatically load in a browser window. Please note that you need to keep RStudio running to work with data in your browser.</p>
+<blockquote>
+<p>When you are done browsing, you will need to close both the browser window <strong>and</strong> end the process running in RStudio. You can end the process in R by clicking on the red stop sign icon in your Console, or by entering <code>Control C</code> in the Console.</p>
+</blockquote>
 <p>If you would like an overview of the features and functionality of the browser, please view the <a href="browsing.html">Browsing vignette</a>.</p>
-<p>The following vignettes are intended to guide curators through the process of creating a web application and formatting data for visualization in the browser. The main vignettes in the series include:</p>
-<ol style="list-style-type: decimal">
+</div>
+<div id="documenting-the-data-and-analysis" class="section level2">
+<h2 class="hasAnchor">
+<a href="#documenting-the-data-and-analysis" class="anchor"></a>Documenting the data and analysis</h2>
+<p>It is useful, and in many cases necessary, to include information about your data and analysis methods when sharing a visualization tool with your colleagues. This section describes approaches for sharing such information within the browser application.</p>
+<div id="data" class="section level3">
+<h3 class="hasAnchor">
+<a href="#data" class="anchor"></a>Data</h3>
+<p>The first step in <a href="02_data_curation.html">data configuration</a> created <code>db_meta.yml</code>, which documented basic information about the dataset. This metadata is shown in the browser when ingesting data.</p>
+</div>
+<div id="analysis" class="section level3">
+<h3 class="hasAnchor">
+<a href="#analysis" class="anchor"></a>Analysis</h3>
+<p>The <code>Additional info</code> tab in the browser application is available for documenting both analysis methods (pre-processing approaches/assumptions, hypotheses being tested, statistical parameters) as well as information about the project (link to preprint/publication, acknowledgements, etc).</p>
+<p>The content of this tab is rendered from <a href="https://github.com/ndcn/omicser/blob/main/inst/app/www/additional_info.Rmd"><code>additional_info.Rmd</code></a>. If you choose to customize this file, you must organize your browser application files within a copy (clone) of the <a href="https://github.com/ndcn/omicser"><code>omicser</code></a>. This ensures that your modified copy of <code>additional_info.Rmd</code> is read when you launch your browser, instead of the original version from your installed library.</p>
+</div>
+</div>
+<div id="share-your-application" class="section level2">
+<h2 class="hasAnchor">
+<a href="#share-your-application" class="anchor"></a>Share your application</h2>
+<p>Now that you have successfully curated, configured, and launched your application, you may choose to share the tool with your collaborators. There are two main methods for sharing:</p>
+<ul>
 <li>
-<a href="01_installation.html">Installation</a>: install required software and set up the R and Python environments</li>
+<strong>Send a zip file</strong>: Share all database, configuration, and customization files as a zip file. Your collaborators will need to unzip the file, install all necessary software and launch the browser to view the application locally on their own computer.</li>
 <li>
-<a href="02_data_curation.html">Data curation</a>: pre-process, filter, and format -omics data</li>
-<li>
-<a href="03_configuration.html">Configuration</a>: connect the database(s) with the application</li>
-<li>
-<a href="04_sharing.html">Launching and sharing</a>: prepare the browser for sharing with collaborators</li>
-</ol>
-<p>An additional vignette on <a href="multiple_databases.html">Adding multiple databases</a> is also available.</p>
-<p>Please view the <a href="https://github.com/ndcn/omicser/tree/main/examples"><code>examples/</code> directory of the GitHub repository</a> for this project to view files and scripts for a variety of use cases.</p>
+<strong>Host the application</strong>: Launch the browser on a shared network server that can run R indefinitely. Your collaborators will be able to access the browser via a URL.</li>
+</ul>
+<blockquote>
+<p>Please be congnizant of possible data privacy and security issues when choosing a method for sharing your application. These issues are specific to your data and research questions.</p>
+</blockquote>
+</div>
+<div id="troubleshooting" class="section level2">
+<h2 class="hasAnchor">
+<a href="#troubleshooting" class="anchor"></a>Troubleshooting</h2>
+<ul>
+<li><p><strong>The app didn’t open in my browser! What do I do?</strong> If the app does not load automatically, copy the URL shown into your Console (e.g., <code>http://127.0.0.1:6422</code>) and paste it into your browser of choice.</p></li>
+<li><p><strong>I closed my browser window! Do I need to relaunch my app?</strong> No, you don’t need to relaunch. Follow the instructions for the question above to view your app in a browser.</p></li>
+</ul>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 
