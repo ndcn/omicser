@@ -1,7 +1,7 @@
 Package: omicser
 Type: Package
 Title: NDCN Omics Browser
-Version: 0.0.9.17092021
+Version: 0.0.9.2021-11-03
 Author: Andy Henrie
 Description: Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 2021.
 License: MIT + file LICENSE
@@ -9,8 +9,9 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     anndata,
+    BiocManager,
     broom,
-    ComplexHeatmap,
+    ComplexHeatmap (>= 2.9.4),
     configr,
     data.table,
     dplyr,
@@ -19,16 +20,20 @@ Imports:
     ggplot2,
     golem,
     gridExtra,
+    LoomExperiment (>= 1.10.1),
     magick,
     magrittr,
     markdown,
     Matrix,
     plotly,
+    rmarkdown,
+    sceasy (>= 0.0.6),
     shiny,
     shinydashboard,
     shinydashboardPlus,
     shinyjs,
     shinyWidgets,
+    SingleCellExperiment (>= 1.14.1),
     stringr,
     thinkr,
     tidyr,
@@ -38,8 +43,10 @@ RoxygenNote: 7.1.2
 URL: https://ndcn.github.io/omicser, https://github.com/ndcn/omicser
 BugReports: https://github.com/ndcn/omicser/issues
 Suggests: 
-    rmarkdown,
     knitr
 VignetteBuilder: knitr
 Remotes: 
-    jokergoo/ComplexHeatmap
+    bioc::3.14/ComplexHeatmap,
+    bioc::3.14/SingleCellExperiment,
+    cellgeni/sceasy,
+    bioc::3.14/LoomExperiment

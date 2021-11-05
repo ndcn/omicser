@@ -12,22 +12,19 @@ mod_help_ui <- function(id){
   tagList(
     h4("WORK IN PROGRESS"),
 
-    HTML('
-
-              <body>
+    HTML('    <body>
               <hr>
               <div>
 
               MORE INFO: <br>
               <a href="https://ndcn.github.io/omicser" target="_blank">Documentaion Site</a>
-<br>
+               <br>
                <a href="https://github.com/ndcn/omicser" target="_blank">ndcn/omicser@github</a>
-
               </div>
               </body>
               '
     )
- )
+  )
 }
 
 #' help Server Functions
