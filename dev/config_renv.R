@@ -56,26 +56,52 @@ reticulate::conda_install(envname=CONDA_ENV,
                           packages = c("scanpy","leidenalg") )
 
 #configure python
+# "/opt/anaconda3/envs/base39/bin/python"
+py <- reticulate::conda_list()$python[7]
 
 
+#set up the python environment this way...
+
+cmd <- c("/Users/ahenrie/Library/r-miniconda/bin/conda create -y -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv python=3.9 pip",
+          "/Users/ahenrie/Library/r-miniconda/bin/conda install -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y seaborn scikit-learn statsmodels numba pytables ",
+          "/Users/ahenrie/Library/r-miniconda/bin/conda install  -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y -c conda-forge python-igraph leidenalg",
+          "/Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv/bin/python -m pip install scanpy",
+          "rm /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv/lib/python3.9/site-packages/statsmodels/stats/libqsturng/CH.r")
 
 
+base::system(command = paste(cmd, collapse = " && "))
 
 
-CONDA_ENV <- "omxr" #"/Users/ahenrie/Library/r-miniconda/envs/omxr/bin/python"
-CONDA_ENV <-"/Users/ahenrie/Library/r-miniconda/envs/omxr" # avoide sicne we have two omxr
+#
 
-
-
-
-
-
-
-
+CONDA_ENV <- "" #"/Users/ahenrie/Library/r-miniconda/envs/omxr/bin/python"
+CONDA_ENV <-"/Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv" # avoide sicne we have two omxr
+CONDA_EXE <- reticulate::conda_binary()
 reticulate::use_condaenv( required = TRUE,
                           condaenv = CONDA_ENV,
                           conda = CONDA_EXE)
 #conirm its active.
+#
+
+# virtualevn is NOT working because the pip installations on Mac need special compiler flags for scanpy...
+reticulate::conda_create(envname = "./.pyenv",python_version = 3.9,
+                              packages = c("pip","wheel","setuptools") )
+
+reticulate::use_condaenv("./.pyenv")
+
+reticulate::virtualenv_install(envname = "./.pyenv", packages = c("'scanpy[leiden]'") )
+
+
+# virtualevn is NOT working because the pip installations on Mac need special compiler flags for scanpy...
+reticulate::virtualenv_create(envname = "./.pyenv",
+                              python = "python3.9",
+                              packages = c("pip","wheel","setuptools"))
+
+reticulate::use_virtualenv("./.pyenv")
+
+reticulate::virtualenv_install(envname = "./.pyenv", packages = c("'scanpy[leiden]'") )
+
+
 reticulate::py_config()
 reticulate::py_exe()
 
