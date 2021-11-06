@@ -11,11 +11,6 @@
   "Bioconductor": {
     "Version": "3.14"
   },
-  "Python": {
-    "Version": "3.9.7",
-    "Type": "conda",
-    "Name": "renv_omxr"
-  },
   "Packages": {
     "BH": {
       "Package": "BH",

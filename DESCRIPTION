@@ -46,7 +46,7 @@ Suggests:
     knitr
 VignetteBuilder: knitr
 Remotes: 
-    bioc::3.13/ComplexHeatmap,
-    bioc::3.13/SingleCellExperiment,
+    bioc::3.14/ComplexHeatmap,
+    bioc::3.14/SingleCellExperiment,
     cellgeni/sceasy,
-    bioc::3.13/LoomExperiment
+    bioc::3.14/LoomExperiment
