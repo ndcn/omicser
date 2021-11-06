@@ -61,12 +61,18 @@ py <- reticulate::conda_list()$python[7]
 
 
 #set up the python environment this way...
-
+# this is the right way to do it, but reenv can't handle the mix of python and conda...
 cmd <- c("/Users/ahenrie/Library/r-miniconda/bin/conda create -y -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv python=3.9 pip",
           "/Users/ahenrie/Library/r-miniconda/bin/conda install -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y seaborn scikit-learn statsmodels numba pytables ",
           "/Users/ahenrie/Library/r-miniconda/bin/conda install  -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y -c conda-forge python-igraph leidenalg",
-          "/Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv/bin/python -m pip install scanpy",
-          "rm /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv/lib/python3.9/site-packages/statsmodels/stats/libqsturng/CH.r")
+          "/Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv/bin/python -m pip install scanpy")
+
+
+# so we'll do everything in conda instead with conda...  possibly doing it in stages makes it faster or less prone to failure... scapyy 1.7.2
+cmd <- c("/Users/ahenrie/Library/r-miniconda/bin/conda create -y -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv python=3.9 pip",
+         "/Users/ahenrie/Library/r-miniconda/bin/conda install -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y seaborn scikit-learn statsmodels numba pytables ",
+         "/Users/ahenrie/Library/r-miniconda/bin/conda install  -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y -c conda-forge python-igraph leidenalg",
+         "/Users/ahenrie/Library/r-miniconda/bin/conda install  -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y -c bioconda scanpy")
 
 
 base::system(command = paste(cmd, collapse = " && "))
