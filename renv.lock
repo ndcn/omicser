@@ -4,7 +4,7 @@
     "Repositories": [
       {
         "Name": "CRAN",
-        "URL": "https://cran.rstudio.com"
+        "URL": "https://cloud.r-project.org"
       }
     ]
   },
@@ -46,15 +46,15 @@
     },
     "ComplexHeatmap": {
       "Package": "ComplexHeatmap",
-      "Version": "2.10.0",
-      "Source": "bioc_xgit",
-      "RemoteType": "bioc_xgit",
-      "RemoteMirror": "https://git.bioconductor.org/packages",
+      "Version": "2.9.4",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
       "RemoteRepo": "ComplexHeatmap",
-      "RemoteRelease": "3.14",
-      "RemoteSha": "170df82a1568e879e4019e0ff6feb0047851684f",
-      "RemoteBranch": "RELEASE_3_14",
-      "Hash": "251cdcd6e546f4ed63877a5cb7cbb9bf"
+      "RemoteUsername": "jokergoo",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "9c277dda153b5f9bfdeb76eb1b087cf81b08bf80",
+      "Hash": "53dadc1d5b34c9842f455c0b2784d9af"
     },
     "DT": {
       "Package": "DT",

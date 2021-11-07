@@ -20,7 +20,6 @@ Imports:
     ggplot2,
     golem,
     gridExtra,
-    LoomExperiment (>= 1.10.1),
     magick,
     magrittr,
     markdown,
@@ -33,7 +32,6 @@ Imports:
     shinydashboardPlus,
     shinyjs,
     shinyWidgets,
-    SingleCellExperiment (>= 1.14.1),
     stringr,
     thinkr,
     tidyr,
@@ -45,8 +43,6 @@ BugReports: https://github.com/ndcn/omicser/issues
 Suggests: 
     knitr
 VignetteBuilder: knitr
-Remotes: 
-    bioc::3.14/ComplexHeatmap,
-    bioc::3.14/SingleCellExperiment,
+Remotes:  
     cellgeni/sceasy,
-    bioc::3.14/LoomExperiment
+    github::jokergoo/ComplexHeatmap
