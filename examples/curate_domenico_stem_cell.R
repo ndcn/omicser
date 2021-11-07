@@ -14,10 +14,8 @@ if (DEV_OMICSER){
   OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
   golem::document_and_reload(pkg = REPO_PATH)
 } else {
-
   require(omicser)
   OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
-
 }
 
 # BOOTSTRAP the options we have already set up...
@@ -25,7 +23,6 @@ if (DEV_OMICSER){
 omicser_options <- omicser::get_config(in_path = OMICSER_RUN_DIR)
 CONDA_ENV <- omicser_options$conda_environment
 DB_ROOT_PATH <- omicser_options$db_root_path
-
 
 DB_NAME <-  list("Domenico DIA" = "domenico_stem_cell")
 

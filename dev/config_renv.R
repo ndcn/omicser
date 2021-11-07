@@ -37,6 +37,50 @@ renv::init()
 #                           packages = c("scanpy","leidenalg") )
 
 
+#configure python
+# "/opt/anaconda3/envs/base39/bin/python"
+py <- reticulate::conda_list()$python[7]
+
+
+#set up the python environment this way...
+# this is the right way to do it, but reenv can't handle the mix of python and conda...
+cmd <- c("/Users/ahenrie/Library/r-miniconda/bin/conda create -y -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv python=3.9 pip",
+          "/Users/ahenrie/Library/r-miniconda/bin/conda install -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y seaborn scikit-learn statsmodels numba pytables ",
+          "/Users/ahenrie/Library/r-miniconda/bin/conda install  -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y -c conda-forge python-igraph leidenalg",
+          "/Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv/bin/python -m pip install scanpy",
+         "/Users/ahenrie/Library/r-miniconda/bin/conda env export -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv > environment.yml")
+
+
+# so we'll do everything in conda instead with conda...  possibly doing it in stages makes it faster or less prone to failure... scapyy 1.7.2
+cmd <- c("/Users/ahenrie/Library/r-miniconda/bin/conda create -y -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv python=3.9 pip",
+         "/Users/ahenrie/Library/r-miniconda/bin/conda install -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y seaborn scikit-learn statsmodels numba pytables ",
+         "/Users/ahenrie/Library/r-miniconda/bin/conda install  -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y -c conda-forge python-igraph leidenalg",
+         "/Users/ahenrie/Library/r-miniconda/bin/conda install  -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv -y -c bioconda scanpy")
+
+base::system(command = paste(cmd, collapse = " && "))
+
+# that doesn't work either... we need to do it al lat once... in stages makes it faster or less prone to failure... scapyy 1.7.2
+cmd <- c("/Users/ahenrie/Library/r-miniconda/bin/conda create -y -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv python=3.9",
+            "pip seaborn scikit-learn statsmodels numba pytables python-igraph leidenalg scanpy",
+            "-c conda-forge -c bioconda ", "&& /Users/ahenrie/Library/r-miniconda/bin/conda env export -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv > environment.yml")
+
+base::system(command = paste(cmd, collapse = " "))
+
+# python management fails with renv... so probably the first way is the "correct way to install things
+#
+#
+
+CONDA_ENV <- "" #"/Users/ahenrie/Library/r-miniconda/envs/omxr/bin/python"
+CONDA_ENV <-"/Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv" # avoide sicne we have two omxr
+CONDA_EXE <- reticulate::conda_binary()
+reticulate::use_condaenv( required = TRUE,
+                          condaenv = CONDA_ENV,
+                          conda = CONDA_EXE)
+#conirm its active.
+
+reticulate::py_config()
+
+
 CONDA_ENV <- "omxr" #"/Users/ahenrie/Library/r-miniconda/envs/omxr/bin/python"
 CONDA_ENV <-"/Users/ahenrie/Library/r-miniconda/envs/omxr" # avoide sicne we have two omxr
 CONDA_EXE <- "/Users/ahenrie/Library/r-miniconda/bin/conda" #reticulate::conda_binary()
@@ -47,35 +91,6 @@ renv::use_python(python = "/Users/ahenrie/Library/r-miniconda/envs/omxr/bin/pyth
 #reticulate::install_miniconda()
 
 
-
-# conda environment is now encapsulated in teh renv...
-CONDA_ENV <-"renv/python/condaenvs/renv-python" # avoide sicne we have two omxr
-
-reticulate::conda_install(envname=CONDA_ENV,
-                          channel = "conda-forge",
-                          packages = c("scanpy","leidenalg") )
-
-#configure python
-
-
-
-
-
-
-CONDA_ENV <- "omxr" #"/Users/ahenrie/Library/r-miniconda/envs/omxr/bin/python"
-CONDA_ENV <-"/Users/ahenrie/Library/r-miniconda/envs/omxr" # avoide sicne we have two omxr
-
-
-
-
-
-
-
-
-reticulate::use_condaenv( required = TRUE,
-                          condaenv = CONDA_ENV,
-                          conda = CONDA_EXE)
-#conirm its active.
 reticulate::py_config()
 reticulate::py_exe()
 

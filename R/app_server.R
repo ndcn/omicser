@@ -27,10 +27,10 @@ app_server <- function(input, output, session) {
     CONDA_EXE <- "auto"
   }
 
-  # reticulate::use_condaenv(
-  #     required = TRUE,
-  #     condaenv = CONDA_ENV,
-  #     conda = CONDA_EXE) #TODO: change this to CONFIG$conda_exe
+  reticulate::use_condaenv(
+      required = TRUE,
+      condaenv = CONDA_ENV,
+      conda = CONDA_EXE) #TODO: change this to CONFIG$conda_exe
 
   ############################ +
   ## Module 4 : "Ingest" Data

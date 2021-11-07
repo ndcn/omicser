@@ -373,7 +373,6 @@ mod_side_selector_server <- function(id, rv_data){
 
           mod_subset_selector_ui(ns("subset_selector_ui_var"))
 
-
           ) #tagList
 
       return(to_return)
@@ -391,11 +390,6 @@ mod_side_selector_server <- function(id, rv_data){
         shinyjs::disable("SI_group_obs2")
       }
     })
-
-
-
-
-
 
 
     #TODO:  make the choices *named* paste0(rv_data$config$fID, fUI)
@@ -435,23 +429,10 @@ mod_side_selector_server <- function(id, rv_data){
         # group (plotting)
         rv_selections$feat_group_by <- input$SI_group_var
         rv_selections$observ_group_by <- input$SI_group_obs
-        rv_selections$observ_group_by2 <- input$SI_group_obs2  # DISABLED FOR NOW could be null
+        rv_selections$observ_group_by2 <- input$SI_group_obs2  # DISABLED FOR NOW
 
         rv_selections$selected_omics <- selected_omics  # value & viz_now & all_active
         rv_selections$GO = TRUE
-
-        # rv_selections$GO = TRUE  # use this to trigger the heatmap to update...
-        #
-        #
-        # # DEPRICATE
-        # rv_selections$data_source <- NA # "X" #DISABLED input$RB_obs_X
-        # rv_selections$plot_x <- NA # DISABLED input$SI_x
-        # rv_selections$plot_y <- NA # DISABLED....input$SI_y
-        # rv_selections$group_action <- NA #DISABLED input$RB_none_or_grp
-        # rv_selections$plot_var_x <- NA # NOT ENABLED#input$SI_var_x
-        # rv_selections$plot_var_y <- NA # NOT ENABLED input$SI_var_y
-        # rv_selections$plot_feats <- NA # NOT ENABLED input$CB_xy_var_select
-
 
     })
 

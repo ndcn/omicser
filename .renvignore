@@ -1,0 +1,12 @@
+# ignore all R Markdown files
+*.Rmd
+
+# ignore the examples and quickstart folder
+/examples/
+/quickstart/
+/.pyenv/
+/pyenv/
+#/docs/
+#/dev/
+#/tests/
+#/vignettes/

@@ -37,10 +37,13 @@ usethis::use_package("ggdendro")
 usethis::use_package("markdown")
 usethis::use_package("rmarkdown")
 #devtools::install_github("jokergoo/ComplexHeatmap")
-usethis::use_dev_package("ComplexHeatmap",remote='jokergoo/ComplexHeatmap')
+#usethis::use_dev_package("ComplexHeatmap",remote='jokergoo/ComplexHeatmap')
+
+#remotes::install_bioc("3.14/ComplexHeatmap")
 #usethis::use_dev_package("ComplexHeatmap",remote='bioc::3.13/ComplexHeatmap')
 #usethis::use_package("ComplexHeatmap")
-#usethis::use_dev_package("ComplexHeatmap",remote="github::jokergoo/ComplexHeatmap")
+remotes::install_github("jokergoo/ComplexHeatmap")
+usethis::use_dev_package("ComplexHeatmap",remote="github::jokergoo/ComplexHeatmap")
 usethis::use_package("plotly")
 
 usethis::use_package("anndata")
@@ -50,8 +53,15 @@ usethis::use_package("Cairo")
 usethis::use_package("waiter")
 
 # DISABLED for now
-# usethis::use_package("BiocManager")
+usethis::use_package("BiocManager")
 # usethis::use_package("SingleCellExperiment")
+#usethis::use_dev_package('bioc::3.14/ComplexHeatmap')
+# remotes::install_bioc("3.14/SingleCellExperiment")
+# remotes::install_bioc("3.14/LoomExperiment")
+# remotes::install_github("cellgeni/sceasy")
+usethis::use_dev_package("SingleCellExperiment",remote="bioc::3.14/SingleCellExperiment")
+usethis::use_dev_package("sceasy",remote="cellgeni/sceasy")
+usethis::use_dev_package("LoomExperiment",remote="bioc::3.14/LoomExperiment")
 
 usethis::use_package("dplyr")
 #usethis::use_package("tidyr") # called by dplyr as dependency?
