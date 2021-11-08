@@ -52,16 +52,16 @@ usethis::use_package("Cairo")
 
 usethis::use_package("waiter")
 
-# DISABLED for now
-usethis::use_package("BiocManager")
-# usethis::use_package("SingleCellExperiment")
-#usethis::use_dev_package('bioc::3.14/ComplexHeatmap')
-# remotes::install_bioc("3.14/SingleCellExperiment")
-# remotes::install_bioc("3.14/LoomExperiment")
-# remotes::install_github("cellgeni/sceasy")
-usethis::use_dev_package("SingleCellExperiment",remote="bioc::3.14/SingleCellExperiment")
-usethis::use_dev_package("sceasy",remote="cellgeni/sceasy")
-usethis::use_dev_package("LoomExperiment",remote="bioc::3.14/LoomExperiment")
+# # DISABLED for now
+# usethis::use_package("BiocManager")
+# # usethis::use_package("SingleCellExperiment")
+# #usethis::use_dev_package('bioc::3.14/ComplexHeatmap')
+# # remotes::install_bioc("3.14/SingleCellExperiment")
+# # remotes::install_bioc("3.14/LoomExperiment")
+# # remotes::install_github("cellgeni/sceasy")
+# usethis::use_dev_package("SingleCellExperiment",remote="bioc::3.14/SingleCellExperiment")
+# usethis::use_dev_package("sceasy",remote="cellgeni/sceasy")
+# usethis::use_dev_package("LoomExperiment",remote="bioc::3.14/LoomExperiment")
 
 usethis::use_package("dplyr")
 #usethis::use_package("tidyr") # called by dplyr as dependency?

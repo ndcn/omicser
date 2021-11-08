@@ -12,8 +12,6 @@ app_server <- function(input, output, session) {
   # for now we have NOT added these config options to the golem-config.yml
   #CONFIG <- configr::read.config( "./omxr_options.yml" )
   #
-
-
   CONFIG <- omicser::get_config()
 
   DB_NAMES <- CONFIG$database_names
