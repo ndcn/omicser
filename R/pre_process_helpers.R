@@ -149,6 +149,77 @@ pack_anndata_from_csv <- function(data_in){
 
 
 
+# sceasy functions rewritten here for simplicity (Bioconductor deps are killing me)
+# COPIED FROM https://github.com/cellgeni/sceasy/blob/master/R/functions.R
+
+.regularise_df <- function(df, drop_single_values = TRUE) {
+  if (ncol(df) == 0) df[['name']] <- rownames(df)
+  if (drop_single_values) {
+    k_singular <- sapply(df, function(x) length(unique(x)) == 1)
+    if (sum(k_singular) > 0)
+      warning(paste('Dropping single category variables:'),
+              paste(colnames(df)[k_singular], collapse=', '))
+    df <- df[, !k_singular, drop=F]
+    if (ncol(df) == 0) df[['name']] <- rownames(df)
+  }
+  return(df)
+}
+
+
+# modified from sceasy original to take advantage of the anndata package
+seurat2anndata <- function(obj,
+                           outFile = NULL,
+                           assay = 'RNA',
+                           main_layer = 'data',
+                           transfer_layers = NULL,
+                           drop_single_values = TRUE) {
+  main_layer <- match.arg(main_layer, c('data', 'counts', 'scale.data'))
+  transfer_layers <- transfer_layers[ transfer_layers %in% c('data', 'counts', 'scale.data') ]
+  transfer_layers <- transfer_layers[ transfer_layers != main_layer ]
+
+  if (compareVersion(as.character(obj@version), '3.0.0') < 0)
+    obj <- Seurat::UpdateSeuratObject(object = obj)
+
+  X <- Seurat::GetAssayData(object = obj, assay = assay, slot = main_layer)
+
+  obs <- .regularise_df(obj@meta.data, drop_single_values = drop_single_values)
+
+  var <- .regularise_df(Seurat::GetAssay(obj, assay = assay)@meta.features, drop_single_values = drop_single_values)
+
+  obsm <- NULL
+  reductions <- names(obj@reductions)
+  if (length(reductions) > 0) {
+    obsm <- sapply(
+      reductions,
+      function(name) as.matrix(Seurat::Embeddings(obj, reduction=name)),
+      simplify = FALSE
+    )
+    names(obsm) <- paste0('X_', tolower(names(obj@reductions)))
+  }
+
+  layers <- list()
+  for (layer in transfer_layers) {
+    mat <- Seurat::GetAssayData(object = obj, assay = assay, slot = layer)
+    if (all(dim(mat) == dim(X))) layers[[layer]] <- Matrix::t(mat)
+  }
+
+  anndata <- reticulate::import('anndata', convert = FALSE)
+  adata <- anndata::AnnData(
+  #adata <- anndata$AnnData(
+    X = Matrix::t(X),
+    obs = obs,
+    var = var,
+    obsm = obsm,
+    layers = layers
+  )
+
+  if (!is.null(outFile))
+    adata$write(outFile, compression = 'gzip')
+
+  adata
+}
+
+
 
 #' pack_anndata_from_seurat
 #'
@@ -163,32 +234,25 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
 
   data_in = readRDS( file = seurat_obj_name )
 
-
   if(class(data_in)[1] == "Seurat"){
     # how stereotyped is this pattern?  check for Oscar...
-    adata <- anndata::AnnDataR6$new(
-              sceasy::convertFormat(data_in, from="seurat", to="anndata",
-                                outFile = NULL,
+    adata <- seurat2anndata(data_in, outFile = NULL,
                                 assay = 'SCT',
                                 main_layer = 'data',
                                 transfer_layers = c('data', 'counts', 'scale.data')
                                 )
-    )
-
-    raw <- anndata::AnnDataR6$new(
-            sceasy::convertFormat(data_in, from="seurat", to="anndata",
-                                 outFile = NULL,
-                                 assay = 'RNA',
-                                 main_layer = 'counts',
-                                 transfer_layers = NULL)
-            )
 
 
+    raw <- seurat2anndata(data_in, outFile = NULL,
+                              assay = 'RNA',
+                              main_layer = 'counts',
+                              transfer_layers = NULL
+                              )
 
     if ( !("sample_ID" %in% adata$obs_keys()) ){
       obs <- adata$obs
       obs <- obs %>% dplyr::mutate(sample_ID=adata$obs_names) %>%
-        dplyr::relocate(sample_ID)
+                     dplyr::relocate(sample_ID)
       adata$obs <- obs
     }
 
@@ -198,10 +262,8 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
     if ( !("feature_name" %in% adata$var_keys()) ){
       var_ <- adata$var
       var_ <- var_ %>% dplyr::mutate(feature_name=adata$var_names) %>%
-        dplyr::relocate(feature_name)
-
+                       dplyr::relocate(feature_name)
       adata$var <- var_
-
     }
 
     # force RAW?
@@ -214,10 +276,8 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
       adata$raw$obs <- obs
       var_ <- adata$raw$var
       var_ <- var_ %>% dplyr::mutate(feature_name=adata$raw$var_names) %>%
-        dplyr::relocate(feature_name)
-
+                       dplyr::relocate(feature_name)
       adata$raw$var <- var_
-
     }
 
     #  DISABLED >> getting bio-conductor dependencies is a pain...
@@ -300,7 +360,6 @@ setup_database <- function(database_name, db_path, data_in, db_meta , re_pack=TR
                         dplyr::relocate(sample_ID)
          adata$obs <- obs
        }
-
       #enforce sample_ID
       # TODO:
       #      replace dplyr with data.table
@@ -308,7 +367,6 @@ setup_database <- function(database_name, db_path, data_in, db_meta , re_pack=TR
         var_ <- adata$var
         var_ <- var_ %>% dplyr::mutate(feature_name=adata$var_names) %>%
                         dplyr::relocate(feature_name)
-
         adata$var <- var_
 
       }
@@ -323,12 +381,9 @@ setup_database <- function(database_name, db_path, data_in, db_meta , re_pack=TR
         adata$raw$obs <- obs
         var_ <- adata$raw$var
         var_ <- var_ %>% dplyr::mutate(feature_name=adata$raw$var_names) %>%
-          dplyr::relocate(feature_name)
-
+                         dplyr::relocate(feature_name)
         adata$raw$var <- var_
-
       }
-
 
     } else if (tolower(tools::file_ext(data_in)) == "loom"){
       print("loom loading not enabled")

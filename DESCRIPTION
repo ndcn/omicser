@@ -26,7 +26,6 @@ Imports:
     Matrix,
     plotly,
     rmarkdown,
-    sceasy (>= 0.0.6),
     shiny,
     shinydashboard,
     shinydashboardPlus,
@@ -43,6 +42,5 @@ BugReports: https://github.com/ndcn/omicser/issues
 Suggests: 
     knitr
 VignetteBuilder: knitr
-Remotes:  
-    cellgeni/sceasy,
+Remotes: 
     github::jokergoo/ComplexHeatmap
