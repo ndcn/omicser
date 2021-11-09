@@ -19,3 +19,4 @@ $run_dev.*
 ^docs$
 ^pkgdown$
 ^\.github$
+^Dockerfile\.2$

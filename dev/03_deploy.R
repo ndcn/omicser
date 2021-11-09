@@ -33,7 +33,7 @@ devtools::build()
 
 ## Docker ----
 ## If you want to deploy via a generic Dockerfile
-golem::add_dockerfile()
+golem::add_dockerfile(output = "Dockerfile.2")
 # (
 #   path = "DESCRIPTION",
 #   output = "Dockerfile",

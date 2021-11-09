@@ -8,7 +8,6 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Imports:
     anndata,
-    BiocManager,
     broom,
     ComplexHeatmap (>= 2.9.4),
     configr,
@@ -28,7 +27,6 @@ Imports:
     shinyjs,
     shinyWidgets,
     stringr,
-    thinkr,
     tidyr,
     waiter
 Authors@R: person('Andy', 'Henrie', email = 'henrie@datatecnica.com', role = c('cre', 'aut'))
