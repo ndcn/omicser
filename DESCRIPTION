@@ -6,7 +6,6 @@ Author: Andy Henrie
 Description: Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 2021.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Imports:
     anndata,
     BiocManager,
@@ -17,10 +16,7 @@ Imports:
     dplyr,
     DT,
     ggdendro,
-    ggplot2,
     golem,
-    gridExtra,
-    magick,
     magrittr,
     markdown,
     Matrix,
