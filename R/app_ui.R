@@ -16,11 +16,13 @@ app_ui <- function(request) {
     fluidPage(
       titlePanel(
         fluidRow(
-          col_4(
+          column(width=5,
             h1("NDCN omicser"),
             h5("Browse and play for creative hypothesis generation")
           ),
-          col_4(img(src = "www/logo.svg"))
+          column(width=7, align = 'right', #offset=4,
+            img(src = "www/logo.svg")
+            )
         )
       ), # end titlePanel
       sidebarLayout(

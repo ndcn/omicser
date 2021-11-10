@@ -85,8 +85,6 @@ make_cx_heatmap = function(in_mat,
                            omics, omics_at,
                            top_annotations, right_annotations) {
 
-
-
   # TODO: create top annotations that show the distribution within each group
   if (samp_aggregated) {
       grp_columns <- colnames(in_mat) #make sure its not a factor
@@ -122,9 +120,6 @@ make_cx_heatmap = function(in_mat,
      cluster_feats <- FALSE
      row_split <- feat_grp
    }
-
-
-
 
   #samp_names are what went into samp_grp
   show_column_names <- TRUE

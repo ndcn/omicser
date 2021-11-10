@@ -70,6 +70,15 @@ base::system(command = paste(cmd, collapse = " "))
 #
 #
 
+
+# that doesn't work either... we need to do it al lat once... in stages makes it faster or less prone to failure... scapyy 1.7.2
+cmd <- c("/Users/ahenrie/Library/r-miniconda/bin/conda create -y -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv python=3.9",
+            "pip seaborn scikit-learn statsmodels numba pytables python-igraph leidenalg scanpy",
+            "-c conda-forge -c bioconda ", "&& /Users/ahenrie/Library/r-miniconda/bin/conda env export -p /Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv > environment.yml")
+
+base::system(command = paste(cmd, collapse = " "))
+
+
 CONDA_ENV <- "" #"/Users/ahenrie/Library/r-miniconda/envs/omxr/bin/python"
 CONDA_ENV <-"/Users/ahenrie/Projects/NDCN_dev/omicser/.pyenv" # avoide sicne we have two omxr
 CONDA_EXE <- reticulate::conda_binary()

@@ -19,7 +19,7 @@ mod_playground_ui <- function(id){
       # summary stats tab
       tabPanel(
         title = "Expression", value = 'raw',
-        mod_pg_vis_raw_ui(id=ns("pg_vis_raw_ui_1"))
+        mod_pg_expression_ui(id=ns("pg_expression_ui_1"))
       ),
       # volcano tab
       tabPanel(
@@ -56,7 +56,7 @@ mod_playground_server <- function(id ,rv_data, rv_selections) {
 # MODULES =================================
     mod_pg_table_server("pg_pg_table_ui_1",rv_data, rv_selections, active_layer_data)
 
-    mod_pg_vis_raw_server("pg_vis_raw_ui_1",rv_data, rv_selections, heat_data)#, agg_heat) #,box_data,varbox_data)
+    mod_pg_expression_server("pg_expression_ui_1",rv_data, rv_selections, heat_data)#, agg_heat) #,box_data,varbox_data)
     mod_pg_vis_comp_server("pg_vis_comp_ui_1",rv_data, rv_selections, active_layer_data)
     #mod_pg_vis_qc_server("pg_vis_qc_ui_1",rv_data, rv_selections)
 
