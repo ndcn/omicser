@@ -150,18 +150,18 @@
     <p>write_config: helper for Writing the Config file for setting up the omicser databases</p>
     </div>
 
-    <pre class="usage"><span class='fu'>write_config</span><span class='op'>(</span><span class='va'>in_options</span>, in_path <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>write_config</span><span class='op'>(</span><span class='va'>in_config</span>, in_path <span class='op'>=</span> <span class='cn'>NULL</span>, set_default <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>in_options</th>
-      <td><p>list of database names, conda environment, and database path</p></td>
-    </tr>
-    <tr>
       <th>in_path</th>
       <td><p>where the config file lives. default cwd</p></td>
+    </tr>
+    <tr>
+      <th>in_options</th>
+      <td><p>list of database names, conda environment, and database path</p></td>
     </tr>
     </table>
 
