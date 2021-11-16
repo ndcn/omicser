@@ -4,12 +4,12 @@
 \alias{write_config}
 \title{write_config: helper for Writing the Config file for setting up the omicser databases}
 \usage{
-write_config(in_options, in_path = NULL)
+write_config(in_config, in_path = NULL, set_default = FALSE)
 }
 \arguments{
-\item{in_options}{list of database names, conda environment, and database path}
-
 \item{in_path}{where the config file lives. default cwd}
+
+\item{in_options}{list of database names, conda environment, and database path}
 }
 \value{
 

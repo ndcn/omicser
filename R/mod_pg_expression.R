@@ -8,7 +8,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_pg_vis_raw_ui <- function(id){
+mod_pg_expression_ui <- function(id){
   ns <- NS(id)
   tag_list <- tagList(
    HTML("Annotated Heatmap"),
@@ -95,7 +95,7 @@ mod_pg_vis_raw_ui <- function(id){
 #' @param varbox_data var boxplot data
 #'
 #' @noRd
-mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, agg_heat){
+mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #}, agg_heat){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -315,7 +315,7 @@ mod_pg_vis_raw_server <- function(id, rv_data, rv_selections, heat_data){ #}, ag
 }
 
 ## To be copied in the UI
-# mod_pg_vis_raw_ui("pg_vis_raw_ui_1")
+# mod_pg_expression_ui("pg_vis_raw_ui_1")
 
 ## To be copied in the server
-# mod_pg_vis_raw_server("pg_vis_raw_ui_1")
+# mod_pg_expression_server("pg_vis_raw_ui_1")

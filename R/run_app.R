@@ -27,6 +27,13 @@ run_app <- function(
   )
 }
 
+# runApp <- function(appDir=getwd(),
+#                    port=getOption('shiny.port'),
+#                    launch.browser = getOption('shiny.launch.browser', interactive()),
+#                    host=getOption('shiny.host', '127.0.0.1'),
+#                    workerId="", quiet=FALSE,
+#                    display.mode=c("auto", "normal", "showcase"),
+#                    test.mode=getOption('shiny.testmode', FALSE)) {
 
 #' run_in_browser - shortcut to launch in_browser
 #'
@@ -37,3 +44,27 @@ run_app <- function(
 run_in_browser <- function(){
   run_app(options = list(launch.browser = TRUE)) #with = "shinyAppDir"
 }
+
+#'
+#'
+#' #' run_defai;ts - shortcut to launch with default settings.
+#' #'
+#' #' @return
+#' #' @export
+#' #'
+#' #' @examples TODO
+#' run_defaults <- function(){
+#'   # load yaml and add launch.browser = TRUE to the list
+#'   #
+#'   #
+#'   #
+#'
+#'
+#'   if
+#'
+#'     default_options <-  list(launch.browser = TRUE,
+#'                            # the rest are options to pass too the app.
+#'                            )
+#'
+#'   run_app(options =) #with = "shinyAppDir"
+#' }

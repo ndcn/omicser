@@ -4,7 +4,7 @@
 \alias{get_config}
 \title{get_config: helper for reading the Config file containing information about the databases}
 \usage{
-get_config(in_path = NULL, is_running = FALSE)
+get_config(in_path = NULL)
 }
 \arguments{
 \item{in_path}{where the config file lives. default getwd() test}

@@ -25,6 +25,7 @@ CONDA_ENV <- omicser_options$conda_environment
 DB_ROOT_PATH <- omicser_options$db_root_path
 
 DB_NAME <-  list("Domenico DIA" = "domenico_stem_cell")
+#DB_NAME <- omicser_options$database_names[1]
 
 if (! (DB_NAME %in% omicser_options$database_names)){
   omicser_options$database_names <- c(omicser_options$database_names,DB_NAME)
@@ -45,37 +46,36 @@ if (!dir.exists(DB_DIR)) {
 #  summarize results / data origin whatever
 
 db_meta <- list(
-  organism = 'mmusculus',
-  lab = "Ori/Ward",
-  annotation_database =  "uniprot_for_annotation.RData?",
-  title = "DIA proteomics",
-  omic_type = "Proteomics",
-  measurment = "normalized counts",
-  pub = "TBD",
-  date = format(Sys.time(), "%a %b %d %X %Y")
+    organism = 'mmusculus',
+    lab = "Ori/Ward",
+    annotation_database =  "uniprot_for_annotation.RData?",
+    title = "DIA proteomics",
+    omic_type = "Proteomics",
+    measurment = "normalized counts",
+    pub = "TBD",
+    date = format(Sys.time(), "%a %b %d %X %Y")
 )
 
 write_db_meta(db_meta,DB_NAME, db_root = DB_ROOT_PATH)
 
 
 #==== 2. helper functions =================================================================================
-
+#
 # TODO:could also source from elsewhere.
 # process_sn_prot_quant_report ---------------------------
-#' here the basic data reading/munging is in this function (process_sn_prot_quant)
-#' and the "report" is wrapped in a separate function (make_sn_prot_quant_report)
-#' started as a Local copy of ori labs "process.sn.prot.quant.report"
-#' compatible with SN >v.9, please use AO proteins scheme to export report from sn
-#' not sure why they have so many versions. (e.g. process.sn.pep.quant.report etc.)
-#'
-#'
-#' @param in_file
-#' @param exp_name
-#'
-#' @return data
-#' @export
-#'
-#' @examples
+#       here the basic data reading/munging is in this function (process_sn_prot_quant)
+#       and the "report" is wrapped in a separate function (make_sn_prot_quant_report)
+#       started as a Local copy of ori labs "process.sn.prot.quant.report"
+#       compatible with SN >v.9, please use AO proteins scheme to export report from sn
+#       not sure why they have so many versions. (e.g. process.sn.pep.quant.report etc.)
+#
+#
+#       @param in_file
+#       @param exp_name
+#
+#       @return data
+
+
 process_sn_prot_quant <- function(matrix_data_path, exp_name=NULL) {
   mp_all <- read.delim(matrix_data_path, sep = "\t", header = TRUE, as.is = TRUE)
   # remove contaminant
@@ -295,24 +295,24 @@ ad <- ad$copy()
 
 
 #  don't know how to make this work....
-#sc$pp$highly_variable_genes(ad,n_top_genes=40)
-ad$var$var_rank <- order(ad$var$expr_var)
+#sc$pp$highly_variable_genes(anndata,n_top_genes=40)
+anndata$var$var_rank <- order(anndata$var$expr_var)
 # choose top 40 proteins by variance across dataset as our "targets"
-target_omics <- ad$var_names[which(ad$var$var_rank <= 40)]
+target_omics <- anndata$var_names[which(anndata$var$var_rank <= 40)]
 
-ad$var$decile <- dplyr::ntile(ad$var$expr_var, 10)
+anndata$var$decile <- dplyr::ntile(anndata$var$expr_var, 10)
 
 
 # save an intermediate file (incase we want to revert...)
-ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
+anndata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
 
 #==== 5-a. dimension reduction - PCA / umap =========================================================================
 
 ## Step 3: Do some basic preprocessing to run PCA and compute the neighbor graphs
 ##
 
-zro_na <- ad$copy()
-zro_na$X <- ad$layers$get('zro_na')
+zro_na <- anndata$copy()
+zro_na$X <- anndata$layers$get('zro_na')
 sc$pp$pca(zro_na)
 sc$pp$neighbors(zro_na)
 ## Step 4: Infer clusters with the leiden algorithm
@@ -321,32 +321,55 @@ sc$tl$leiden(zro_na)
 sc$tl$umap(zro_na)
 
 
-sc$pp$pca(ad)
-sc$pp$neighbors(ad)
-sc$tl$leiden(ad)
-sc$tl$umap(ad)
+sc$pp$pca(anndata)
+sc$pp$neighbors(anndata)
+sc$tl$leiden(anndata)
+sc$tl$umap(anndata)
 
 
-ad$obsm$unscaled_X_pca <- zro_na$obsm$X_pca
-ad$obsm$unscaled_X_umap <- zro_na$obsm$X_umap
-ad$varm$unscaled_PCs <- zro_na$varm$PCs
-ad$obsp$unscaled_distances <- zro_na$obsp$distances
-ad$obsp$unscaled_connectivities <- zro_na$obsp$connectivities
+anndata$obsm$unscaled_X_pca <- zro_na$obsm$X_pca
+anndata$obsm$unscaled_X_umap <- zro_na$obsm$X_umap
+anndata$varm$unscaled_PCs <- zro_na$varm$PCs
+anndata$obsp$unscaled_distances <- zro_na$obsp$distances
+anndata$obsp$unscaled_connectivities <- zro_na$obsp$connectivities
 
 # save an intermediate file (incase we want to revert...)
-ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
+anndata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 
 
 #==== 6. differential expression  ======================================================================
 #already have from the DIA helper fucnctions.
 file.exists(file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
-# diff_exp <- readRDS(file = file.path(DB_ROOT_PATH,DB_NAME, "diff_expr_table.rds"))
+#diff_exp <- readRDS(file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
+add_these <- list(
+                  exp_annot = NULL,
+                  omic_feat = NULL,
+                  feat_annot = NULL,
+                  feat_deets = NULL,
+                  feature_filter = NULL
+                  )
+
+
+remove_these <- list(
+  x_obs
+  y_obs
+  obs_subset
+  x_var
+  y_var
+
+
+)
+
+# CREATE CONFIGS>>>>
+source("../R/fct_ingestor.R")
+
+conf_def <- gen_config_table(anndata, DB_NAME, DB_ROOT_PATH)
 
 #==== 7. create configs =========================================================================
 # what ad$obs do we want to make default values for...
-default_factors <- c("Condition","leiden","Color")
+default_factors <- c("Condition","leiden")
 
 # differentials  #if we care we need to explicitly state. defaults will be the order...
 config_list <- list(
@@ -368,12 +391,12 @@ config_list <- list(
   ),
 
   layers = c("X","raw","X_is_scaled_na_to_0","scaled","zro_na"),
-  layer_values = c("arb. expression", )
+  layer_values = c("arb. expression" ),
   # Dimred
-  dimreds = list(obsm = ad$obsm_keys(),
-                 varm = ad$varm_keys()),
+  dimreds = list(obsm = anndata$obsm_keys(),
+                 varm = anndata$varm_keys()),
 
-  # what ad$obs do we want to make default values for...
+  # what anndata$obs do we want to make default values for...
   # # should just pack according to UI?
   default_factors = default_factors, #c("Condition","leiden","Color"),
   target_omics = target_omics,
@@ -392,5 +415,4 @@ config_list <- list(
 omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
 
 #==== 8. write data file to load  =========================================================================
-ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
-
+anndata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))

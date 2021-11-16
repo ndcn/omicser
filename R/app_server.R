@@ -8,27 +8,7 @@
 app_server <- function(input, output, session) {
   # Your application server logic
 
-  # config is in the ./inst/db_info/ directory
-  # for now we have NOT added these config options to the golem-config.yml
-  #CONFIG <- configr::read.config( "./omxr_options.yml" )
-  #
-  CONFIG <- omicser::get_config()
 
-  DB_NAMES <- CONFIG$database_names
-  CONDA_ENV <- CONFIG$conda_environment
-  DB_ROOT_PATH <- CONFIG$db_root_path
-  CONDA_EXE <- CONFIG$conda_exe
-
- # CONDA_ENV <-"renv/python/condaenvs/renv-python"
-  # default is "auto"... probably can just pass NULL? for now lets be safe
-  if (is.null(CONDA_EXE)) {
-    CONDA_EXE <- "auto"
-  }
-
-  reticulate::use_condaenv(
-      required = TRUE,
-      condaenv = CONDA_ENV,
-      conda = CONDA_EXE) #TODO: change this to CONFIG$conda_exe
 
   ############################ +
   ## Module 4 : "Ingest" Data
@@ -37,7 +17,7 @@ app_server <- function(input, output, session) {
   ############################ +
   {
     # Call module "ingest" - returns reactive data values
-    rv_data <- mod_ingestor_server("ingestor_ui_1", db_names=DB_NAMES, db_root_path=DB_ROOT_PATH)
+    rv_data <- mod_ingestor_server("ingestor_ui_1")
 
   }
 

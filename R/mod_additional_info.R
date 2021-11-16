@@ -92,19 +92,18 @@ mod_additional_info_ui <- function(id, title = ""){
 #' additional_info Server Functions
 #'
 #' @param id shiny internal
-#' @param rv_data main reactive value (just getting the database directory)
-#' @param db_root_path where do our databases live
+#' @param rv_data main reactive value, name, and root (just getting the database directory)
 #'
 #' @noRd
-mod_additional_info_server <- function(id,db_name, db_root_path){
+mod_additional_info_server <- function(id,db_info){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     # show the factors that have been loaded
     output$additional_info_md <- renderUI({
-      req(db_name$name)
-      message(paste0("loading additional_info: ", db_name$name))
-      md_path <- file.path(db_root_path,db_name$dir,"additional_info.Rmd")
+      req(db_info$name)
+      message(paste0("loading additional_info: ", db_info$name))
+      md_path <- file.path(db_info$root,db_info$dir,"additional_info.Rmd")
       #TODO:  allow a .docx file instead which will need to be rendered and then output
       #
       if (!file.exists(md_path)) { #LOAD DEFAULT MESSAGE

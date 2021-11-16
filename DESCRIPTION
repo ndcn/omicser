@@ -22,10 +22,8 @@ Imports:
     plotly,
     rmarkdown,
     shiny,
-    shinydashboard,
     shinydashboardPlus,
     shinyjs,
-    shinyWidgets,
     stringr,
     tidyr,
     waiter

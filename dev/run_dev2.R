@@ -13,6 +13,7 @@ golem::document_and_reload( "/Users/ahenrie/Projects/NDCN_dev/omicser" )
 
 setwd("quickstart")
 # Run the application
+
 run_in_browser()
 #run_app(options = list(launch.browser = TRUE)) #with = "shinyAppDir"
 

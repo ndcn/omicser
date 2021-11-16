@@ -5,13 +5,14 @@
 #' @param ad_in  anndata object input
 #' @param db_name where is the database name
 #' @param db_root_path where is out database located
+#' @param regenerate regenerate the tables if TRUE, use saved if FALSE
 #'
 #' @return list containint config table, defaults list and omics vector
 #'
 #' @noRd
 #' @import data.table
 #' @import RColorBrewer
-gen_config_table <- function(ad_in, db_name, db_root_path) {
+gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
   # load or generate configs..
 
   config_files <- c(file.path(db_root_path,db_name,"omxr_conf.rds" ),
@@ -21,14 +22,15 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
   #                   file.path(db_root_path,db_name,"omxr_omics.rds" ))
 
   # check if we have it or are forcing
-  if ( all(file.exists( config_files )) ) {
+  if ( all(file.exists( config_files )) && !regenerate) {
     omxr_conf <- readRDS(file = config_files[1])
     omxr_def <- readRDS(file = config_files[2])
-    #omics_ <- readRDS(file = config_files[3])
   } else {
-    max_levels <- 50 # ceiling for considering somethign a factor
-    legend_cols = 4
-    max_levels_ui = 50  # ceiling for UI levels
+    max_levels <- 25 # ceiling for considering somethign a factor
+    max_levels_ui = 25  # ceiling for UI levels
+
+
+  # Get defaults / last saved...
 
     conf_list <- configr::read.config( file.path(db_root_path,db_name,"db_config.yml" ) )
     db_meta <- configr::read.config( file.path(db_root_path,db_name,"db_meta.yml" ) )
@@ -38,12 +40,12 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     samples <- ad_in$obs_names
     obs_meta <- ad_in$obs
 
-    omics <- ad_in$var_names
+    features <- ad_in$var_names
     var_meta <- ad_in$var
 
     X_dims <- dim(ad_in$X)
     meta_names <- ad_in$obs_keys()
-    # default list of omics for subsetting/choosing
+    # default list of features for subsetting/choosing
 
 
     # A observation meta ($obs)  ----------------------------------------
@@ -67,7 +69,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     for (i_meta in meta_to_include) {
       tmp_conf <- data.table(
         ID = i_meta, UI = i_meta, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, Qobs = TRUE, field = "obs",
+        fCL = NA, Qobs = TRUE, field = "obs",
         default = 0, grp = FALSE, measure= FALSE,
         diff_exp = FALSE, dimred = FALSE
       )
@@ -81,13 +83,11 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
           tmp_conf$fID <- paste0(levels(obs_meta[[i_meta]]), collapse = "|")
           tmp_conf$fUI <- tmp_conf$fID
           tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels), collapse = "|")
-          tmp_conf$fRow <- ceiling(n_levels / legend_cols)
           tmp_conf$grp <- TRUE
         } else if (n_levels == 1) {
           tmp_conf$fID <- levels(obs_meta[[i_meta]])
           tmp_conf$fUI <- tmp_conf$fID
           tmp_conf$fCL <- "black"
-          tmp_conf$fRow <- 1
           print('we should drop constants and put the value in uns')
         } #else 0
       } # just append the "blank"
@@ -96,11 +96,11 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     }
 
     # B variable annotations (var-meta; ad_in$var)  ----------------------------------------
-    var_to_include <- ad_in$var_keys()# the first one should be "omics
+    var_to_include <- ad_in$var_keys()# the first one should be "features
     for (i_var in var_to_include) {
       tmp_conf <- data.table(
         ID = i_var, UI = i_var, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, Qobs = FALSE, field = "var",
+        fCL = NA, Qobs = FALSE, field = "var",
         default = 0, grp = FALSE, measure= FALSE,
         diff_exp = FALSE, dimred = FALSE
       )
@@ -117,13 +117,11 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
           tmp_conf$fID <- paste0(levels(var_vect), collapse = "|")
           tmp_conf$fUI <- tmp_conf$fID
           tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels), collapse = "|")
-          tmp_conf$fRow <- ceiling(n_levels / legend_cols)
           tmp_conf$grp <- TRUE
         } else if (n_levels == 1) {
           tmp_conf$fID <- levels(var_vect)
           tmp_conf$fUI <- tmp_conf$fID
           tmp_conf$fCL <- "black"
-          tmp_conf$fRow <- 1
         }
         #TODO: test for comp measure...
       }
@@ -136,11 +134,11 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     #               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
     #               diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
     #               diff_exp_tests =  levels(factor(diff_exp$test_type)))
-    de_to_include <- names(diffs) # the first one should be "omics
+    de_to_include <- names(diffs) # the first one should be "features
     for (i_diff in de_to_include) {
       tmp_conf <- data.table(
         ID = i_diff, UI = i_diff, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, Qobs = FALSE, field = "de",
+        fCL = NA, Qobs = FALSE, field = "de",
         default = 0, grp = FALSE, measure= FALSE,
         diff_exp = TRUE, dimred = FALSE
       )
@@ -152,13 +150,11 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
           tmp_conf$fID <- paste0(levels(tmp_list), collapse = "|")
           tmp_conf$fUI <- tmp_conf$fID
           tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels), collapse = "|")
-          tmp_conf$fRow <- ceiling(n_levels / legend_cols)
           tmp_conf$grp <- TRUE
         } else if (n_levels == 1) {
           tmp_conf$fID <- levels(tmp_list)
           tmp_conf$fUI <- tmp_conf$fID
           tmp_conf$fCL <- "black"
-          tmp_conf$fRow <- 1
         }
         #TODO: test for comp measure...
         omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
@@ -168,12 +164,12 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
 
     # D- dimension reductions (ad_in$varm ) ---------------------
     dimreds <- conf_list$dimreds
-    dr_to_include <- names(dimreds) # the first one should be "omics
+    dr_to_include <- names(dimreds) # the first one should be "features
     for (i_dr in dr_to_include) {
       tmp_list <-dimreds[[i_dr]]
       tmp_conf <- data.table(
         ID = i_dr, UI = i_dr, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, Qobs = FALSE, field = "dr",
+        fCL = NA, Qobs = FALSE, field = "dr",
         default = 0, grp = FALSE, measure= FALSE,
         diff_exp = FALSE, dimred = TRUE
       )
@@ -188,13 +184,11 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
           tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels),
                                  collapse = "|"
           )
-          tmp_conf$fRow <- ceiling(n_levels / legend_cols)
           tmp_conf$grp <- TRUE
         } else if (n_levels == 1) {
           tmp_conf$fID <- levels(tmp_list)
           tmp_conf$fUI <- tmp_conf$fID
           tmp_conf$fCL <- "black"
-          tmp_conf$fRow <- 1
         }
         #TODO: test for comp measure...
         omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
@@ -206,34 +200,33 @@ gen_config_table <- function(ad_in, db_name, db_root_path) {
     for (i_lr in lr_to_include) {
       tmp_conf <- data.table(
         ID = i_lr, UI = i_lr, fID = NA, fUI = NA,
-        fCL = NA, fRow = NA, Qobs = FALSE, field = "layer",
+        fCL = NA, Qobs = FALSE, field = "layer",
         default = 0, grp = FALSE, measure= FALSE,
         diff_exp = FALSE, dimred = TRUE
       )
       tmp_conf$fID <- 0
       tmp_conf$fUI <- tmp_conf$fID
       tmp_conf$fCL <- "black"
-      tmp_conf$fRow <- 1
         #TODO: test for comp measure...
         omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
 
     # obs to subset # default selection is all (if multi) or first (if only 1)
-    # omics
+    # features
     # vars subset
 
     # OMIC MAPPING (disabled) ----------------------------------------
     # just make a sorted list
-    omic_mapping <- omics
-    names(omic_mapping) <- omics #
+    omic_feature_mapping <- features
+    names(omic_feature_mapping) <- features #
 
-    omics_ <- seq(X_dims[2])
-    names(omic_mapping) <- NULL
-    names(omics_) <- omic_mapping
+    features_ <- seq(X_dims[2])
+    names(omic_feature_mapping) <- NULL
+    names(features_) <- omic_feature_mapping
 
     # sort alphabetically and by length
-    omics_ <- omics_[order(names(omics_))]
-    omics_ <- omics_[order(nchar(names(omics_)))]
+    features_ <- features_[order(names(features_))]
+    features_ <- features_[order(nchar(names(features_)))]
 
 
     for (def_i in 1:length(conf_list$default_factors)){
