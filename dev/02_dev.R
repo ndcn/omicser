@@ -22,9 +22,12 @@ usethis::use_package( "golem" )
 usethis::use_package("shiny")
 usethis::use_package("shinyjs")
 
-usethis::use_package("shinyWidgets")
-usethis::use_package("shinydashboard")
-usethis::use_package("shinydashboardPlus")
+usethis::use_package("shinyBS")
+
+# usethis::use_package("shinyWidgets") # might not need?
+# usethis::use_package("shinydashboard") # might not need?
+usethis::use_package("shinydashboardPlus") #maybe automatically get shinydashboard?
+
 
 usethis::use_package("data.table")
 usethis::use_package("DT")

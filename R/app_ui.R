@@ -60,7 +60,6 @@ app_ui <- function(request) {
               mod_playground_ui(id = "playground_ui_1")
             ),
 
-
             # table tab
             tabPanel(
               title = "Data Table", value = "table",
@@ -68,13 +67,6 @@ app_ui <- function(request) {
               mod_tables_tab_ui("tables_tab_ui_1")
 
             ),
-
-            # # Export tab
-            # tabPanel(
-            #   title = "Export", value = "export",
-            #   # copy the landing module for now
-            #   mod_export_ui(id = "export_ui_1")
-            # ),
 
             tabPanel(
               title = "Help", value = "help",

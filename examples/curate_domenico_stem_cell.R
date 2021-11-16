@@ -60,7 +60,7 @@ write_db_meta(db_meta,DB_NAME, db_root = DB_ROOT_PATH)
 
 
 #==== 2. helper functions =================================================================================
-# 
+#
 # TODO:could also source from elsewhere.
 # process_sn_prot_quant_report ---------------------------
 #       here the basic data reading/munging is in this function (process_sn_prot_quant)
@@ -68,11 +68,11 @@ write_db_meta(db_meta,DB_NAME, db_root = DB_ROOT_PATH)
 #       started as a Local copy of ori labs "process.sn.prot.quant.report"
 #       compatible with SN >v.9, please use AO proteins scheme to export report from sn
 #       not sure why they have so many versions. (e.g. process.sn.pep.quant.report etc.)
-# 
-# 
+#
+#
 #       @param in_file
 #       @param exp_name
-# 
+#
 #       @return data
 
 
@@ -343,11 +343,29 @@ file.exists(file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
 #diff_exp <- readRDS(file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
+add_these <- list(
+                  exp_annot = NULL,
+                  omic_feat = NULL,
+                  feat_annot = NULL,
+                  feat_deets = NULL,
+                  feature_filter = NULL
+                  )
+
+
+remove_these <- list(
+  x_obs
+  y_obs
+  obs_subset
+  x_var
+  y_var
+
+
+)
 
 # CREATE CONFIGS>>>>
-source("../R/fct_ingestor.R")                                                                                                             
+source("../R/fct_ingestor.R")
 
-conf_def <- gen_config_table(anndata, DB_NAME, DB_ROOT_PATH)   
+conf_def <- gen_config_table(anndata, DB_NAME, DB_ROOT_PATH)
 
 #==== 7. create configs =========================================================================
 # what ad$obs do we want to make default values for...
@@ -398,4 +416,3 @@ omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
 
 #==== 8. write data file to load  =========================================================================
 anndata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
-

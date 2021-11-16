@@ -8,17 +8,26 @@
 #' @export write_config
 #' @importFrom configr write.config
 #' @examples TODO
-write_config <- function(in_options, in_path=NULL) {
+write_config <- function(in_config, in_path=NULL, set_default=FALSE) {
+
   if ( is.null(in_path) ) {
-    in_path <- getwd()
+    if (golem::app_dev()) {
+      in_path <- golem::get_golem_wd()
+    } else {
+      in_path <- getwd()
+    }
   }
-
   #TODO: check_config_list(in_options)
-
-  OPTIONS_FILE <- file.path(in_path,'omicser_options.yml')
-  write.config(config.dat = in_options, file.path = OPTIONS_FILE,
+  CONFIG_FILE <- file.path(in_path,'app_config.yml')
+  write.config(config.dat = in_config, file.path = CONFIG_FILE,
                write.type = "yaml", indent = 4)
 
+  if (set_default){
+    #write a new fallback config in omicser/inst
+    CONFIG_FILE <- system.file('app_config.yml', package = 'omicser')
+    write.config(config.dat = in_config, file.path = CONFIG_FILE,
+                 write.type = "yaml", indent = 4)
+  }
 }
 
 
@@ -26,7 +35,7 @@ write_config <- function(in_options, in_path=NULL) {
 #TODO:  make a check_config_list <- function(in_options)
 #         to ensure that we have everything or we are setting defaults
 #
-
+#TODO: check paths in 'app_config.yml' and spawn error if the paths are undefined
 
 #' get_config: helper for reading the Config file containing information about the databases
 #'
@@ -36,28 +45,68 @@ write_config <- function(in_options, in_path=NULL) {
 #' @export get_config
 #' @importFrom configr read.config
 #' @examples TODO
-get_config <- function(in_path = NULL, is_running = FALSE) {
+get_config <- function(in_path = NULL) {
 
-  # TODO:  can we make this more dynamic??
-  # OPTIONS_FILE <- system.file('omicser_options.yml',
-  #                             package = 'omicser')
-
-  if (is_running) {
-    OPTIONS_FILE <- system.file('omicser_options.yml', package = 'omicser')
-  } else {
-    if ( is.null(in_path) ) {
+  if ( is.null(in_path) ) {
+    if (golem::app_dev()) {
+      in_path <- golem::get_golem_wd()
+      install_type <- "dev"
+    } else {
       in_path <- getwd()
+      install_type <- "configured"
     }
-    OPTIONS_FILE <- file.path(in_path,'omicser_options.yml')
   }
 
-  options_list <- read.config( file = OPTIONS_FILE )
+
+  CONFIG_FILE <- file.path(in_path,'app_config.yml')
+  if (file.exists(CONFIG_FILE)) {
+    config_list <- read.config( file = CONFIG_FILE )
+  } else {
+    #fallback to default.
+    CONFIG_FILE <- system.file('app_config.yml', package = 'omicser')
+    config_list <- read.config( file = CONFIG_FILE )
+    install_type <- "default"
+  }
+  config_list$install <- install_type
   #TODO: check_config_list(in_options)
   #
-  return(options_list)
+  return(config_list)
 }
-
-
+#
+# #
+#
+# if {options()$golem.app.prod {
+#
+#
+# } else {
+#   golem::get_golem_wd()
+#
+# }
+#
+#
+#
+#   DB_NAMES <- get_golem_config("database_names")
+#   DB_ROOT_PATH <- get_golem_config("db_root_path")
+#
+#   # get_golem_config <- function(
+#   # value,
+#   # config = Sys.getenv(
+#   #   "GOLEM_CONFIG_ACTIVE",
+#   #   Sys.getenv(
+#   #     "R_CONFIG_ACTIVE",
+#   #     "default"
+#   #   )
+#   # ),
+#   # use_parent = TRUE
+#   #
+#   #   CONFIG <- omicser::get_config()
+#   #   DB_NAMES <- CONFIG$database_names
+#   #   DB_ROOT_PATH <- CONFIG$db_root_path
+#   # PYTHON_ENV <- CONFIG$python_environment
+#   # reticulate::use_virtualenv(
+#   #     virtualenv = PYTHON_ENV,
+#   #     required = TRUE)
+#
 
 
 #' write_db_meta: helper for writing the database meta info

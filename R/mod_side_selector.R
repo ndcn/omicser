@@ -127,7 +127,6 @@ mod_side_selector_server <- function(id, rv_data){
 
     observe({
       #req(active_omics())  # set when database is chosen ... this is essentially a reset...
-
       # need to order and rank the variance vector... and then
       selected_omics$all_omics <- active_omics()
       selected_omics$freeze <- 0 #reset ffreeze?

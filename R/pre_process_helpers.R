@@ -203,7 +203,6 @@ seurat2anndata <- function(obj,
     if (all(dim(mat) == dim(X))) layers[[layer]] <- Matrix::t(mat)
   }
 
-  anndata <- reticulate::import('anndata', convert = FALSE)
   adata <- anndata::AnnData(
   #adata <- anndata$AnnData(
     X = Matrix::t(X),

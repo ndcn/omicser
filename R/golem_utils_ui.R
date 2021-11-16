@@ -388,7 +388,7 @@ make_action_button <- function(tag, inputId = NULL) {
 #' Load rendered RMarkdown from a file and turn into HTML.
 #'
 #' @rdname includeRMarkdown
-#' @export
+####' @export
 #'
 #' @importFrom rmarkdown render
 #' @importFrom markdown markdownToHTML
