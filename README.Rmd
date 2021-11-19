@@ -58,7 +58,7 @@ The package is able to provide the following outputs:
 
 ## Installation and usage
 
-This package was developed to create a [`{shiny}`](https://shiny.rstudio.com/) application using  
+This package was developed to create a [`Shiny`](https://shiny.rstudio.com/) application using  
 [`{golem}`](https://github.com/ThinkR-open/golem), "an opinionated framework for building production-grade shiny applications."
 It requires a number of additional R and Python packages.  The package creates the Shiny browser app as well as several functions for curating and packaging the data being curated.
 

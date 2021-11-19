@@ -446,7 +446,8 @@ mod_ingestor_server <- function(id) {
       tmp_vmr <- matrixStats::colVars(anndata$X,na.rm = TRUE)/tmp_mu
       # set vmr to zero when mean is zero
       tmp_vmr[adata$var$expr_mean==0] <- 0
-      adata$var$vmr <- tmp_vmr
+
+      temp_rv$VMR <- tmp_vmr
 
       obs_choices <- anndata$obs_keys()
 
@@ -512,7 +513,6 @@ mod_ingestor_server <- function(id) {
       #conf_list_old <- configr::read.config( file.path(db$root,db$dir,"db_config.yml" ) )
 
       conf_list_old <- omicser::get_db_conf(db$dir, db_root = db$root)
-
       conf_list_old$group_obs <- input$SI_exp_fact
       conf_list_old$obs_annots <- input$SI_exp_annot
       conf_list_old$group_var <- input$SI_omic_feat
@@ -562,7 +562,6 @@ mod_ingestor_server <- function(id) {
       shaddow_defs$feat_annot <- input$SI_feat_annot
       shaddow_defs$feat_deets  <- input$SI_feat_deets
       shaddow_defs$feature_filter  <- if (input$CB_var_to_mean_ratio) "VMR" else input$SI_feature_filter
-
 
       to_return$shaddow_defs <- shaddow_defs
       to_return$VMR <- temp_rv$VMR
