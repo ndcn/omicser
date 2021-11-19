@@ -1,68 +1,65 @@
-#==== INFO ========================================================
+#==== 0. INFO ========================================================
 ##
 ##  Muscle Stem Cell Proteomics
 ##  - DIA DATASET developed from "wRapper_example" script
 
+#==== 1. Set our PATHS ===============
+REPO_PATH <- getwd() # e.g. "~/Projects/NDCN_dev/omicser"
+OMICSER_RUN_DIR <- REPO_PATH # file.path(REPO_PATH,"quickstart")
 
-#==== 0. preamble/setup ==================================================
+# where are the raw data files for this script?
+RAW_DIR <- file.path(OMICSER_RUN_DIR,"quickstart/raw_data/DOMENICO_A")
+
+# set where we will put the database folder
+DB_ROOT <- file.path(OMICSER_RUN_DIR,"quickstart/raw_data/test_db")
+
+OMICSER_PYTHON <-  "./pyenv"
+
+
+
+#==== 2. Load omicser package ==================================================
+
 DEV_OMICSER <- TRUE
-
 if (DEV_OMICSER){
   # this should be a full path... e.g. ~/Projects/NDCN_dev/omicser
   # but for github, we will set relative to the repo BASE
-  REPO_PATH <- "/Users/ahenrie/Projects/NDCN_dev/omicser"
-  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
   golem::document_and_reload(pkg = REPO_PATH)
 } else {
   require(omicser)
-  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
-}
-
-# BOOTSTRAP the options we have already set up...
-# NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
-omicser_options <- omicser::get_config(in_path = OMICSER_RUN_DIR)
-CONDA_ENV <- omicser_options$conda_environment
-DB_ROOT_PATH <- omicser_options$db_root_path
-
-DB_NAME <-  list("Domenico DIA" = "domenico_stem_cell")
-#DB_NAME <- omicser_options$database_names[1]
-
-if (! (DB_NAME %in% omicser_options$database_names)){
-  omicser_options$database_names <- c(omicser_options$database_names,DB_NAME)
-  omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
 }
 
 
-#DB_NAME = "yassene_lipid"
-DB_DIR = file.path(DB_ROOT_PATH,DB_NAME)
-if (!dir.exists(DB_DIR)) {
-  dir.create(DB_DIR)
+#==== 3. ASSERT PYTHON ==================================================
+#   we need to make sure we have "scanpy" installed in order to use our helper functions
+
+OMICSER_PYTHON <- file.path(REPO_PATH,'pyenv')
+#Sys.setenv("RETICULATE_PYTHON"=RETICULATE_PYTHON)
+#Sys.getenv("RETICULATE_PYTHON")
+
+
+if (!reticulate::virtualenv_exists( OMICSER_PYTHON )){
+  reticulate::virtualenv_create( envname = OMICSER_PYTHON,
+                                 python = "/usr/local/bin/python3",
+                                 packages = c("anndata","scanpy")    )
+
 }
 
 
-#==== 1. documentation / provenance ==============================================================
-# TODO:  markdown file or html with some copy about the database
-#  - lab, paper link/name
-#  summarize results / data origin whatever
-
-db_meta <- list(
-    organism = 'mmusculus',
-    lab = "Ori/Ward",
-    annotation_database =  "uniprot_for_annotation.RData?",
-    title = "DIA proteomics",
-    omic_type = "Proteomics",
-    measurment = "normalized counts",
-    pub = "TBD",
-    date = format(Sys.time(), "%a %b %d %X %Y")
-)
-
-write_db_meta(db_meta,DB_NAME, db_root = DB_ROOT_PATH)
+reticulate::use_virtualenv(virtualenv = OMICSER_PYTHON,
+                           required = TRUE)
 
 
-#==== 2. helper functions =================================================================================
+
+reticulate::py_discover_config()
+# make sure we have scanpy installed eek! I think i broke it!!
 #
-# TODO:could also source from elsewhere.
-# process_sn_prot_quant_report ---------------------------
+#reticulate::py_install("scanpy")
+
+
+#==== 4. Define helper functions =================================================================================
+#  Or source the file to get them
+
+# process_sn_prot_quant_report
 #       here the basic data reading/munging is in this function (process_sn_prot_quant)
 #       and the "report" is wrapped in a separate function (make_sn_prot_quant_report)
 #       started as a Local copy of ori labs "process.sn.prot.quant.report"
@@ -74,8 +71,6 @@ write_db_meta(db_meta,DB_NAME, db_root = DB_ROOT_PATH)
 #       @param exp_name
 #
 #       @return data
-
-
 process_sn_prot_quant <- function(matrix_data_path, exp_name=NULL) {
   mp_all <- read.delim(matrix_data_path, sep = "\t", header = TRUE, as.is = TRUE)
   # remove contaminant
@@ -103,8 +98,6 @@ process_sn_prot_quant <- function(matrix_data_path, exp_name=NULL) {
   }
   return(t(data))
 }
-# End process_sn_prot_quant_report ---------------------------
-
 
 process_DIA_annot_de <- function( annot_de_file_path ){
   # full plath
@@ -186,6 +179,7 @@ prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,
   tmp_mat <- data
   tmp_mat[is.na(tmp_mat)] <- 0
 
+
   de_annot$annot$expr_geomean <- Matrix::colMeans( log(data),na.rm = TRUE) #exp minus 1?
   de_annot$annot$expr_mean <- Matrix::colMeans(data,na.rm = TRUE)
   de_annot$annot$expr_var  <- matrixStats::colVars(data,na.rm = TRUE)
@@ -194,6 +188,7 @@ prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,
   conditions_table$expr_var <- matrixStats::rowVars(data,na.rm=TRUE)
   conditions_table$expr_mean <- Matrix::rowMeans(data,na.rm=TRUE)
   conditions_table$expr_frac <- Matrix::rowMeans(tmp_mat>0)
+
 
 
   # scemaa
@@ -209,15 +204,16 @@ prep_DIA_files <- function(matrix_data_file,annot_de_file,conditions_table_file,
   return(data_list)
 }
 
+#==== 5. Set the database name  ("DB_NAME") =====================================================================================
 
+DB_NAME <-  list("Domenico DIA" = "domenico_stem_cell")
+RAW_DIR <- file.path(OMICSER_RUN_DIR,"quickstart","raw_data", "Domenico_A")
+DB_ROOT_PATH = "quickstart/test_db"
 
-
-# TODO:  define "get marker genes" or some such
-
-
-#==== 3. load data -========================================================================================
-
-RAW_DIR <- file.path(OMICSER_RUN_DIR,"raw_data", "Domenico_A")
+DB_DIR = file.path(DB_ROOT_PATH,DB_NAME)
+if (!dir.exists(DB_DIR)) {
+  dir.create(DB_DIR)
+}
 
 # report table
 matrix_data_file <- "20210524_093609_170805_aging_against_SC_merged_all_lib_2_Report.xls"
@@ -230,32 +226,26 @@ conditions_table_file <- "170805_aging_against_SC_merged_all_lib_2_ConditionSetu
 
 data_list <- prep_DIA_files(matrix_data_file,annot_de_file,conditions_table_file,RAW_DIR)
 
-
 # save diff expression data for later...
 diff_exp <- data_list$de
-# saveRDS(diff_exp, file = file.path(DB_DIR, "diff_expr_table.rds"))
+
 saveRDS(diff_exp, file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
-#==== 4. pack into anndata =========================================================================
-
-# helper_function<-('data-raw/ingest_helpers.R')
-# source(helper_function)
-
-
-ad <- omicser::setup_database(database_name=DB_NAME,
+#==== 6. pack into anndata =========================================================================
+adata <- omicser::setup_database(database_name=DB_NAME,
                               db_path=DB_ROOT_PATH,
                               data_in=data_list,
                               db_meta=NULL ,
                               re_pack=TRUE)
 
 
-ad$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"core_data.h5ad"))
+adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"core_data.h5ad"))
 
 
-#==== 5. post processing =========================================================================               --
+#==== 7. additional data processing (curation) =======================================================               --
 
 # Add the raw field
-raw <- ad$copy()
+raw <- adata$copy()
 # make raw #includes NA
 #     X="zeroed_NA" (for PCA)
 #     "scaled"  (zeroed)
@@ -269,50 +259,48 @@ sc <- reticulate::import("scanpy")
 # X_is_scaled_na_to_0
 
 
-zro_na <- ad$copy()
+zro_na <- adata$copy()
 zro_na$X[is.na(zro_na$X)]<-0
 zro_na <- zro_na$copy()
 
-scaled <- ad$copy() #scaled
+scaled <- adata$copy() #scaled
 sc$pp$scale(scaled)
 
-ad_out <- ad$copy()
+ad_out <- adata$copy()
 
 ad_out$X[is.na(ad_out$X)]<-0
-ad <- ad_out$copy()
-sc$pp$scale(ad)
+adata <- ad_out$copy()
+sc$pp$scale(adata)
 
-ad_copy <- ad$copy()
-ad$layers <- list(zro_na=zro_na$X,
+ad_copy <- adata$copy()
+adata$layers <- list(zro_na=zro_na$X,
               scaled=scaled$X,
               X_is_scaled_na_to_0=ad_copy$X) #list('count'=layers)
 
+adata$raw <- raw
+adata$raw$to_adata()
+#adata <- adata$copy()
 
-ad$raw <- raw
-ad$raw$to_adata()
-ad <- ad$copy()
+adata$var$vmr <- adata$var$expr_var/adata$var$expr_mean
+# set vmr to zero when mean is zero
+adata$var$vmr[adata$var$expr_mean==0] <- 0
 
+adata$var$vmr_rank <- order(adata$var$vmr)
 
+# curate a decile
+adata$var$vmr_decile <- dplyr::ntile(adata$var$vmr, 10)
 
-#  don't know how to make this work....
-#sc$pp$highly_variable_genes(anndata,n_top_genes=40)
-anndata$var$var_rank <- order(anndata$var$expr_var)
-# choose top 40 proteins by variance across dataset as our "targets"
-target_omics <- anndata$var_names[which(anndata$var$var_rank <= 40)]
-
-anndata$var$decile <- dplyr::ntile(anndata$var$expr_var, 10)
-
+# fix anotation fators
+#
+facts <- sapply(adata$var, is.factor)
+adata$var[facts] <- lapply(adata$var[facts], as.character)
 
 # save an intermediate file (incase we want to revert...)
-anndata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
+adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
 
-#==== 5-a. dimension reduction - PCA / umap =========================================================================
-
-## Step 3: Do some basic preprocessing to run PCA and compute the neighbor graphs
-##
-
-zro_na <- anndata$copy()
-zro_na$X <- anndata$layers$get('zro_na')
+#==== 7-b. dimension reduction - PCA / umap =========================================================================
+zro_na <- adata$copy()
+zro_na$X <- adata$layers$get('zro_na')
 sc$pp$pca(zro_na)
 sc$pp$neighbors(zro_na)
 ## Step 4: Infer clusters with the leiden algorithm
@@ -320,99 +308,144 @@ sc$tl$leiden(zro_na)
 ## Step 5: Compute tsne and umap embeddings
 sc$tl$umap(zro_na)
 
+sc$pp$pca(adata)
+sc$pp$neighbors(adata)
+sc$tl$leiden(adata)
+sc$tl$umap(adata)
 
-sc$pp$pca(anndata)
-sc$pp$neighbors(anndata)
-sc$tl$leiden(anndata)
-sc$tl$umap(anndata)
-
-
-anndata$obsm$unscaled_X_pca <- zro_na$obsm$X_pca
-anndata$obsm$unscaled_X_umap <- zro_na$obsm$X_umap
-anndata$varm$unscaled_PCs <- zro_na$varm$PCs
-anndata$obsp$unscaled_distances <- zro_na$obsp$distances
-anndata$obsp$unscaled_connectivities <- zro_na$obsp$connectivities
+adata$obsm$unscaled_X_pca <- zro_na$obsm$X_pca
+adata$obsm$unscaled_X_umap <- zro_na$obsm$X_umap
+adata$varm$unscaled_PCs <- zro_na$varm$PCs
+adata$obsp$unscaled_distances <- zro_na$obsp$distances
+adata$obsp$unscaled_connectivities <- zro_na$obsp$connectivities
 
 # save an intermediate file (incase we want to revert...)
-anndata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
+adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 
 
-#==== 6. differential expression  ======================================================================
+#==== 8. differential expression  ======================================================================
 #already have from the DIA helper fucnctions.
 file.exists(file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
 #diff_exp <- readRDS(file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
-add_these <- list(
-                  exp_annot = NULL,
-                  omic_feat = NULL,
-                  feat_annot = NULL,
-                  feat_deets = NULL,
-                  feature_filter = NULL
-                  )
+adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 
+#==== 9. create configs =========================================================================
+omic_type <- "prote" #c("transcript","prote","metabol","lipid","other")
+aggregate_by_default <- (if (omic_type=="transcript") TRUE else FALSE ) #e.g.  single cell
+# choose top 40 proteins by variance across dataset as our "targets"
+target_features <- adata$var_names[which(adata$var$var_rank <= 40)]
 
-remove_these <- list(
-  x_obs
-  y_obs
-  obs_subset
-  x_var
-  y_var
-
-
-)
-
-# CREATE CONFIGS>>>>
-source("../R/fct_ingestor.R")
-
-conf_def <- gen_config_table(anndata, DB_NAME, DB_ROOT_PATH)
-
-#==== 7. create configs =========================================================================
-# what ad$obs do we want to make default values for...
-default_factors <- c("Condition","leiden")
-
-# differentials  #if we care we need to explicitly state. defaults will be the order...
+#if we care we need to explicitly state. defaults will be the order...
 config_list <- list(
-  x_obs = c("Condition","leiden","Is.Reference","Replicate", "Label"),
-  y_obs =  c("expr_var", "expr_mean", "expr_frac"), #MEASURES
-  obs_groupby = c("Condition","leiden","Is.Reference","Replicate", "Label"),
-  obs_subset =  c("Condition","leiden","Is.Reference","Replicate", "Label"),
+  # meta-tablel grouping "factors"
+  group_obs = c("Condition","leiden","Is.Reference","Replicate"),
+  group_var = c("vmr_decile"),
 
-  x_var = c("decile"),
-  y_var = c("expr_geomean", "expr_mean", "expr_var", "expr_frac" ),
 
-  var_groupby = c("decile"),
-  var_subset = c("decile"),
+  # LAYERS
+  # each layer needs a label/explanation
+  layer_values = c("X","raw","X_is_scaled_na_to_0","scaled","zro_na"),
+  layer_names = c("Z-scores","intensity (arb)","Z-scores (na=0)","Z-scores","intensity (na=0)" ),
 
-  diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
-               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this
-               diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
-               diff_exp_tests =  levels(factor(diff_exp$test_type))
-  ),
-
-  layers = c("X","raw","X_is_scaled_na_to_0","scaled","zro_na"),
-  layer_values = c("arb. expression" ),
-  # Dimred
-  dimreds = list(obsm = anndata$obsm_keys(),
-                 varm = anndata$varm_keys()),
-
-  # what anndata$obs do we want to make default values for...
+  # ANNOTATIONS / TARGETS
+  # what adata$obs do we want to make default values for...
   # # should just pack according to UI?
-  default_factors = default_factors, #c("Condition","leiden","Color"),
-  target_omics = target_omics,
-  omic_details = c("Genes",
-                   "ProteinDescriptions",
-                   "ProteinNames",
-                   "GO.Cellular.Component",
-                   "GO.Molecular.Function",
-                   "GO.Biological.Process",
-                   "decile")
+  default_obs =  c("Condition","leiden"), #subset & ordering
 
+  obs_annots = c("Condition","leiden", "Is.Reference", "expr_var","expr_mean"),
+
+  default_var = character(0), #just use them in order as defined
+  var_annots = c("vmr_decile",
+                 "expr_geomean",
+                 "expr_mean",
+                 "expr_frac",
+                 "vmr",
+                 "vmr_decile"),
+
+
+  target_features = target_features,
+  feature_deets = c("Genes",
+                "ProteinDescriptions",
+                "ProteinNames",
+                "GO.Cellular.Component",
+                "GO.Molecular.Function",
+                "GO.Biological.Process",
+                "expr_geomean",
+                "expr_mean",
+                "expr_var" ,
+                "expr_frac",
+                "mean",
+                "std",
+                "vmr" ,
+                "vmr_rank",
+                "vmr_decile" ),
+
+  filter_feature = c("vmr"), #if null defaults to "fano_factor"
+
+  # differential expression
+  diffs = list( diff_exp_comps = levels(factor(diff_exp$versus)),
+                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
+                diff_exp_tests =  levels(factor(diff_exp$test_type))
+              ),
+
+  # Dimension reduction (depricated)
+  dimreds = list(obsm = adata$obsm_keys(),
+                 varm = adata$varm_keys()),
+
+
+  #meta info
+  annotation_database =  NA,
+  publication = "TBD",
+  method = "bulk", # c("single-cell","bulk","other")
+  omic_type = omic_type, #c("transcript","prote","metabol","lipid","other")
+  aggregate_by_default = aggregate_by_default, #e.g.  single cell
+
+  organism = 'mmusculus',
+  lab = "Ori/Ward",
+  title = "DIA proteomics",
+  date = format(Sys.time(), "%a %b %d %X %Y")
 )
-
 
 
 omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
 
-#==== 8. write data file to load  =========================================================================
-anndata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
+
+
+# # CREATE CONFIGS>>>>
+# source("./R/fct_ingestor.R")
+
+conf_def <- omicser:::gen_config_table(adata, DB_NAME, DB_ROOT_PATH)
+# TODO:  rewrite gen_config to determine type (char/num/int)
+#     remove Qobs
+#     depricate dimreds (but leave commented for future enablement)
+#     grouping... color
+#       - colors should cycle (borrow from heatmap hack)
+#
+#
+#
+
+
+#==== 10. write data file to load  =========================================================================
+adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
+
+adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
+
+
+#===== 11.  CONFIGURE DATABASES ===============
+
+# configure
+# BOOTSTRAP the options we have already set up...
+# NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
+omicser_options <- omicser::get_config(in_path = OMICSER_RUN_DIR)
+DB_ROOT_PATH <- omicser_options$db_root_path
+
+#DB_NAME <- omicser_options$database_names[1]
+
+if (! (DB_NAME %in% omicser_options$database_names)){
+  omicser_options$database_names <- c(omicser_options$database_names,DB_NAME)
+  omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
+}
+
+

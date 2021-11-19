@@ -1,4 +1,105 @@
 
+
+
+col_unif = list(c("white", "orange"),
+                c("white", "purple"),
+                c("black", "orange"),
+                c("black", "purple"))
+
+col_norm = list(c("green", "white", "red"),
+                c("purple", "white", "orange"),
+                c("blue", "white", "red"),
+                c("orange", "white", "pink")
+)
+
+col_cats10 = list("Set3","Paired","Pastel1") #Ncols==10,11,12
+col_cats9 = list("Set1","Pastel1") #Ncols==9,10
+col_cats8 = list("Accent","Dark2","Pastel2","Set2") #1-8
+
+
+
+
+col_unif = list(c("white", "orange"),
+                c("white", "purple"),
+                c("black", "orange"),
+                c("black", "purple"))
+
+col_norm = list(c("green", "white", "red"),
+                c("purple", "white", "orange"),
+                c("blue", "white", "red"),
+                c("orange", "white", "pink")
+)
+
+col_cats10 = list("Set3","Paired","Pastel1") #Ncols==10,11,12
+col_cats9 = list("Set1","Pastel1") #Ncols==9,10
+col_cats8 = list("Accent","Dark2","Pastel2","Set2") #1-8
+
+
+
+get_my_cols <- function(top_annotations){
+  # if aggregated don't show top annotations...
+  max_levels <- 12
+
+  rpt_cats <- 1 #index to non-repeating colormaps.
+  rpt_unif <- 1
+  rpt_norm <- 1
+  # A- "observations"  (ad_in$obs) pack in the observations.
+  top_colors <- list()
+  annot_colnms <- colnames(top_annotations)
+  for (annot_i in annot_colnms) {
+    # Additional pre-processing for categorical metadata
+    meta_i <- top_annotations[[annot_i]]
+    n_levels <- length(unique(meta_i))
+    if (n_levels > 2 & n_levels <= max_levels) {
+      if (is.factor(meta_i)) {
+        col_i <- structure(brewer.pal(n_levels, col_cats[[rpt_cats]]),
+                           names = levels(meta_i))
+        rpt_cats <- rpt_cats %% 4 + 1
+        top_colors[[annot_i]] <- col_i
+      } else if (is.numeric(meta_i)) {
+        mx <- max(meta_i)
+        mn <- min(meta_i)
+        if (mn < 0) {
+          mx <- round(max(abs(in_mat)))
+          col_i <- circlize::colorRamp2(c(-mx, 0, mx), col_norm[[rpt_norm]])
+          rpt_norm <- rpt_norm %% 4 + 1
+
+        } else {
+          col_i <- circlize::colorRamp2(c(mn, mx), col_unif[[rpt_unif]])
+          rpt_unif <- rpt_unif %% 4 + 1
+        }
+        top_colors[[annot_i]] <- col_i
+
+      } else { #charachter
+        col_i <- structure(brewer.pal(n_levels, col_cats[[rpt_cats]]),
+                           names = levels(factor(meta_i)))
+        rpt_cats <- rpt_cats %% 4 + 1
+        top_colors[[annot_i]] <- col_i
+
+      }
+
+    } else {
+      if (is.numeric(meta_i)) {
+        mx <- max(meta_i)
+        mn <- min(meta_i)
+        if (mn < 0) {
+          mx <- round(max(abs(in_mat)))
+          col_i <- circlize::colorRamp2(c(-mx, 0, mx), col_norm[[rpt_norm]])
+          rpt_norm <- rpt_norm %% 4 + 1
+        } else {
+          col_i <- circlize::colorRamp2(c(mn, mx), col_unif[[rpt_unif]])
+          rpt_unif <- rpt_unif %% 4 + 1
+        }
+        top_colors[[annot_i]] <- col_i
+      }
+    }
+  }
+
+  return(top_colors)
+}
+
+
+
 #' gen_config_table
 #'
 #' @description function to read the data object and create the config files needed by the UI
@@ -17,24 +118,32 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
 
   config_files <- c(file.path(db_root_path,db_name,"omxr_conf.rds" ),
                     file.path(db_root_path,db_name,"omxr_def.rds" ))
-  # DISABLED THIS... we can just read from the anndata
-  # ,
-  #                   file.path(db_root_path,db_name,"omxr_omics.rds" ))
+
+  conf_yml <- file.path(db_root_path,db_name,"db_config.yml" )
 
   # check if we have it or are forcing
-  if ( all(file.exists( config_files )) && !regenerate) {
-    omxr_conf <- readRDS(file = config_files[1])
-    omxr_def <- readRDS(file = config_files[2])
-  } else {
-    max_levels <- 25 # ceiling for considering somethign a factor
-    max_levels_ui = 25  # ceiling for UI levels
+  if ( !regenerate) {
+    # do we have the files
+    if ( all(file.exists( config_files ))) {
+      # are teh saved files newer than the yaml?
+      if (difftime(file.info(config_files[1])$ctime,file.info(conf_yml)$ctime, units = "days") < 0) {
+        omxr_conf <- readRDS(file = config_files[1])
+        omxr_def <- readRDS(file = config_files[2])
+        return (list(conf  = omxr_conf,def   = omxr_def))
+      }
+    }
+  }
 
 
-  # Get defaults / last saved...
+    # should this max levels be according to colors??  i.e. 7, or 9?
+    max_levels <- 12 # ceiling for considering somethign a factor
 
-    conf_list <- configr::read.config( file.path(db_root_path,db_name,"db_config.yml" ) )
-    db_meta <- configr::read.config( file.path(db_root_path,db_name,"db_meta.yml" ) )
 
+    # Get defaults / last saved...
+    #conf_list <- configr::read.config( file.path(db_root_path,db_name,"db_config.yml" ) )
+    conf_list <- omicser::get_db_conf(db_name, db_root = db_root_path)
+
+    # depricate db_meta... force using a text file / .Rmd and force other things into the db_config.yml
 
     # PREPROCESS --------------------------------
     samples <- ad_in$obs_names
@@ -49,79 +158,87 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
 
 
     # A observation meta ($obs)  ----------------------------------------
-    obs_meta <- as.data.table(ad_in$obs)
-    for (i_meta in colnames(obs_meta)) {
-      obs_meta[[i_meta]] = unlist(obs_meta[[i_meta]]) # unlist and refactor
-      if (is.character(obs_meta[[i_meta]])) {
-        levels = sort(unique(obs_meta[[i_meta]]))
-        if (length(levels) < max_levels) {
-          obs_meta[[i_meta]] = factor(obs_meta[[i_meta]], levels = levels)
-        }
+    obs_meta <- data.table::as.data.table(ad_in$obs)
+      # val_type <- c("character","numeric","integer")
+      # col_type <- c("factor","value","annotation")
+
+    # Make sure that all of our categorical variables are factors...
+    # "categorical" is defined as anything with less than `max_levels`
+    for (i_meta in colnames(obs_meta) ) {
+      #TODO: lapply?
+      levels <- sort(unique(obs_meta[[i_meta]]))
+      nlevels <- length(levels)
+      if (nlevels <= max_levels) {
+        obs_meta[[i_meta]] <-  factor(obs_meta[[i_meta]], levels = levels)
+        if ( typeof(i_meta) == "double" ) print("Warning less than `max_levels` double type")
       }
     }
-
     # include everything
-    meta_to_include <- colnames(obs_meta)
+    meta_to_include <- colnames(obs_meta) #TODO: make this a parameter
     # Start making config data.table
     omxr_conf <- data.table()
-
     # A- "observations"  (ad_in$obs) pack in the observations.
     for (i_meta in meta_to_include) {
+
+      levels <- sort(unique(obs_meta[[i_meta]]))
+      nlevels <- length(levels)
+      if (nlevels <= max_levels) {
+        obs_meta[[i_meta]] <-  factor(obs_meta[[i_meta]], levels = levels)
+        if ( typeof(i_meta) == "double" ) print("Warning less than `max_levels` double type")
+      }
+
       tmp_conf <- data.table(
-        ID = i_meta, UI = i_meta, fID = NA, fUI = NA,
-        fCL = NA, Qobs = TRUE, field = "obs",
-        default = 0, grp = FALSE, measure= FALSE,
-        diff_exp = FALSE, dimred = FALSE
+        ID = i_meta, UI = i_meta, fID = NA, fUI = NA, fCL = NA, field = "obs",
+        default = 0, grp = FALSE,diff_exp = FALSE, dimred = FALSE
       )
+
       # Additional pre-processing for categorical metadata
       n_levels <- nlevels(obs_meta[[i_meta]])
-
-      if (n_levels !=0 &
-          n_levels <= max_levels &
-          n_levels < X_dims[1]*.6 ) {
-        if (n_levels >= 2) {
+      if ( n_levels !=0 ) {  # && (i_meta %in% conf_list$group_obs)
+        if ( n_levels >= 2 ) { # grouping variable...
           tmp_conf$fID <- paste0(levels(obs_meta[[i_meta]]), collapse = "|")
           tmp_conf$fUI <- tmp_conf$fID
-          tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels), collapse = "|")
-          tmp_conf$grp <- TRUE
-        } else if (n_levels == 1) {
+          #tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels), collapse = "|")
+          #tmp_conf$grp <- TRUE
+        } else if ( n_levels == 1 ) {
           tmp_conf$fID <- levels(obs_meta[[i_meta]])
           tmp_conf$fUI <- tmp_conf$fID
-          tmp_conf$fCL <- "black"
+          #tmp_conf$fCL <- "black"
           print('we should drop constants and put the value in uns')
-        } #else 0
-      } # just append the "blank"
-      #TODO: test for comp measure...
+        }
+      }
       omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
 
+
     # B variable annotations (var-meta; ad_in$var)  ----------------------------------------
+    var_meta <- data.table::as.data.table(ad_in$var)
+    # val_type <- c("character","numeric","integer")
+    # col_type <- c("factor","value","annotation")
+
     var_to_include <- ad_in$var_keys()# the first one should be "features
     for (i_var in var_to_include) {
       tmp_conf <- data.table(
-        ID = i_var, UI = i_var, fID = NA, fUI = NA,
-        fCL = NA, Qobs = FALSE, field = "var",
-        default = 0, grp = FALSE, measure= FALSE,
-        diff_exp = FALSE, dimred = FALSE
+        ID = i_var, UI = i_var, fID = NA, fUI = NA, fCL = NA, field = "var",
+        default = 0, grp = FALSE, diff_exp = FALSE, dimred = FALSE
       )
+
       var_vect <-ad_in$var[[i_var]]
       var_vect <- factor(var_vect)
       n_levels <- nlevels(var_vect)
 
       if (n_levels !=0 &
-          n_levels <= max_levels &
-          n_levels < length(var_vect)*.6) {
-        if (n_levels >= 2 &
-            (i_var %in% conf_list$x_var) ) {
+          n_levels <= max_levels ) {
+        if (n_levels >= 2 ) {
           #check to see if its in the list
           tmp_conf$fID <- paste0(levels(var_vect), collapse = "|")
           tmp_conf$fUI <- tmp_conf$fID
-          tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels), collapse = "|")
-          tmp_conf$grp <- TRUE
+          #tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels), collapse = "|")
+          #tmp_conf$grp <- TRUE
         } else if (n_levels == 1) {
           tmp_conf$fID <- levels(var_vect)
           tmp_conf$fUI <- tmp_conf$fID
-          tmp_conf$fCL <- "black"
+          #tmp_conf$fCL <- "black"
         }
         #TODO: test for comp measure...
       }
@@ -130,17 +247,14 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
 
     # C differential expression   ----------------------------------------
     diffs <- conf_list$diffs
-    # diffs <- list(diff_exp_groups =  levels(factor(diff_exp$group)),
-    #               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)),
+    # diffs <- list(diff_exp_comps =  levels(factor(diff_exp$group)),
     #               diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
     #               diff_exp_tests =  levels(factor(diff_exp$test_type)))
     de_to_include <- names(diffs) # the first one should be "features
     for (i_diff in de_to_include) {
       tmp_conf <- data.table(
-        ID = i_diff, UI = i_diff, fID = NA, fUI = NA,
-        fCL = NA, Qobs = FALSE, field = "de",
-        default = 0, grp = FALSE, measure= FALSE,
-        diff_exp = TRUE, dimred = FALSE
+        ID = i_diff, UI = i_diff, fID = NA, fUI = NA, fCL = NA, field = "de",
+        default = 0, grp = FALSE, diff_exp = TRUE, dimred = FALSE
       )
       tmp_list <-diffs[[i_diff]]
       tmp_list <- factor(tmp_list)
@@ -149,12 +263,12 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
         if (n_levels >= 2) {
           tmp_conf$fID <- paste0(levels(tmp_list), collapse = "|")
           tmp_conf$fUI <- tmp_conf$fID
-          tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels), collapse = "|")
-          tmp_conf$grp <- TRUE
+          #tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels), collapse = "|")
+          #tmp_conf$grp <- TRUE
         } else if (n_levels == 1) {
           tmp_conf$fID <- levels(tmp_list)
           tmp_conf$fUI <- tmp_conf$fID
-          tmp_conf$fCL <- "black"
+          #tmp_conf$fCL <- "black"
         }
         #TODO: test for comp measure...
         omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
@@ -162,16 +276,16 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
     }
 
 
+
+    # TODO:  first pass infer dimreds and layers from anndata table
     # D- dimension reductions (ad_in$varm ) ---------------------
     dimreds <- conf_list$dimreds
     dr_to_include <- names(dimreds) # the first one should be "features
     for (i_dr in dr_to_include) {
       tmp_list <-dimreds[[i_dr]]
       tmp_conf <- data.table(
-        ID = i_dr, UI = i_dr, fID = NA, fUI = NA,
-        fCL = NA, Qobs = FALSE, field = "dr",
-        default = 0, grp = FALSE, measure= FALSE,
-        diff_exp = FALSE, dimred = TRUE
+        ID = i_dr, UI = i_dr, fID = NA, fUI = NA, fCL = NA, field = "dr",
+        default = 0, grp = FALSE, diff_exp = FALSE, dimred = TRUE
       )
 
       # Additional pre-processing for categorical metadata
@@ -181,14 +295,10 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
         if (n_levels >= 2) {
           tmp_conf$fID <- paste0(levels(tmp_list), collapse = "|")
           tmp_conf$fUI <- tmp_conf$fID
-          tmp_conf$fCL <- paste0(colorRampPalette(brewer.pal(12, "Paired"))(n_levels),
-                                 collapse = "|"
-          )
-          tmp_conf$grp <- TRUE
+          #tmp_conf$grp <- TRUE
         } else if (n_levels == 1) {
           tmp_conf$fID <- levels(tmp_list)
           tmp_conf$fUI <- tmp_conf$fID
-          tmp_conf$fCL <- "black"
         }
         #TODO: test for comp measure...
         omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
@@ -196,88 +306,71 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
     }
 
     # E- matrix layers (ad_in$layers ) ---------------------
-    lr_to_include <- conf_list$layers
-    for (i_lr in lr_to_include) {
+    lr_to_include <- conf_list$layer_values
+    lr_names <- if (length(conf_list$layer_names)==length(lr_to_include)) conf_list$layer_names else conf_list$layer_values
+
+    for (i in 1:length(lr_to_include)) {
+      i_lr <- lr_to_include[i]
+      i_nm <- lr_names[i]
+
       tmp_conf <- data.table(
-        ID = i_lr, UI = i_lr, fID = NA, fUI = NA,
-        fCL = NA, Qobs = FALSE, field = "layer",
-        default = 0, grp = FALSE, measure= FALSE,
-        diff_exp = FALSE, dimred = TRUE
+        ID = i_lr, UI = i_lr, fID = 0, fUI = i_nm, fCL = NA,field = "layer",
+        default = 0, grp = FALSE,  diff_exp = FALSE, dimred = TRUE
       )
-      tmp_conf$fID <- 0
-      tmp_conf$fUI <- tmp_conf$fID
-      tmp_conf$fCL <- "black"
-        #TODO: test for comp measure...
-        omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
+
+      #TODO: test for comp measure...
+      omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
 
+    # DEFAULTS ----------------------------------------
     # obs to subset # default selection is all (if multi) or first (if only 1)
-    # features
-    # vars subset
+    for (def_i in conf_list$group_obs) {
+      omxr_conf[ UI==def_i & field=="obs"]$grp <- TRUE
+    }
 
-    # OMIC MAPPING (disabled) ----------------------------------------
-    # just make a sorted list
-    omic_feature_mapping <- features
-    names(omic_feature_mapping) <- features #
-
-    features_ <- seq(X_dims[2])
-    names(omic_feature_mapping) <- NULL
-    names(features_) <- omic_feature_mapping
-
-    # sort alphabetically and by length
-    features_ <- features_[order(names(features_))]
-    features_ <- features_[order(nchar(names(features_)))]
-
-
-    for (def_i in 1:length(conf_list$default_factors)){
-      # need errorcheck?
-      omxr_conf[ UI==conf_list$default_factors[def_i] ]$default <- def_i
+    i <- 0
+    for (def_i in conf_list$default_obs) {
+      i <- i + 1
+      omxr_conf[ UI==def_i & field=="obs"]$default <- i
     }
 
 
-    all_measures <- c(conf_list$y_obs, conf_list$y_var)
-    for (def_i in 1:length(all_measures)){
-      # need errorcheck?
-      omxr_conf[ UI==all_measures[def_i] ]$measure <- TRUE
+    for (def_i in conf_list$group_var) {
+      omxr_conf[ UI==def_i & field=="var"]$grp <- TRUE
+    }
+
+    i <- 0
+    for (def_i in conf_list$default_var){
+      i <- i + 1
+      omxr_conf[ UI==def_i & field=="var"]$default <- i
     }
 
 
-  # DEFAULTS ----------------------------------------
     omxr_def <- list()
-    omxr_def$omics <- conf_list$target_omics # first 20
 
-    omxr_def$obs_x <- omxr_conf[default == 1]$UI #
-
-    omxr_def$obs_y <- omxr_conf[measure == TRUE & field == "obs"]$UI[1] #
-
-    # in case we don't have more than 1 default we need to check...
+    # turn on grp if  in our conf_list
     #
-    if (length(conf_list$default_factors)>1){
-      def_n <- 2
-    } else {
-      def_n <- 1
-    }
 
-    omxr_def$obs_subset <- omxr_conf[default == def_n]$UI #
-    omxr_def$color_grp <- omxr_conf[default == def_n]$UI # color by...
+    #copy things over...
+    omxr_def$group_obs <- conf_list$group_obs
+    omxr_def$group_var <- conf_list$group_var
 
+    omxr_def$obs_annots <- conf_list$obs_annots
+    omxr_def$var_annots <- conf_list$var_annots
+    omxr_def$target_features <- conf_list$target_features # first 20
+    omxr_def$feature_deets <- conf_list$feature_deets
+    omxr_def$filter_feature  <- conf_list$filter_feature
 
-    omxr_def$var_x <- omxr_conf[grp==TRUE & field=="var"]$UI[1] #
-    omxr_def$var_y <- omxr_conf[measure == TRUE & field == "var"]$UI[1] #
-    omxr_def$var_subset <- omxr_conf[grp==TRUE & field=="var"]$UI[1]  # Us
-
-    # TODO: add new parameter defaults here.
-    omxr_def$scale <- NA # raw / area / z
-    omxr_def$trans <- NA # log10 or no
-    omxr_def$p_val <- NA # corrected?
-
-    omxr_def$comp_name <- diffs$diff_exp_obs_name[1]  # x vs y / x vs rest,
-    omxr_def$comp_type <- diffs$diff_exp_comp_type[1]  # x vs y / x vs rest,
-    omxr_def$comp_fact <- diffs$diff_exp_comps[1] # choice
-    omxr_def$test <- diffs$diff_exp_tests[1]  # t-test, xx
-
-    omxr_def$db_meta <- db_meta
-    omxr_def$omic_details <- conf_list$omic_details
+    #meta info
+    omxr_def$annotation_database <- conf_list$annotation_database
+    omxr_def$publication <- conf_list$publication
+    omxr_def$method <- conf_list$method
+    omxr_def$omic_type <- conf_list$omic_type
+    omxr_def$aggregate_by_default <- conf_list$aggregate_by_default
+    omxr_def$organism <- conf_list$organism
+    omxr_def$lab <- conf_list$lab
+    omxr_def$title <- conf_list$title
+    omxr_def$date<-  format(Sys.time(), "%a %b %d %X %Y")
 
     # WRITE FILES  ----------------------------------------
 
@@ -285,7 +378,6 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
     saveRDS(omxr_def, file = file.path(db_root_path,db_name,"omxr_def.rds") )
     #saveRDS(omics_, file = file.path(db_root_path,db_name,"omxr_omics.rds") )
 
-  }
 
   out_vals <- list(conf  = omxr_conf,
                    def   = omxr_def)

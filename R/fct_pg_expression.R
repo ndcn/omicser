@@ -12,11 +12,15 @@ col_norm = list(c("green", "white", "red"),
                  c("orange", "white", "pink")
                  )
 
-col_cats = list("Set3","Paired","Set1","Dark2")
+col_cats10 = list("Set3","Paired","Pastel1") #Ncols==10,11,12
+col_cats9 = list("Set1","Pastel1") #Ncols==9,10
+col_cats8 = list("Accent","Dark2","Pastel2","Set2") #1-8
+
+col_cats <- c(col_cats10,col_cats9,col_cats8)
 
 get_my_cols <- function(top_annotations){
   # if aggregated don't show top annotations...
-  max_levels <- 10
+  max_levels <- 12
 
   rpt_cats <- 1 #index to non-repeating colormaps.
   rpt_unif <- 1

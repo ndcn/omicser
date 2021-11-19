@@ -87,7 +87,7 @@ mod_ingestor_ui <- function(id) {
                ),
                column(6,
                       HTML("<b>feature filtering variable</b>"),br(),
-                      checkboxInput(ns("CB_fano_fact"), "calculate? (relative variance)", value = TRUE),
+                      checkboxInput(ns("CB_var_to_mean_ratio"), "calculate VMR? (idx if disp.)", value = TRUE),
 
                     shinyjs::disabled(
                            selectizeInput(
@@ -124,12 +124,16 @@ mod_ingestor_server <- function(id) {
     ns <- session$ns
 
 
-    # config is in the ./inst/db_info/ directory
-    CONFIG <- omicser::get_config()
-    DB_NAMES <- CONFIG$database_names
-    DB_ROOT <- CONFIG$db_root_path
-    INSTALL_TYPE <- CONFIG$install #production, dev,
+    # # config is in the ./inst/db_info/ directory
+    # CONFIG <- omicser::get_config()
+    # DB_NAMES <- CONFIG$database_names
+    # DB_ROOT <- CONFIG$db_root_path
+    # INSTALL_TYPE <- CONFIG$install #production, dev,
 
+
+    DB_NAMES <- golem::get_golem_options("database_names")
+    DB_ROOT <- golem::get_golem_options("db_root")
+    INSTALL_TYPE <- golem::get_golem_options("install_type") #production, dev,
 
     # potential / modal values
     modal_db_info = reactiveValues(db_root = DB_ROOT, #"UNDEFINED",
@@ -146,7 +150,7 @@ mod_ingestor_server <- function(id) {
                               dir=NULL, #current
                               root=NULL, #db_root
                               list=NULL, #all databases
-                              regenerate=FALSE)
+                              regenerate=TRUE) #always regenerate on initial load...
 
     #instead of shinyFiles i could use find .hd5 and strip of the two parents in the path...
     shinyFiles::shinyDirChoose(input, "database_root_path", roots = c(shinyFiles::getVolumes()()), session = session, allowDirCreate = FALSE)
@@ -171,7 +175,7 @@ mod_ingestor_server <- function(id) {
       trigger = 0,
 
       shaddow_defs = NULL,
-      fano_factor = NULL
+      VMR = NULL
     )
 
     idx_of_disp <- reactive({
@@ -194,7 +198,7 @@ mod_ingestor_server <- function(id) {
       de = NULL,
       config = NULL,
       default = NULL,
-      fano_factor = NULL
+      VMR = NULL
     )
 
 
@@ -292,8 +296,6 @@ mod_ingestor_server <- function(id) {
     observe({
       selected_root <- shinyFiles::parseDirPath(roots = c(shinyFiles::getVolumes()()), input$database_root_path)
       # restrictions = system.file(package = "base")
-      #
-      #
       output$txt_database_root_path <- renderPrint({
         if (is.integer(input$database_root_path)) {
           cat("No directory has been selected (shinyDirChoose)")
@@ -427,7 +429,6 @@ mod_ingestor_server <- function(id) {
       db$name <- names(which(db$list==input$SI_database))
       # zero out the data_meta until we "load"
       output$ui_data_meta <- renderUI({h4("Press `LOAD` to activate data") })
-
       # load data
       temp_rv$de <- readRDS(file = file.path(db$root,db$dir,"db_de_table.rds"))
       anndata <- anndata::read_h5ad(filename=file.path(db$root,db$dir,"db_data.h5ad"))
@@ -439,43 +440,46 @@ mod_ingestor_server <- function(id) {
       temp_rv$default <- conf_def$def
 
       # computed index of dispersion
-      # TODO: fix this HACK
+      # TODO: fix this HACK, change to VMR (index of dispersion)
       # computer no-matter what,
-      temp_rv$fano_factor <- (matrixStats::colVars(anndata$X,na.rm = TRUE)/(colMeans(anndata$X,na.rm = TRUE)+10^-40))
+      tmp_mu <- colMeans(anndata$X,na.rm = TRUE)
+      tmp_vmr <- matrixStats::colVars(anndata$X,na.rm = TRUE)/tmp_mu
+      # set vmr to zero when mean is zero
+      tmp_vmr[adata$var$expr_mean==0] <- 0
+      adata$var$vmr <- tmp_vmr
 
       obs_choices <- anndata$obs_keys()
 
-      group_obs <- temp_rv$config[grp == TRUE & field=="obs"]$UI # <- choices_x
-      def_grp_o <- temp_rv$default$obs_subset
-
+      #group_obs <- temp_rv$config[grp == TRUE & field=="obs"]$UI # <- choices_x
+      #def_grp_o <- temp_rv$config[grp == TRUE & field=="obs" & default==1]$ID
       #will still be disabled if we are calculating...
       updateSelectInput(inputId = "SI_exp_fact", #label="Choose sample factors"
                         choices = obs_choices, #multiple=TRUE
-                        selected = group_obs)
+                        selected = temp_rv$default$group_obs)
 
       updateSelectInput(inputId = "SI_exp_annot", #label="Choose sample-meta annotations (heatmap)"
                         choices = obs_choices, #multiple=TRUE
-                        selected = group_obs)
+                        selected = temp_rv$default$obs_annots)
 
       var_choices <- anndata$var_keys()
-      group_var <- temp_rv$config[grp == TRUE & field=="var"]$UI # <- choices_x
-      def_grp_v <- temp_rv$default$var_subset
+      #group_var <- temp_rv$config[grp == TRUE & field=="var"]$UI # <- choices_x
+      #group_var <- temp_rv$config[grp == TRUE & field=="var"]$UI # <- choices_x
 
       updateSelectInput(inputId = "SI_omic_feat", #label="Choose omic feature groups"
                         choices = var_choices, #multiple=TRUE
-                        selected = def_grp_v)
+                        selected = temp_rv$default$group_var)
 
       updateSelectInput(inputId = "SI_feat_annot", #label= "Choose omic feature annotatins (heatmap)"
                         choices = var_choices, #multiple=TRUE
-                        selected = group_var)
+                        selected = temp_rv$default$var_annots)
 
       updateSelectInput(inputId = "SI_feat_deets", #label= "Choose omic feature meta-info"
                         choices = var_choices, #multiple=TRUE
-                        selected = var_choices)
+                        selected = temp_rv$default$feature_deets)
 
       updateSelectInput(inputId = "SI_feature_filter",# label="Choose omic feature for filtering `highly variable`"
                         choices = var_choices, #multiple=FALSE
-                        selected = "")
+                        selected = temp_rv$default$filter_feature[1])
 
       shinyjs::enable("AB_update_defaults")
 
@@ -492,7 +496,7 @@ mod_ingestor_server <- function(id) {
     })
 
     observe({
-      if ( input$CB_fano_fact ) {
+      if ( input$CB_var_to_mean_ratio ) {
         shinyjs::disable("SI_feature_filter")
         # compute and set ? value??
 
@@ -505,11 +509,23 @@ mod_ingestor_server <- function(id) {
     # update defaults: write to configuration
     observeEvent(input$AB_update_defaults, {
       # all other return values set with SI_database
+      #conf_list_old <- configr::read.config( file.path(db$root,db$dir,"db_config.yml" ) )
+
+      conf_list_old <- omicser::get_db_conf(db$dir, db_root = db$root)
+
+      conf_list_old$group_obs <- input$SI_exp_fact
+      conf_list_old$obs_annots <- input$SI_exp_annot
+      conf_list_old$group_var <- input$SI_omic_feat
+      conf_list_old$var_annots <- input$SI_feat_annot
+      conf_list_old$feature_deets <- input$SI_feat_deets
+      conf_list_old$filter_feature <- input$SI_feature_filter
 
       # use a modal?  or simply send everything from the ingest UI as update?
+      omicser::write_db_conf(conf_list_old,DB_NAME, db_root = DB_ROOT_PATH)
 
+      # set flag to regenerate the configuration gen_config_table
+      db$regenerate <- TRUE
 
-      #
       }
     )
 
@@ -545,11 +561,11 @@ mod_ingestor_server <- function(id) {
       shaddow_defs$omic_feat <- input$SI_omic_feat
       shaddow_defs$feat_annot <- input$SI_feat_annot
       shaddow_defs$feat_deets  <- input$SI_feat_deets
-      shaddow_defs$feature_filter  <- if (input$CB_fano_fact) "fano factor" else input$SI_feature_filter
+      shaddow_defs$feature_filter  <- if (input$CB_var_to_mean_ratio) "VMR" else input$SI_feature_filter
 
 
       to_return$shaddow_defs <- shaddow_defs
-      to_return$fano_factor <- temp_rv$fano_factor
+      to_return$VMR <- temp_rv$VMR
 
 
       # will this work?  or is the "observing" affecting a reactive with this render?

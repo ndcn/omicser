@@ -4,7 +4,7 @@
 \alias{run_in_browser}
 \title{run_in_browser - shortcut to launch in_browser}
 \usage{
-run_in_browser()
+run_in_browser(...)
 }
 \value{
 

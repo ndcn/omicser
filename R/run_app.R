@@ -41,30 +41,33 @@ run_app <- function(
 #' @export
 #'
 #' @examples TODO
-run_in_browser <- function(){
-  run_app(options = list(launch.browser = TRUE)) #with = "shinyAppDir"
+run_in_browser <- function(...){
+  run_app(options = list(launch.browser = TRUE),...) #with = "shinyAppDir"
 }
 
+
+
+#' run_defai;ts - shortcut to launch with default settings.
 #'
+#' @return
+#' @export
 #'
-#' #' run_defai;ts - shortcut to launch with default settings.
-#' #'
-#' #' @return
-#' #' @export
-#' #'
-#' #' @examples TODO
-#' run_defaults <- function(){
-#'   # load yaml and add launch.browser = TRUE to the list
-#'   #
-#'   #
-#'   #
-#'
-#'
-#'   if
-#'
-#'     default_options <-  list(launch.browser = TRUE,
-#'                            # the rest are options to pass too the app.
-#'                            )
-#'
-#'   run_app(options =) #with = "shinyAppDir"
-#' }
+#' @examples TODO
+run_defaults <- function(){
+  # load yaml and add launch.browser = TRUE to the list
+  #
+  #
+  #
+
+    CONFIG <- omicser::get_config()
+    DB_NAMES <- CONFIG$database_names
+    DB_ROOT <- CONFIG$db_root_path
+    INSTALL_TYPE <- CONFIG$install #production, dev,
+
+
+  run_app(options = list(launch.browser = TRUE),
+          db_root = DB_ROOT,
+          database_names = DB_NAMES,
+          install_type = INSTALL_TYPE
+          ) #with = "shinyAppDir"
+}
