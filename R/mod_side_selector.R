@@ -122,9 +122,6 @@ mod_side_selector_server <- function(id, rv_data){
 
     )
 
-
-
-
     observe({
       #req(active_omics())  # set when database is chosen ... this is essentially a reset...
       # need to order and rank the variance vector... and then
@@ -137,9 +134,7 @@ mod_side_selector_server <- function(id, rv_data){
         })
     })
 
-
     ### OMICS  =========================================================
-
     #new_db_trig <- reactive( rv_data$trigger )
     rv_config <- reactive({
       rv_data$config
@@ -148,11 +143,8 @@ mod_side_selector_server <- function(id, rv_data){
     obs_sub <- mod_subset_selector_server("subset_selector_ui_obs",rv_config,"obs")
     var_sub <- mod_subset_selector_server("subset_selector_ui_var",rv_config,"var")
 
-
     all_omics <- reactive( rv_data$anndata$var_names )  #only changes when new database is loaded
-    def_omics <- reactive( rv_data$default$omics )
-
-
+    def_omics <- reactive( rv_data$default$target_features )
 
     # filter omics from subsetting
     active_omics <- reactive({
@@ -160,7 +152,6 @@ mod_side_selector_server <- function(id, rv_data){
 
       omic_out <- all_omics()
       # subset var (omics)
-
       subsetted <- if ( !is.null( var_sub$set ) &
                         !is.null( var_sub$select ) &
                         length(var_sub$select)>0 )  rv_data$anndata$var[[ var_sub$set ]] %in% var_sub$select
@@ -227,12 +218,13 @@ mod_side_selector_server <- function(id, rv_data){
 
 
     observe({
+      #TODO: depricate `shaddow_defs`
       req(rv_data$shaddow_defs$feature_filter)
 
       # figure out the vector we are filtering by
-      if (rv_data$shaddow_defs$feature_filter == "fano factor") { #use the fano_factor
-        filt_name <- "fano factor (computed)"
-        filt_vect <- rv_data$fano_factor
+      if (rv_data$shaddow_defs$feature_filter == "VMR") { #use the fano_factor
+        filt_name <- "VMR (computed)"
+        filt_vect <- rv_data$VMR
       } else {
         filt_name <- rv_data$shaddow_defs$feature_filter
         filt_vect <- rv_data$anndata$var[[filt_name]]
@@ -267,6 +259,7 @@ mod_side_selector_server <- function(id, rv_data){
     ## dynamic subset UI group
     output$ui_data_layer <- renderUI({
       req(rv_data$config)
+
       choices <- rv_data$config[field=="layer"]$UI  # X, raw, or layers
       # default data_source is obs
       ret_tags <-  selectizeInput(ns("SI_data_layer"),
@@ -283,15 +276,12 @@ mod_side_selector_server <- function(id, rv_data){
       req(rv_data$config)
 
       group_obs <- rv_data$config[grp == TRUE & field=="obs"]$UI # <- choices_x
-      group_obs2 <- rv_data$config[grp == TRUE & field=="obs"]$UI
-      def_grp_o <- rv_data$default$obs_subset
+      group_obs2 <- group_obs # rv_data$config[grp == TRUE & field=="obs"]$UI
+      def_grp_o <- group_obs[1]
 
 
-      #hack nynamic choices in for now...]
-      #
-      #
-      # to_return$shaddow_defs <- shaddow_defs
-      # to_return$fano_factor <- temp_rv$fano_factor
+      #TODO: depricate `shaddow_defs`
+
 
       group_obs <- rv_data$shaddow_defs$exp_fact
       group_obs2 <- group_obs
@@ -348,6 +338,8 @@ mod_side_selector_server <- function(id, rv_data){
       group_var <- rv_data$config[grp == TRUE & field=="var"]$UI                                         #
       def_grp_v <- group_var[1]
 
+
+      #TODO: depricate shaddow_defs
       group_var <-rv_data$shaddow_defs$omic_feat
       def_grp_v <- group_var[1]
 

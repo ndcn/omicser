@@ -61,6 +61,7 @@ get_config <- function(in_path = NULL) {
   CONFIG_FILE <- file.path(in_path,'app_config.yml')
   if (file.exists(CONFIG_FILE)) {
     config_list <- read.config( file = CONFIG_FILE )
+    install_type <- "configured"
   } else {
     #fallback to default.
     CONFIG_FILE <- system.file('app_config.yml', package = 'omicser')
