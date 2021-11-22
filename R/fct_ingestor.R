@@ -276,7 +276,6 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
     }
 
 
-
     # TODO:  first pass infer dimreds and layers from anndata table
     # D- dimension reductions (ad_in$varm ) ---------------------
     dimreds <- conf_list$dimreds
@@ -322,6 +321,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
       omxr_conf <- rbindlist(list(omxr_conf, tmp_conf))
     }
 
+
     # DEFAULTS ----------------------------------------
     # obs to subset # default selection is all (if multi) or first (if only 1)
     for (def_i in conf_list$group_obs) {
@@ -345,12 +345,13 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
       omxr_conf[ UI==def_i & field=="var"]$default <- i
     }
 
-
-    omxr_def <- list()
-
-    # turn on grp if  in our conf_list
+    #TODO: add color information here
+    #     actually maps for GRP
+    #     function for annotations..
+    #
     #
 
+    omxr_def <- list()
     #copy things over...
     omxr_def$group_obs <- conf_list$group_obs
     omxr_def$group_var <- conf_list$group_var
@@ -381,8 +382,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
 
   out_vals <- list(conf  = omxr_conf,
                    def   = omxr_def)
-                  #    ,
-                   #omics = omics_)
+
   return(out_vals)
 
 }

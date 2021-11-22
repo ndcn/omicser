@@ -158,7 +158,7 @@ make_cx_heatmap = function(in_mat,
 
    # COLOR STUFF
     mx <- round(max(abs(in_mat)))
-    mat_colors <- circlize::colorRamp2(c(-mx, 0, mx), c("green", "white", "red"))
+    mat_colors <- circlize::colorRamp2(c(-mx, 0, mx), c("blue", "white", "red"))
 
 
     #top_annotations and ha below should work together (and samp_names)

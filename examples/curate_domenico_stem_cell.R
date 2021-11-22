@@ -32,6 +32,53 @@ if (DEV_OMICSER){
 #==== 3. ASSERT PYTHON ==================================================
 #   we need to make sure we have "scanpy" installed in order to use our helper functions
 
+
+
+
+OMICSER_CONDA_PYTHON <- file.path(REPO_PATH,'conda_env')
+#Sys.setenv("RETICULATE_PYTHON"=RETICULATE_PYTHON)
+#Sys.getenv("RETICULATE_PYTHON")
+
+
+if (!reticulate::virtualenv_exists( OMICSER_PYTHON )){
+  reticulate::virtualenv_create( envname = OMICSER_PYTHON,
+                                 python = "/usr/local/bin/python3",
+                                 packages = c("pip","wheel","numpy","scanpy[leiden]")) #anndata")) #,"scanpy")    )
+
+}
+
+reticulate::virtualenv_create( envname = "./OMXRenv3",
+                               #python = "/usr/local/bin/python3",
+                               python = "/usr/local/bin/python3.6",
+                               packages = c("pip","scanpy[leiden]")) #anndata")) #,"scanpy")    )
+#reticulate::virtualenv_install(envname = "./OMXRenv2",packages = c("scanpy[leiden]"))
+
+
+OMICSER_PYTHON <- "./OMXRenv3"
+
+reticulate::use_virtualenv(virtualenv = OMICSER_PYTHON,
+                           required = TRUE)
+
+
+reticulate::virtualenv_create( envname = "./OMXRenv3",
+                               #python = "/usr/local/bin/python3",
+                               python = "/usr/local/bin/python3.6", #binary pkg install
+                               packages = c("pip","scanpy[leiden]")) #anndata")) #,"scanpy")    )
+#reticulate::virtualenv_install(envname = "./OMXRenv2",packages = c("scanpy[leiden]"))
+
+
+# python 3.8 (brew)
+OMICSER_PYTHON <- "./OMXRenv38"
+python <- "/usr/local/opt/python@3.8/bin/python3.8" #brewinstall
+reticulate::virtualenv_create( envname = OMICSER_PYTHON,
+                               #python = "/usr/local/bin/python3",
+                               python = python,
+                               packages = c("pip","scanpy[leiden]")) #anndata")) #,"scanpy")    )
+#reticulate::virtualenv_install(envname = "./OMXRenv2",packages = c("scanpy[leiden]"))
+# for scanpy i might need to use conda...
+
+
+
 OMICSER_PYTHON <- file.path(REPO_PATH,'pyenv')
 #Sys.setenv("RETICULATE_PYTHON"=RETICULATE_PYTHON)
 #Sys.getenv("RETICULATE_PYTHON")
@@ -40,7 +87,7 @@ OMICSER_PYTHON <- file.path(REPO_PATH,'pyenv')
 if (!reticulate::virtualenv_exists( OMICSER_PYTHON )){
   reticulate::virtualenv_create( envname = OMICSER_PYTHON,
                                  python = "/usr/local/bin/python3",
-                                 packages = c("anndata","scanpy")    )
+                                 packages = c("anndata")) #,"scanpy")    )
 
 }
 
@@ -53,7 +100,7 @@ reticulate::use_virtualenv(virtualenv = OMICSER_PYTHON,
 reticulate::py_discover_config()
 # make sure we have scanpy installed eek! I think i broke it!!
 #
-#reticulate::py_install("scanpy")
+#reticulate::virtualenv_install(envname = OMICSER_PYTHON,packages = c("scanpy[leiden]"),ignore_installed = TRUE)
 
 
 #==== 4. Define helper functions =================================================================================
