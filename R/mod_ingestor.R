@@ -182,6 +182,7 @@ mod_ingestor_server <- function(id) {
       matrixStats::colVars(raw,na.rm = TRUE)/colMeans(raw,na.rm = TRUE)
     })
 
+    #TODO:  remove shaddow_defs and unify with temp_rv / to_return
     shaddow_defs <- reactiveValues(
       # holding the interactive selected factors and features which supercede what is from the defaults/configs
       exp_fact = NULL,
@@ -189,7 +190,7 @@ mod_ingestor_server <- function(id) {
       omic_feat = NULL,
       feat_annot = NULL,
       feat_deets = NULL,
-      feature_filter = NULL
+      feature_filter = NULL  #TODO:  change this to feature_filter_name
     )
 
     temp_rv <- reactiveValues(
@@ -198,7 +199,7 @@ mod_ingestor_server <- function(id) {
       de = NULL,
       config = NULL,
       default = NULL,
-      VMR = NULL
+      VMR = NULL  #TODO:  change this to feature_filter_values
     )
 
 
@@ -326,7 +327,7 @@ mod_ingestor_server <- function(id) {
         db$regenerate <- TRUE
         db$root <- out_conf$db_root_path
       } else {
-        print("urkk! [save db_root]  still undefined")
+        message("urkk! [save db_root]  still undefined")
 
       }
     })
@@ -353,7 +354,7 @@ mod_ingestor_server <- function(id) {
         db$regenerate <- TRUE
         db$list <- isolate(modal_db_info$db_names)
       } else {
-        print("eek! [save config] something still undefined")
+        message("eek! [save config] something still undefined")
       }
 
     })
@@ -438,16 +439,16 @@ mod_ingestor_server <- function(id) {
       #update reactives...
       temp_rv$config <- conf_def$conf
       temp_rv$default <- conf_def$def
-
       # computed index of dispersion
       # TODO: fix this HACK, change to VMR (index of dispersion)
       # computer no-matter what,
-      tmp_mu <- colMeans(anndata$X,na.rm = TRUE)
-      tmp_vmr <- matrixStats::colVars(anndata$X,na.rm = TRUE)/tmp_mu
+      tmp_X <- log1p(anndata$X)
+      tmp_mu <- colMeans(tmp_X,na.rm = TRUE)
+      tmp_vmr <- matrixStats::colVars(tmp_X,na.rm = TRUE)-tmp_mu
       # set vmr to zero when mean is zero
-      tmp_vmr[adata$var$expr_mean==0] <- 0
+      #tmp_vmr[anndata$var$expr_mean==0] <- 0
 
-      temp_rv$VMR <- tmp_vmr
+      temp_rv$VMR <- tmp_vmr  #actuall logVMR
 
       obs_choices <- anndata$obs_keys()
 
@@ -521,7 +522,7 @@ mod_ingestor_server <- function(id) {
       conf_list_old$filter_feature <- input$SI_feature_filter
 
       # use a modal?  or simply send everything from the ingest UI as update?
-      omicser::write_db_conf(conf_list_old,DB_NAME, db_root = DB_ROOT_PATH)
+      omicser::write_db_conf(conf_list_old,db$dir, db_root =  db$root)
 
       # set flag to regenerate the configuration gen_config_table
       db$regenerate <- TRUE
@@ -553,8 +554,6 @@ mod_ingestor_server <- function(id) {
       to_return$db_meta$etc<-temp_rv$default$db_meta$annotation_database
 
       to_return$trigger <- to_return$trigger + 1
-
-
 
       shaddow_defs$exp_fact <- input$SI_exp_fact
       shaddow_defs$exp_annot <- input$SI_exp_annot

@@ -58,12 +58,13 @@ run_defaults <- function(){
   #
   #
   #
+  CONFIG <- omicser::get_config()
+  DB_NAMES <- CONFIG$database_names
+  DB_ROOT <- CONFIG$db_root_path
+  INSTALL_TYPE <- CONFIG$install #production, dev,
 
-    CONFIG <- omicser::get_config()
-    DB_NAMES <- CONFIG$database_names
-    DB_ROOT <- CONFIG$db_root_path
-    INSTALL_TYPE <- CONFIG$install #production, dev,
-
+   # TODO:  assert ptython settings
+  #reticulate::py_module_available("anndata")
 
   run_app(options = list(launch.browser = TRUE),
           db_root = DB_ROOT,
