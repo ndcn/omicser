@@ -17,6 +17,7 @@ write_config <- function(in_config, in_path=NULL, set_default=FALSE) {
       in_path <- getwd()
     }
   }
+
   #TODO: check_config_list(in_options)
   CONFIG_FILE <- file.path(in_path,'app_config.yml')
   write.config(config.dat = in_config, file.path = CONFIG_FILE,
