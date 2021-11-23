@@ -41,8 +41,16 @@ run_app <- function(
 #' @export
 #'
 #' @examples TODO
-run_in_browser <- function(...){
-  run_app(options = list(launch.browser = TRUE),...) #with = "shinyAppDir"
+run_in_browser <- function(db_root=NULL,database_names=NULL,install_type = "empty",...){
+
+  if (is.null(db_root)) db_root <- "UNDEFINED"
+  if (is.null(database_names)) database_names <- list(UNDEFINED="UNDEFINED")
+
+  run_app(options = list(launch.browser = TRUE),
+          db_root=db_root,
+          database_names=database_names,
+          install_type=install_type,
+          ...) #with = "shinyAppDir"
 }
 
 
