@@ -64,9 +64,19 @@ get_config <- function(in_path = NULL) {
     install_type <- "configured"
   } else {
     #fallback to default.
-    CONFIG_FILE <- system.file('app_config.yml', package = 'omicser')
-    config_list <- read.config( file = CONFIG_FILE )
-    install_type <- "default"
+    CONFIG_FILE <- system.file('inst/app/app_config.yml', package = 'omicser')
+    message(paste("fallback to default:",CONFIG_FILE))
+    if (CONFIG_FILE == "") {
+      message("can't find config file: hacking defaults")
+      config_list <- list(
+        database_names=list(UNDEFINED="UNDEFINED"),
+        db_root_path = "UNDEFINED",
+        install = "hack"
+        )
+    } else {
+      config_list <- read.config( file = CONFIG_FILE )
+      install_type <- "default"
+    }
   }
   config_list$install <- install_type
   #TODO: check_config_list(in_options)
