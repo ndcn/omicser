@@ -1,6 +1,5 @@
 # Overview --------------
 #### Create an app to browse PBMC3k data from 10X Genomics
-require(devtools) # to install omicser package
 require(reticulate) # runs python when curating data
 
 #  Step 1: Set paths--------------
@@ -22,6 +21,7 @@ if (CLONED_OMICSER <- TRUE){
   golem::document_and_reload(pkg = REPO_PATH)
 } else {
   require(omicser)
+  #see install_script.R if not installed
 }
 
 # Step 3: Assert python back-end ----------------
