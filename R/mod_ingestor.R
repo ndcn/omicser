@@ -442,11 +442,17 @@ mod_ingestor_server <- function(id) {
       # computed index of dispersion
       # TODO: fix this HACK, change to VMR (index of dispersion)
       # computer no-matter what,
-      tmp_X <- log1p(anndata$X)
-      tmp_mu <- colMeans(tmp_X,na.rm = TRUE)
-      tmp_vmr <- matrixStats::colVars(tmp_X,na.rm = TRUE)-tmp_mu
-      # set vmr to zero when mean is zero
-      #tmp_vmr[anndata$var$expr_mean==0] <- 0
+      if (min(anndata$X)<=0) {
+        tmp_mu <- abs(colMeans(anndata$X,na.rm = TRUE))
+        tmp_vmr <- matrixStats::colVars(anndata$X,na.rm = TRUE)/tmp_mu
+        # set vmr to zero when mean is zero
+        tmp_vmr[tmp_mu==0] <- 0
+      } else {
+        tmp_X <- log1p(anndata$X)
+        tmp_mu <- colMeans(tmp_X,na.rm = TRUE)
+        tmp_vmr <- matrixStats::colVars(tmp_X,na.rm = TRUE)-tmp_mu
+
+      }
 
       temp_rv$VMR <- tmp_vmr  #actuall logVMR
 
