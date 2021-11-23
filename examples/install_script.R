@@ -6,7 +6,6 @@
 install.packages("devtools")
 install.packages("reticulate")
 
-
 # Step 2: make sure we have python available
 # find out what python is available... make sure >= 3.6 (3.8 recommended)
 #  we recommend using reticulate's installation of mini-conda as below
@@ -38,7 +37,7 @@ if (USE_CONDA){
 
     reticulate::use_condaenv(condaenv = OMICSER_PYTHON,
                                     conda = reticulate::conda_binary(),
-                                    required = TRUE) 
+                                    required = TRUE)
 
 
 } else {
@@ -48,7 +47,7 @@ if (USE_CONDA){
     base::system( command = paste(cmd, collapse = " && ") )
     reticulate::virtualenv_create( envname = OMICSER_PYTHON,
                                python = PYTHON_PATH,
-                               packages = packages   ) 
+                               packages = packages   )
 
     reticulate::use_virtualenv(virtualenv = OMICSER_PYTHON,
                             required = TRUE)
