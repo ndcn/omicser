@@ -18,7 +18,7 @@ col_cats8 = list("Accent","Dark2","Pastel2","Set2") #1-8
 
 col_cats <- c(col_cats10,col_cats9,col_cats8)
 
-get_my_cols <- function(top_annotations){
+get_my_cols2 <- function(top_annotations){
   # if aggregated don't show top annotations...
   max_levels <- 12
 
@@ -43,7 +43,7 @@ get_my_cols <- function(top_annotations){
         mx <- max(meta_i)
         mn <- min(meta_i)
         if (mn < 0) {
-          mx <- round(max(abs(in_mat)))
+          mx <- round(max(abs(meta_i)))
           col_i <- circlize::colorRamp2(c(-mx, 0, mx), col_norm[[rpt_norm]])
           rpt_norm <- rpt_norm %% 4 + 1
 
@@ -66,7 +66,7 @@ get_my_cols <- function(top_annotations){
         mx <- max(meta_i)
         mn <- min(meta_i)
         if (mn < 0) {
-          mx <- round(max(abs(in_mat)))
+          mx <- round(max(abs(meta_i)))
           col_i <- circlize::colorRamp2(c(-mx, 0, mx), col_norm[[rpt_norm]])
           rpt_norm <- rpt_norm %% 4 + 1
 
@@ -182,7 +182,7 @@ make_cx_heatmap = function(in_mat,
         top_annotations <-data.frame(grp_columns)
         colnames(top_annotations) <- samp_grp_nm
       }
-      top_colors <- get_my_cols(top_annotations)
+      top_colors <- get_my_cols2(top_annotations)
       t_annots <- ComplexHeatmap::HeatmapAnnotation(df = top_annotations, col = top_colors)
     }
 
@@ -206,10 +206,9 @@ make_cx_heatmap = function(in_mat,
     #}
 
 
-
     #right_annotations and ha2 below should work together (and samp_names)
     #
-    rt_colors <- get_my_cols(right_annotations)
+    rt_colors <- get_my_cols2(right_annotations)
 
     r_annots <- ComplexHeatmap::rowAnnotation(df = right_annotations, col=rt_colors,
                                               feats = ComplexHeatmap::anno_mark(at = omics_at, labels = omics) )

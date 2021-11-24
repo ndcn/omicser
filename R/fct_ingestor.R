@@ -1,105 +1,6 @@
 
 
 
-col_unif = list(c("white", "orange"),
-                c("white", "purple"),
-                c("black", "orange"),
-                c("black", "purple"))
-
-col_norm = list(c("green", "white", "red"),
-                c("purple", "white", "orange"),
-                c("blue", "white", "red"),
-                c("orange", "white", "pink")
-)
-
-col_cats10 = list("Set3","Paired","Pastel1") #Ncols==10,11,12
-col_cats9 = list("Set1","Pastel1") #Ncols==9,10
-col_cats8 = list("Accent","Dark2","Pastel2","Set2") #1-8
-
-
-
-
-col_unif = list(c("white", "orange"),
-                c("white", "purple"),
-                c("black", "orange"),
-                c("black", "purple"))
-
-col_norm = list(c("green", "white", "red"),
-                c("purple", "white", "orange"),
-                c("blue", "white", "red"),
-                c("orange", "white", "pink")
-)
-
-col_cats10 = list("Set3","Paired","Pastel1") #Ncols==10,11,12
-col_cats9 = list("Set1","Pastel1") #Ncols==9,10
-col_cats8 = list("Accent","Dark2","Pastel2","Set2") #1-8
-
-
-
-get_my_cols <- function(top_annotations){
-  # if aggregated don't show top annotations...
-  max_levels <- 12
-
-  rpt_cats <- 1 #index to non-repeating colormaps.
-  rpt_unif <- 1
-  rpt_norm <- 1
-  # A- "observations"  (ad_in$obs) pack in the observations.
-  top_colors <- list()
-  annot_colnms <- colnames(top_annotations)
-  for (annot_i in annot_colnms) {
-    # Additional pre-processing for categorical metadata
-    meta_i <- top_annotations[[annot_i]]
-    n_levels <- length(unique(meta_i))
-    if (n_levels > 2 & n_levels <= max_levels) {
-      if (is.factor(meta_i)) {
-        col_i <- structure(brewer.pal(n_levels, col_cats[[rpt_cats]]),
-                           names = levels(meta_i))
-        rpt_cats <- rpt_cats %% 4 + 1
-        top_colors[[annot_i]] <- col_i
-      } else if (is.numeric(meta_i)) {
-        mx <- max(meta_i)
-        mn <- min(meta_i)
-        if (mn < 0) {
-          mx <- round(max(abs(in_mat)))
-          col_i <- circlize::colorRamp2(c(-mx, 0, mx), col_norm[[rpt_norm]])
-          rpt_norm <- rpt_norm %% 4 + 1
-
-        } else {
-          col_i <- circlize::colorRamp2(c(mn, mx), col_unif[[rpt_unif]])
-          rpt_unif <- rpt_unif %% 4 + 1
-        }
-        top_colors[[annot_i]] <- col_i
-
-      } else { #charachter
-        col_i <- structure(brewer.pal(n_levels, col_cats[[rpt_cats]]),
-                           names = levels(factor(meta_i)))
-        rpt_cats <- rpt_cats %% 4 + 1
-        top_colors[[annot_i]] <- col_i
-
-      }
-
-    } else {
-      if (is.numeric(meta_i)) {
-        mx <- max(meta_i)
-        mn <- min(meta_i)
-        if (mn < 0) {
-          mx <- round(max(abs(in_mat)))
-          col_i <- circlize::colorRamp2(c(-mx, 0, mx), col_norm[[rpt_norm]])
-          rpt_norm <- rpt_norm %% 4 + 1
-        } else {
-          col_i <- circlize::colorRamp2(c(mn, mx), col_unif[[rpt_unif]])
-          rpt_unif <- rpt_unif %% 4 + 1
-        }
-        top_colors[[annot_i]] <- col_i
-      }
-    }
-  }
-
-  return(top_colors)
-}
-
-
-
 #' gen_config_table
 #'
 #' @description function to read the data object and create the config files needed by the UI
@@ -386,4 +287,101 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
   return(out_vals)
 
 }
+
+
+
+# DEPRICATED COLOR FUNCTIONS BELOW
+# #
+# col_unif = list(c("white", "orange"),
+#                 c("white", "purple"),
+#                 c("black", "orange"),
+#                 c("black", "purple"))
+#
+# col_norm = list(c("green", "white", "red"),
+#                 c("purple", "white", "orange"),
+#                 c("blue", "white", "red"),
+#                 c("orange", "white", "pink")
+# )
+#
+# col_cats10 = list("Set3","Paired","Pastel1") #Ncols==10,11,12
+# col_cats9 = list("Set1","Pastel1") #Ncols==9,10
+# col_cats8 = list("Accent","Dark2","Pastel2","Set2") #1-8
+# col_unif = list(c("white", "orange"),
+#                 c("white", "purple"),
+#                 c("black", "orange"),
+#                 c("black", "purple"))
+#
+# col_norm = list(c("green", "white", "red"),
+#                 c("purple", "white", "orange"),
+#                 c("blue", "white", "red"),
+#                 c("orange", "white", "pink")
+# )
+#
+# col_cats10 = list("Set3","Paired","Pastel1") #Ncols==10,11,12
+# col_cats9 = list("Set1","Pastel1") #Ncols==9,10
+# col_cats8 = list("Accent","Dark2","Pastel2","Set2") #1-8
+#
+# get_my_cols <- function(top_annotations){
+#   # if aggregated don't show top annotations...
+#   max_levels <- 12
+#
+#   rpt_cats <- 1 #index to non-repeating colormaps.
+#   rpt_unif <- 1
+#   rpt_norm <- 1
+#   # A- "observations"  (ad_in$obs) pack in the observations.
+#   top_colors <- list()
+#   annot_colnms <- colnames(top_annotations)
+#   for (annot_i in annot_colnms) {
+#     # Additional pre-processing for categorical metadata
+#     meta_i <- top_annotations[[annot_i]]
+#     n_levels <- length(unique(meta_i))
+#     if (n_levels > 2 & n_levels <= max_levels) {
+#       if (is.factor(meta_i)) {
+#         col_i <- structure(brewer.pal(n_levels, col_cats[[rpt_cats]]),
+#                            names = levels(meta_i))
+#         rpt_cats <- rpt_cats %% 4 + 1
+#         top_colors[[annot_i]] <- col_i
+#       } else if (is.numeric(meta_i)) {
+#         mx <- max(meta_i)
+#         mn <- min(meta_i)
+#         if (mn < 0) {
+#           mx <- round(max(abs(meta_i)))
+#           col_i <- circlize::colorRamp2(c(-mx, 0, mx), col_norm[[rpt_norm]])
+#           rpt_norm <- rpt_norm %% 4 + 1
+#
+#         } else {
+#           col_i <- circlize::colorRamp2(c(mn, mx), col_unif[[rpt_unif]])
+#           rpt_unif <- rpt_unif %% 4 + 1
+#         }
+#         top_colors[[annot_i]] <- col_i
+#
+#       } else { #charachter
+#         col_i <- structure(brewer.pal(n_levels, col_cats[[rpt_cats]]),
+#                            names = levels(factor(meta_i)))
+#         rpt_cats <- rpt_cats %% 4 + 1
+#         top_colors[[annot_i]] <- col_i
+#
+#       }
+#
+#     } else {
+#       if (is.numeric(meta_i)) {
+#         mx <- max(meta_i)
+#         mn <- min(meta_i)
+#         if (mn < 0) {
+#           mx <- round(max(abs(in_mat)))
+#           col_i <- circlize::colorRamp2(c(-mx, 0, mx), col_norm[[rpt_norm]])
+#           rpt_norm <- rpt_norm %% 4 + 1
+#         } else {
+#           col_i <- circlize::colorRamp2(c(mn, mx), col_unif[[rpt_unif]])
+#           rpt_unif <- rpt_unif %% 4 + 1
+#         }
+#         top_colors[[annot_i]] <- col_i
+#       }
+#     }
+#   }
+#
+#   return(top_colors)
+# }
+#
+
 
