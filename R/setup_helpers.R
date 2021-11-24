@@ -11,11 +11,11 @@
 write_config <- function(in_config, in_path=NULL, set_default=FALSE) {
 
   if ( is.null(in_path) ) {
-    if (golem::app_dev()) {
-      in_path <- golem::get_golem_wd()
-    } else {
+    # if (golem::app_dev()) {
+    #   in_path <- golem::get_golem_wd()
+    # } else {
       in_path <- getwd()
-    }
+    # }
   }
 
   #TODO: check_config_list(in_options)
@@ -49,13 +49,13 @@ write_config <- function(in_config, in_path=NULL, set_default=FALSE) {
 get_config <- function(in_path = NULL) {
 
   if ( is.null(in_path) ) {
-    if (golem::app_dev()) {
-      in_path <- golem::get_golem_wd()
-      install_type <- "dev"
-    } else {
+    # if (golem::app_dev()) {
+    #   in_path <- golem::get_golem_wd()
+    #   install_type <- "dev"
+    # } else {
       in_path <- getwd()
       install_type <- "configured"
-    }
+    # }
   }
 
 
