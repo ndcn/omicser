@@ -12,10 +12,10 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 ## Introduction
 
 The goal of this package is to allow exploration of -omics data using an
-interactive “playground” (e.g., Shiny application), accessible through
-an interactive web browser. In addition to the browser package, this
-project includes documentation about usage, example scripts, and an
-expository quickstart tutorial to demonstrate how it is to be used. The
+interactive Shiny app based “playground”, which is accessable through an
+web browser. In addition to the browser package, this project includes
+documentation about usage, and a series of example scripts (`examples/`)
+which serve as a tutorial to demonstrate how it is to be used. The
 browser package itself contains the code to create/run the browser, as
 well as a small collection of helper functions to aid in curating and
 configuring datasets for browsing.
@@ -25,10 +25,10 @@ configuring datasets for browsing.
 
 There are two types of users for this package:
 
--   **Curators**: data analysts who configure the app and prepare
-    datasets for viewing. These individuals should be fairly proficient
-    with R coding, including familiarity with building Shiny apps and
-    knowledgeable about -omics data structures.
+-   **Curators**: data owners who prepare datasets for viewing. These
+    individuals should be fairly proficient with R coding, including
+    familiarity with building Shiny apps and knowledgeable about -omics
+    data structures.
 -   **Viewers**: scientists who are interested in exploring -omics data
     using the application. They do not require extensive knowledge about
     R, but may need to have it installed if they are running the app on
@@ -56,7 +56,7 @@ The package is able to provide the following outputs:
 ## Installation and usage
 
 This package was developed to create a
-[`{shiny}`](https://shiny.rstudio.com/) application using  
+[`Shiny`](https://shiny.rstudio.com/) application using  
 [`{golem}`](https://github.com/ThinkR-open/golem), “an opinionated
 framework for building production-grade shiny applications.” It requires
 a number of additional R and Python packages. The package creates the
