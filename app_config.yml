@@ -1,4 +1,6 @@
 database_names:
-    dmnico dia: domenico_stem_cell
-db_root_path: /Volumes/MAC OS/Users/ahenrie/omicser_databases
-install: configured
+    UNDEFINED: UNDEFINED
+db_root_path: UNDEFINED
+install: dev
+
+

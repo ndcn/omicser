@@ -26,7 +26,7 @@ please view the [Browsing vignette](browsing.md).
 The following vignettes are intended to guide curators through the process of creating a web application and formatting data for visualization in the browser.
 The main vignettes in the series include:
 
-1. [Installation](01_installation.md): install required software and set up the R and Python environments
+1. [Installation](01_installation.md): install required R packages, dependencies and configuration of the nescessary Python environments
 2. [Data curation](02_data_curation.md): pre-process, filter, and format -omics data
 3. [Configuration](03_configuration.md): connect the database(s) with the application
 4. [Launching and sharing](04_sharing.md): prepare the browser for sharing with collaborators

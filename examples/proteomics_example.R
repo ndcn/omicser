@@ -465,3 +465,11 @@ if (! (DB_NAME %in% omicser_options$database_names)){
 
 # Step 11: Run the browser -------------
 
+# assert the right conda (restart R-session?)
+reticulate::use_condaenv(condaenv = OMICSER_PYTHON,
+                         conda = reticulate::conda_binary(),
+                         required = TRUE)
+
+#### Launch browser
+omicser::run_defaults()
+#
