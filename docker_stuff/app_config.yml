@@ -1,0 +1,6 @@
+database_names:
+    Domenico: domenico_stem_cell
+    Rico: rico_lipids
+db_root_path: /root/DB
+conda_environment: pyenv_omicser
+install: configured
