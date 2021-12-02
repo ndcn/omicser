@@ -1,6 +1,4 @@
 database_names:
-    UNDEFINED: UNDEFINED
-db_root_path: UNDEFINED
-install: dev
-
-
+    pbmc3k: pbmc3k
+db_root_path: /Volumes/MAC OS/Users/ahenrie/omicser_databases
+install: configured

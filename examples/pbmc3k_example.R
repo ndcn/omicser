@@ -155,7 +155,6 @@ sc$pp$scale(adata, max_value=10)
 
 # choose top 40 genes by variance across dataset as "targets"
 adata$var$var_rank <- order(adata$var$dispersions_norm)
-target_omics <- adata$var_names[which(adata$var$var_rank <= 40)]
 
 # calculate deciles
 adata$var$decile <- dplyr::ntile(adata$var$dispersions_norm, 10)
@@ -212,17 +211,10 @@ if (FALSE) {
   diff_exp <- readRDS( file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 }
 
-
-
 DB_DIR = file.path(DB_ROOT_PATH,DB_NAME)
 if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
 }
-
-# save diff expression data
-diff_exp <- data_list$de
-
-saveRDS(diff_exp, file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
 # write the anndata object
 adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
@@ -299,24 +291,23 @@ config_list <- list(
   dimreds = list(obsm = adata$obsm_keys(),
                  varm = adata$varm_keys()),
 
-
-  #meta info
-  annotation_database =  NA,
-  publication = "TBD",
-  method = "bulk", # c("single-cell","bulk","other")
   omic_type = omic_type, #c("transcript","prote","metabol","lipid","other")
   aggregate_by_default = aggregate_by_default, #e.g.  single cell
 
-  organism = "human",
-  lab = "",
-  source = "peripheral blood mononuclear cells (PBMCs)",
-  annotation_database =  "",
-  title = "pbmc3k",
-  omic_type = omic_type,
-  measurment = "normalized counts",
-  pub = "10X Genomics",
-  url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k",
-  date = format(Sys.time(), "%a %b %d %X %Y")
+  #meta info
+  meta_info = list(
+    annotation_database =  NA,
+    publication = "TBD",
+    method = "single-cell", # c("single-cell","bulk","other")
+    organism = "human",
+    lab = "?",
+    source = "peripheral blood mononuclear cells (PBMCs)",
+    title = "pbmc3k",
+    measurment = "normalized counts",
+    pub = "10X Genomics",
+    url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k",
+    date = format(Sys.time(), "%a %b %d %X %Y")
+    )
 )
 
 omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
