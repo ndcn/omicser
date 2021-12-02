@@ -55,6 +55,8 @@ usethis::use_package("Cairo")
 
 usethis::use_package("waiter")
 
+usethis::use_package("shinyFiles")
+
 # # DISABLED for now
 # usethis::use_package("BiocManager")
 # # usethis::use_package("SingleCellExperiment")
