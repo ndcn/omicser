@@ -10,7 +10,7 @@ get_config(in_path = NULL)
 \item{in_path}{where the config file lives. default getwd() test}
 }
 \value{
-the list of options contained in `omicser_options.yml`
+the list of options contained in `app_config.yml`
 }
 \description{
 get_config: helper for reading the Config file containing information about the databases

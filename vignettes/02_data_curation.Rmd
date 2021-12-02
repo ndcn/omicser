@@ -17,22 +17,24 @@ The most crucial step when setting up your own app is _curating_ your data in pr
 There are two reasons for these steps:
 
 - formatting the data into `AnnData` files, which creates a database accessible by the browser
-- identifying the variables (e.g., columns in a table) that will be browsable, which specifies how data can be selected and/or manipulated in the browswer interface
+- identifying the variables (i.e., columns in a table) that will be browsable, which specifies how data can be selected and/or manipulated in the browswer interface
 
 As the _Curator_ you have the responsibility to understand the specific research questions involved in your data,
 and how to allow these questions to be explored using a visualization tool.
 
 The process of curating your data generally includes the following steps:
 
-1. **Metadata documentation** - define the metadata and context for the dataset
-2. **Format and ingest raw data** - translate the outputs of your quality-controlled (QC) data to database format and pack data into scanpy's `AnnData` structure
-3. **Post-processing** - dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.
-4. **Differential expression tables** - compute and/or format existing tables
-5. **Write database** - create database and configuration files and store in a location the browser can locate
+1. **Format and ingest raw data** - translate the outputs of your experimental data (post-QC phase) into scanpy's `AnnData` structure
+2. **Post-processing** - create additional columns and fields of interest. E.g. dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.
+3. **Differential expression tables** - compute and/or format existing tables of the different expression levels relative to experimental conditions
+4. **Write database** - write the data and configuration files to a named directory which we will define as a _database_.  
+
+5. **database context documentation** - define the context and for the dataset. This involves editing/creating the R-markdown file which will render in the browser app ( `additional_info.Rmd`)
+
 
 Each step of data curation is generally described below,
 referencing the PBMC3k dataset from 10X Genomics as an example.
-The complete script used for curation can be found in [`examples/browse_pbmc3k.R`](https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R).
+The complete script used for curation can be found in [`examples/browse_pbmc3k.R`](https://github.com/ndcn/omicser/blob/main/examples/pbmc3k_example.R).
 Additional examples of how the data curation process is applied to various data types and use cases can be found in the 
 [`examples/` subdirectory](https://github.com/ndcn/omicser/tree/main/examples).
 
@@ -56,19 +58,9 @@ The [PBMC3k example script](https://github.com/ndcn/omicser/blob/main/examples/b
 includes code sections to help you install software/environments, download/organize data, and otherwise prepare for the data curation steps below.
 Please note that the data files from 10X Genomics need to be saved as `.gz` files for them to be read correctly when importing the data.
 
-## 1. Metadata setup
-
-Given your intended use for the browser you are developing,
-you may choose to develop documentation accessible through the browser itself
-for referencing information about the data's source(s).
-In this step, 
-you can create a list of metadata about your dataset,
-then use `write_db_meta()` to save the information as `db_meta.yml`.
-
 ## 2. Format and ingest raw data
 
-The exact steps required to ingest raw data vary widely depending on your data type
-and how these data are formatted.
+The exact steps required to ingest raw data vary widely depending on your data type and how these data are formatted.
 The general goal is to obtain the data necessary to create an  `AnnData` object
 containing all data and metadata required for visualization.
 
@@ -106,31 +98,31 @@ The `omicser::setup_database()` function incorporates the three separate data so
 (DATA matrix, omic FEATURE METADATA annotations, and SAMPLE METADATA)
 into the `AnnData` object.
 
-For our PBMC3k example, 
-we'll apply the `omicser::setup_database()` function:
+For our PBMC3k example, we'll apply the `omicser::setup_database()` function:
 
 ```{r, 3-anndata, eval=FALSE}
 # identify location of raw data
 data_list <- list(object = path(DB_ROOT_PATH, DB_NAME, "core_data.h5ad"))
 
 # create database formatted as AnnData
-adata_2 <- omicser::setup_database(database_name = DB_NAME,
+adata <- omicser::setup_database(database_name = DB_NAME,
                                  db_path = DB_ROOT_PATH,
                                  data_in = data_list,
-                                 db_meta = NULL,
                                  re_pack = TRUE)
 ```
 
 In this case, all data necessary was ingested in the previous step.
 This results in a database that is consistently formatted,
 and thus able to potentially be combined with other datasets in the future.
-If there were additional metadata files,
-they could be indicated here (e.g., instead of `db_meta = NULL`).
+
               
 ## 3. Post-processing 
 
 Now that the data are packed into the the `AnnData` object,
-we can leverage additional functions from `scanpy` and `reticulate` to do perform additional data manipulation,
+we can leverage additional functions from `scanpy` via `reticulate` to do perform additional data post-processing.   The  for the PMBC3k data includes steps to filter, annotate,
+and otherwise prepare the data for visualization.
+The data are periodically saved at intermediate steps,
+which is useful for optimizing visualizations.
 such as dimension reduction and clustering.
 
 > You have flexibility in the data curation process regarding which approaches you use,
@@ -139,27 +131,11 @@ such as dimension reduction and clustering.
 > but is a useful step if you'd like to work with your data in other tools,
 > like [`cellxgene`](https://github.com/chanzuckerberg/cellxgene).
 
-The example below demonstrates dimension reduction with the `AnnData` object using `scanpy`.
+The example below demonstrates a semi-automatic procedure to infering clusters in the data using the `scanpy` python library for processing `AnnData` data.
 For more information on using `scanpy` in R,
 please see the [troubleshooting section](#troubleshooting).
 
-```{r, RM-prep-4, eval=FALSE}
-sc <- import("scanpy")
-# run PCA
-sc$pp$pca(adata)
-# compute neighbor graph
-sc$pp$neighbors(adata)
-## infer clusters
-sc$tl$leiden(adata)
-# compute umap
-sc$tl$umap(adata)
-```
 
-In addition to dimension reduction, 
-post-processing for the PMBC3k data includes steps to filter, annotate,
-and otherwise prepare the data for visualization.
-The data are periodically saved at intermediate steps,
-which is useful for optimizing visualizations.
 
 ## 4. Create differential expression tables
 
@@ -233,7 +209,7 @@ so their names and location are important:
 
 1. `db_data.h5ad` - the `AnnData` object          
 2. `db_de_table.rds` - differntial expression table
-3, `db_meta.yml` - list of database 'meta' information
+3, `additional_info.Rmd` - expository explanation of the context and logic of database 
 
 You may also have intermediate database files created during post-processing: `normalized_data.h5ad`,`core_data.h5ad`,and `norm_data_plus_dr.h5ad`.
 They are available for your reference,

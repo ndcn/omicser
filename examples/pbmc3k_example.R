@@ -12,7 +12,7 @@ RAW_DATA_DIR <- file.path(OMICSER_RUN_DIR,"quickstart/raw_data",DB_NAME)
 
 DB_ROOT_PATH <- file.path(OMICSER_RUN_DIR,"quickstart/test_db")
 
-OMICSER_PYTHON <-  "pyenv_omxr"
+OMICSER_PYTHON <-  "pyenv_omicser"
 # installation type (see install_script.R)
 CLONED_OMICSER <- TRUE
 
@@ -51,6 +51,7 @@ if (FALSE){  #you should already have installed miniconda and created the env
                               packages =  packages )
 
 }
+
 reticulate::use_condaenv(condaenv = OMICSER_PYTHON,
                                 conda = reticulate::conda_binary(),
                                 required = TRUE)
@@ -122,7 +123,6 @@ data_list <- list(object=file.path(DB_ROOT_PATH,DB_NAME,"core_data.h5ad"))
 adata <- omicser::setup_database(database_name = DB_NAME,
                                  db_path = DB_ROOT_PATH,
                                  data_in = data_list,
-                                 db_meta = NULL,
                                  re_pack = TRUE)
 
 
@@ -155,7 +155,6 @@ sc$pp$scale(adata, max_value=10)
 
 # choose top 40 genes by variance across dataset as "targets"
 adata$var$var_rank <- order(adata$var$dispersions_norm)
-target_omics <- adata$var_names[which(adata$var$var_rank <= 40)]
 
 # calculate deciles
 adata$var$decile <- dplyr::ntile(adata$var$dispersions_norm, 10)
@@ -206,23 +205,16 @@ saveRDS(diff_exp, file = file.path(DB_ROOT_PATH, DB_NAME, "db_de_table.rds"))
 # write final database
 adata$write_h5ad(filename = file.path(DB_ROOT_PATH, DB_NAME, "db_data.h5ad"))
 
-# Step 10:  configure browser ----
 # load intermediate files if available
 if (FALSE) {
   adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
   diff_exp <- readRDS( file = file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 }
 
-# Step 9: Write data files to database directory -------
 DB_DIR = file.path(DB_ROOT_PATH,DB_NAME)
 if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
 }
-
-# save diff expression data
-diff_exp <- data_list$de
-
-saveRDS(diff_exp, file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
 
 # write the anndata object
 adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"db_data.h5ad"))
@@ -257,7 +249,7 @@ config_list <- list(
   obs_annots = c( "leiden",
                   "n_genes","n_genes_by_counts","total_counts","total_counts_mt","pct_counts_mt"),
 
-  default_var = character(0), #just use them in order as defined
+  default_var = c("decile"),#just use them in order as defined
   var_annots = c(
     "n_cells",
     "mt",
@@ -289,57 +281,59 @@ config_list <- list(
                      "decile" ),
 
   filter_feature = c("dispersions_norm"), #if null defaults to "fano_factor"
-
-  xr_groupby = c("decile","highly_variable"),
-  var_subset = c("decile","highly_variable"),
-
   # differential expression
   diffs = list( diff_exp_comps = levels(factor(diff_exp$versus)),
                 diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
                 diff_exp_tests =  levels(factor(diff_exp$test_type))
-  ),
+             ),
 
   # Dimension reduction (depricated)
   dimreds = list(obsm = adata$obsm_keys(),
                  varm = adata$varm_keys()),
 
-
-  #meta info
-  annotation_database =  NA,
-  publication = "TBD",
-  method = "bulk", # c("single-cell","bulk","other")
   omic_type = omic_type, #c("transcript","prote","metabol","lipid","other")
   aggregate_by_default = aggregate_by_default, #e.g.  single cell
 
-  organism = "human",
-  lab = "",
-  source = "peripheral blood mononuclear cells (PBMCs)",
-  annotation_database =  "",
-  title = "pbmc3k",
-  omic_type = omic_type,
-  measurment = "normalized counts",
-  pub = "10X Genomics",
-  url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k",
-  date = format(Sys.time(), "%a %b %d %X %Y")
+  #meta info
+  meta_info = list(
+    annotation_database =  NA,
+    publication = "TBD",
+    method = "single-cell", # c("single-cell","bulk","other")
+    organism = "human",
+    lab = "?",
+    source = "peripheral blood mononuclear cells (PBMCs)",
+    title = "pbmc3k",
+    measurment = "normalized counts",
+    pub = "10X Genomics",
+    url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k",
+    date = format(Sys.time(), "%a %b %d %X %Y")
+    )
 )
 
 omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
 
 
-#### Configuration 2. Browser configuration
+# BOOTSTRAP the options we have already set up...
+# NOTE: we are looking in the "quickstart" folder.  the default is to look for the config in with default getwd()
+omicser_options <- omicser::get_config(in_path = OMICSER_RUN_DIR)
+DB_ROOT_PATH <- omicser_options$db_root_path
 
-# Now move to the directory where you want to execute the omicser
-# and make the omicser_options.yml
+#DB_NAME <- omicser_options$database_names[1]
 
-omicser_options <- list(database_names=DB_NAME,
-                        db_root_path=DB_ROOT_PATH,
-                        conda_environment=CONDA_ENV)
+if (! (DB_NAME %in% omicser_options$database_names)){
+  omicser_options$database_names <- c(omicser_options$database_names,DB_NAME)
+  omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
+}
 
-omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
+
+# Step 11: Run the browser -------------
+
+# assert the right conda (restart R-session?)
+reticulate::use_condaenv(condaenv = OMICSER_PYTHON,
+                         conda = reticulate::conda_binary(),
+                         required = TRUE)
 
 #### Launch browser
-
-omicser::run_app(options = list(launch.browser = TRUE))
-
+omicser::run_defaults()
 
 

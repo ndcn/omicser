@@ -1,6 +1,6 @@
 ---
 title: "1-Installation"
-date: "10/26/2021"
+date: "11/26/2021"
 output:
   html_document: 
     toc: yes
@@ -34,28 +34,34 @@ install.packages("reticulate")
 > Installing the `omicser` browser package in the next section will also install additional R packages as dependencies.
 
 We will use a [conda environment](https://conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) 
-to manage the Python packages handling data on the back end of the browser application.
-We can use R to install **Python version 3.9** and other necessary Python packages
-by creating a conda environment using `reticulate`:
+to manage the Python packages handling data on the back end of the browser application. Although python virtual environments or other python installations can be configured via `reticulate` ["TODO:link to other python configurations"] we recommend using conda via the reticulate mini-conda installation as described here.
 
-```{r RM-r_env, eval=FALSE}
-YOUR_CONDA_ENV <- "omxr"
-PYTHON_VERSION <- 3.9
+We can use R to install **Python version 3.8** and other necessary Python packages
+by creating a conda environment using `reticulate`. For curation we need to make sure we also install the `scanpy` package. 
 
-library(reticulate)
-reticulate::install_miniconda() 
-reticulate::conda_create(YOUR_CONDA_ENV, python_version = PYTHON_VERSION)
-```
+```{r RM-r_env-1, eval=FALSE}
+OMICSER_PYTHON <- "my_py_env_name"
 
-We'll now install Python packages into this conda environment that are required in the example scripts used later in this tutorial.
-Please note that if you have bioconductor configured as a channel it may cause problems.
-Forcing install from the "conda-forge" channel is preferred:
-
-```{r RM-r_scanpy, eval=FALSE}
-reticulate::conda_install(envname= YOUR_CONDA_ENV,
+reticulate::install_miniconda() #in case it is not already installed
+# simpler pip pypi install
+packages <- c("scanpy[leiden]")
+reticulate::conda_create(OMICSER_PYTHON, python_version = 3.8)
+reticulate::conda_install(envname=OMICSER_PYTHON,
                           channel = "conda-forge",
-                          packages = c("scanpy", "leidenalg") )
+                          pip = TRUE,
+                          packages =  packages )
 ```
+
+Start a fresh R-session and force reticulate to use our `OMICSER_PYTHON` by calling `reticulate::use_condaenv`.
+
+```{r RM-r_env-2, eval=FALSE}
+
+reticulate::use_condaenv(condaenv = OMICSER_PYTHON,
+                                conda = reticulate::conda_binary(),
+                                required = TRUE)
+
+```
+
 
 ## Installing `omicser`
 
@@ -80,35 +86,6 @@ you are now ready for [data curation](02_data_curation.md).
 
 ## Troubleshooting
 
-### Command line installation
-
-If you have difficulty installing Miniconda via R,
-or prefer to work on the command line,
-the following instructions demonstrate how to use the shell to set up your environment
-(examples for MacOSX).
-
-First, download and install Miniconda:
-
-```{bash, conda_inst, eval = FALSE}
-curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh
-bash ~/miniconda.sh -p $HOME/miniconda
-```
-
-You may need to respond to some prompts in your Console to complete this installation.
-
-Now we can use conda to install a python 3.9 environment to use with `reticulate`. 
-Installing the python packages `scanpy` and `leidenalg` will ensure all additional python requirements are installed:
-
-```{bash, conda_env, eval = FALSE}
-conda create -n omxr python=3.9
-conda install -c conda-forge scanpy leidenalg                                                                       
-```
-
-Note that we do not use `conda activate` to load the environment.
-Because we'll be working in R,
-we recommend loading the environment through R
-(see next section for more information).
-Please also remember to install `devtools` and `reticulate`.
 
 ### `reticulate` and `conda`
 
@@ -121,15 +98,15 @@ reticulate::py_discover_config()
 
 Because you used `reticulate` to create an environment for you 
 with the relevant packages installed,
-you should see your environment name ("omxr")
+you should see your environment name
 listed in the Python paths
-(e.g., `r-miniconda/envs/omxr/bin/python`).
+(e.g., `r-miniconda/envs/my_py_env_name/bin/python`).
 
 If you do not see your environment listed in the paths,
 you can load your environment:
 
 ```{r, eval = FALSE}
-reticulate::use_condaenv(condaenv = "omxr", required = TRUE)
+reticulate::use_condaenv(condaenv = "my_py_env_name", required = TRUE)
 ```
 
 This may also require you to restart your R session.

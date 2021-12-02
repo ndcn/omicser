@@ -4,7 +4,7 @@
 \alias{setup_database}
 \title{setup_database}
 \usage{
-setup_database(database_name, db_path, data_in, db_meta, re_pack = TRUE)
+setup_database(database_name, db_path, data_in, re_pack = TRUE)
 }
 \arguments{
 \item{database_name}{- name of the database being setup}
@@ -12,8 +12,6 @@ setup_database(database_name, db_path, data_in, db_meta, re_pack = TRUE)
 \item{db_path}{- system path to the databases}
 
 \item{data_in}{- a list of data, or a filename}
-
-\item{db_meta}{- "meta" information about the database origin/ context / etc}
 
 \item{re_pack}{- force re-packing the anndata object}
 }

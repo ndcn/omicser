@@ -342,7 +342,7 @@ if (FALSE){
     adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 }
 
-# Step 8: pre-compute differential expression
+# Step 8: pre-compute differential expression -------------
 # save diff expression data for later...
 diff_exp <- data_list$de
 saveRDS(diff_exp, file.path(DB_ROOT_PATH,DB_NAME, "db_de_table.rds"))
@@ -353,7 +353,7 @@ if (FALSE){
     #load intermediat data
     adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_plus_dr.h5ad"))
 }
-# Step 9: Write data files to database directory -------
+# Step 9: Write data files to database directory ---------
 DB_DIR = file.path(DB_ROOT_PATH,DB_NAME)
 if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
@@ -433,18 +433,23 @@ config_list <- list(
   dimreds = list(obsm = adata$obsm_keys(),
                  varm = adata$varm_keys()),
 
-
   #meta info
-  annotation_database =  NA,
-  publication = "TBD",
-  method = "bulk", # c("single-cell","bulk","other")
   omic_type = omic_type, #c("transcript","prote","metabol","lipid","other")
   aggregate_by_default = aggregate_by_default, #e.g.  single cell
 
-  organism = 'mmusculus',
-  lab = "Ori/Ward",
-  title = "DIA proteomics",
-  date = format(Sys.time(), "%a %b %d %X %Y")
+   #meta info
+  meta_info = list(
+    annotation_database =  NA,
+    publication = "TBD",
+    method = "bulk", # c("single-cell","bulk","other")
+    organism = 'mmusculus',
+    measurment = "DIA",
+    lab = "Ori/Ward",
+    title = "DIA proteomics",
+    url = "TBD",
+    date = format(Sys.time(), "%a %b %d %X %Y")
+  )
+
 )
 
 omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
@@ -465,3 +470,11 @@ if (! (DB_NAME %in% omicser_options$database_names)){
 
 # Step 11: Run the browser -------------
 
+# assert the right conda (restart R-session?)
+reticulate::use_condaenv(condaenv = OMICSER_PYTHON,
+                         conda = reticulate::conda_binary(),
+                         required = TRUE)
+
+#### Launch browser
+omicser::run_defaults()
+#

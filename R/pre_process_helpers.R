@@ -304,7 +304,6 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
 #' @param database_name - name of the database being setup
 #' @param db_path - system path to the databases
 #' @param data_in - a list of data, or a filename
-#' @param db_meta - "meta" information about the database origin/ context / etc
 #' @param re_pack - force re-packing the anndata object
 #'
 #' @description A a function to create the anndata database
@@ -313,7 +312,7 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
 #' @export setup_database
 #'
 #' @examples  TODO
-setup_database <- function(database_name, db_path, data_in, db_meta , re_pack=TRUE){
+setup_database <- function(database_name, db_path, data_in, re_pack=TRUE){
   #LOAD & PACK into ANNDATA
   ##if data_in contains filenames they must be the full path (i.e. RAW_DIR inlcuded)
 

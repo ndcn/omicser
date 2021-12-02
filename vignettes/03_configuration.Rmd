@@ -1,6 +1,6 @@
 ---
 title: "3-Configuration"
-date: "10/26/2021"
+date: "11/26/2021"
 output:
   html_document: 
     keep_md: yes
@@ -15,10 +15,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 In the last section, we formatted and configured our data to make it accessible to the browser.
 In this section, we'll create two sets of configuration instructions:
-- `db_config.yml` - located with the database files, and specific to each database
-- `omicser_options.yml` - located in the run directory, provides top-level configuration and identifies the database(s) accessible for visualization in the browser
+- `db_config.yml` - which is specific to each _database_ and located with the data files in the database folder
+- `app_config.yml` - which identifies the path where the database(s) are located 
 
-We'll continue to refer to the [PBMC3k example script](https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R)
+
+We'll continue to refer to the [PBMC3k example script](https://github.com/ndcn/omicser/blob/main/examples/pbmc3k_example.R)
 as our example.
 
 ## Database configuration
@@ -29,48 +30,106 @@ by the viewers of the application while browsing.
 This involves defining the experimental factors as well as visualization parameters.
 
 The example below matches the PBMC3k.
-Please see the [`examples/`](https://github.com/ndcn/omicser/tree/main/examples) for alternative configurations.
+Please see the [`examples/`](https://github.com/ndcn/omicser/tree/main/examples) for additional examples (e.g. proteomics).
 
 ``` {r, 4-config-1, eval=FALSE}
-# differentials: the order here dictates the order in which they will appear in the browser
-conf_list <- list(
-  x_obs = c("leiden"),
-  # measures
-  y_obs =  c('n_genes', 'n_genes_by_counts', 'total_counts', 'total_counts_mt', 'pct_counts_mt'),
-  obs_groupby = c("leiden"),
-  obs_subset = c("leiden"),
 
-  x_var = c("decile","highly_variable"),
-  y_var = c( 'n_cells', 'mt', 'n_cells_by_counts', 'mean_counts',
-            'pct_dropout_by_counts', 'total_counts',
-            'means', 'dispersions', 'dispersions_norm', 'mean', 'std'),
 
-  var_groupby = c("decile","highly_variable"),
+# Step 10:  configure browser ----
+
+omic_type <- "transcript" #c("transcript","prote","metabol","lipid","other")
+aggregate_by_default <- (if (omic_type=="transcript") TRUE else FALSE ) #e.g.  single cell
+# choose top 40 proteins by variance across dataset as our "targets"
+target_features <- adata$var_names[which(adata$var$var_rank <= 40)]
+#if we care we need to explicitly state. defaults will be the order...
+config_list <- list(
+  # meta-tablel grouping "factors"
+  group_obs = c("leiden"),
+  group_var = c("decile","highly_variable"),
+
+  # LAYERS
+  # each layer needs a label/explanation
+  layer_values = c("X","raw"),
+  layer_names = c("norm-count","counts" ),
+
+  # ANNOTATIONS / TARGETS
+  # what adata$obs do we want to make default values for...
+  # # should just pack according to UI?
+  default_obs =  c("Condition","leiden"), #subset & ordering
+
+  obs_annots = c( "leiden","n_genes","n_genes_by_counts",
+                  "total_counts","total_counts_mt","pct_counts_mt"),
+
+  default_var = c("decile"), #just use them in order as defined
+  var_annots = c(
+    "n_cells",
+    "mt",
+    "n_cells_by_counts",
+    "mean_counts",
+    "pct_dropout_by_counts",
+    "total_counts",
+    "highly_variable",
+    "dispersions_norm",
+    "decile"),
+
+
+  target_features = target_features,
+  feature_deets = c( "feature_name",
+                     "gene_ids",
+                     "n_cells",
+                     "mt",
+                     "n_cells_by_counts",
+                     "mean_counts",
+                     "pct_dropout_by_counts",
+                     "total_counts",
+                     "highly_variable",
+                     "means",
+                     "dispersions",
+                     "dispersions_norm",
+                     "mean",
+                     "std",
+                     "var_rank",
+                     "decile" ),
+
+  filter_feature = c("dispersions_norm"), #if null defaults to "fano_factor"
+
+  xr_groupby = c("decile","highly_variable"),
   var_subset = c("decile","highly_variable"),
 
-  diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
-               diff_exp_comp_type =  levels(factor(diff_exp$comp_type)), #i don't think we need this
-               diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
-               diff_exp_tests =  levels(factor(diff_exp$test_type))),
+  # differential expression
+  diffs = list( diff_exp_comps = levels(factor(diff_exp$versus)),
+                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
+                diff_exp_tests =  levels(factor(diff_exp$test_type))
+  ),
 
-  layers = c("X","raw"),
+  # Dimension reduction (depricated)
+  dimreds = list(obsm = adata$obsm_keys(),
+                 varm = adata$varm_keys()),
 
-  # dimension reduction
-  dimreds = list(obsm = ad$obsm_keys(),
-                 varm = ad$varm_keys()),
 
-  # setting defaults for ad$obs 
-  default_factors = default_factors,
-  target_omics = target_omics,
-  omic_details = c('gene_ids', 'n_cells', 'mt', 'n_cells_by_counts',
-                   'mean_counts', 'pct_dropout_by_counts', 'total_counts',
-                   'highly_variable', 'means', 'dispersions',
-                   'dispersions_norm', 'mean', 'std', 'var_rank', 'decile')))
+  #meta info
+  annotation_database =  NA,
+  publication = "TBD",
+  method = "bulk", # c("single-cell","bulk","other")
+  omic_type = omic_type, #c("transcript","prote","metabol","lipid","other")
+  aggregate_by_default = aggregate_by_default, #e.g.  single cell
 
-# write db_config.yml to database directory
-configr::write.config(config.dat = conf_list, 
-                      file.path = file.path(DS_ROOT_PATH, DB_NAME, "db_config.yml"),
-                      write.type = "yaml", indent = 4)
+  organism = "human",
+  lab = "",
+  source = "peripheral blood mononuclear cells (PBMCs)",
+  annotation_database =  "",
+  title = "pbmc3k",
+  omic_type = omic_type,
+  measurment = "normalized counts",
+  pub = "10X Genomics",
+  url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k",
+  date = format(Sys.time(), "%a %b %d %X %Y")
+)
+
+omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
+
+
+
 ```
 
 ## Browser configuration
