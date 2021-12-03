@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">omicser</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.9.2021-11-03</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.9.2021-11-03</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
@@ -72,6 +68,9 @@
       <a href="articles/browsing.html">Browsing your data</a>
     </li>
     <li>
+      <a href="articles/docker.html">docker</a>
+    </li>
+    <li>
       <a href="articles/multiple_databases.html">Adding multiple datasets</a>
     </li>
   </ul>
@@ -82,7 +81,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/ndcn/omicser/">
+  <a href="https://github.com/ndcn/omicser/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -99,27 +98,29 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="ndcn--omics-browser-name-tbc" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#ndcn--omics-browser-name-tbc" class="anchor"></a>NDCN -Omics Browser (name TBC)</h1></div>
+<div class="section level1">
+<div class="page-header"><h1 id="ndcn--omics-browser-name-tbc">NDCN -Omics Browser (name TBC)<a class="anchor" aria-label="anchor" href="#ndcn--omics-browser-name-tbc"></a>
+</h1></div>
 <!-- badges: start -->
 
-<div id="introduction" class="section level2">
-<h2 class="hasAnchor">
-<a href="#introduction" class="anchor"></a>Introduction</h2>
-<p>The goal of this package is to allow exploration of -omics data using an interactive “playground” (e.g., Shiny application), accessible through an interactive web browser. In addition to the browser package, this project includes documentation about usage, example scripts, and an expository quickstart tutorial to demonstrate how it is to be used. The browser package itself contains the code to create/run the browser, as well as a small collection of helper functions to aid in curating and configuring datasets for browsing.</p>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>The goal of this package is to allow exploration of -omics data using an interactive Shiny app based “playground”, which is accessable through an web browser. In addition to the browser package, this project includes documentation about usage, and a series of example scripts (<code>examples/</code>) which serve as a tutorial to demonstrate how it is to be used. The browser package itself contains the code to create/run the browser, as well as a small collection of helper functions to aid in curating and configuring datasets for browsing.</p>
 <blockquote>
 <p><em>Note</em>: although the NDCN Omics Browser is not yet officially named, references it as <code>omicser</code> or <code>omxr</code>.</p>
 </blockquote>
 <p>There are two types of users for this package:</p>
 <ul>
 <li>
-<strong>Curators</strong>: data analysts who configure the app and prepare datasets for viewing. These individuals should be fairly proficient with R coding, including familiarity with building Shiny apps and knowledgeable about -omics data structures.</li>
+<strong>Curators</strong>: data owners who prepare datasets for viewing. These individuals should be fairly proficient with R coding, including familiarity with building Shiny apps and knowledgeable about -omics data structures.</li>
 <li>
 <strong>Viewers</strong>: scientists who are interested in exploring -omics data using the application. They do not require extensive knowledge about R, but may need to have it installed if they are running the app on their own computer.</li>
 </ul>
 <p>The diagram below summarizes the steps required to use this package:</p>
-<p><img src="reference/figures/README-omicser-overview.png" alt="Overview of data visualization using the omicser"></p>
+<div class="figure">
+<img src="reference/figures/README-omicser-overview.png" alt=""><p class="caption">Overview of data visualization using the omicser</p>
+</div>
 <p>Support for the following <em>post-QC</em> -omics data types has been tested:</p>
 <ul>
 <li>
@@ -138,18 +139,18 @@
 <li>web application packaged with data that can be shared with collaborators</li>
 </ul>
 </div>
-<div id="installation-and-usage" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation-and-usage" class="anchor"></a>Installation and usage</h2>
-<p>This package was developed to create a <a href="https://shiny.rstudio.com/"><code>{shiny}</code></a> application using<br><a href="https://github.com/ThinkR-open/golem"><code>{golem}</code></a>, “an opinionated framework for building production-grade shiny applications.” It requires a number of additional R and Python packages. The package creates the Shiny browser app as well as several functions for curating and packaging the data being curated.</p>
+<div class="section level2">
+<h2 id="installation-and-usage">Installation and usage<a class="anchor" aria-label="anchor" href="#installation-and-usage"></a>
+</h2>
+<p>This package was developed to create a <a href="https://shiny.rstudio.com/" class="external-link"><code>Shiny</code></a> application using<br><a href="https://github.com/ThinkR-open/golem" class="external-link"><code>{golem}</code></a>, “an opinionated framework for building production-grade shiny applications.” It requires a number of additional R and Python packages. The package creates the Shiny browser app as well as several functions for curating and packaging the data being curated.</p>
 <blockquote>
 <p><strong>If you would like an overview of the features and functionality of the browser, please view the <a href="https://ndcn.github.io/omicser/articles/browsing.html">Browsing vignette</a>.</strong></p>
 </blockquote>
 <p>The remaining <a href="https://ndcn.github.io/omicser/articles/00_quickstart.html">vignettes</a> are designed to walk Curators through the process of installing necessary software, curating data, creating an application, and launching the tool.</p>
 </div>
-<div id="contributing-to-this-project" class="section level2">
-<h2 class="hasAnchor">
-<a href="#contributing-to-this-project" class="anchor"></a>Contributing to this project</h2>
+<div class="section level2">
+<h2 id="contributing-to-this-project">Contributing to this project<a class="anchor" aria-label="anchor" href="#contributing-to-this-project"></a>
+</h2>
 <p>This project began as part of the CZI NDCN Open Science Initiative Data Science Pilot (March-Sept 2021).</p>
 <p>Please see our <a href="CONTRIBUTING.html">Contributing guidelines</a> for more information on any of the following:</p>
 <ul>
@@ -159,10 +160,10 @@
 <li>sharing information about how you’ve used this package in your own work</li>
 </ul>
 <p>Anyone interacting with our project is expected to follow our <a href="CODE_OF_CONDUCT.html">Code of Conduct</a>.</p>
-<div id="roadmap" class="section level3">
-<h3 class="hasAnchor">
-<a href="#roadmap" class="anchor"></a>Roadmap</h3>
-<p>Please view our <a href="https://github.com/ndcn/omicser/issues">issues</a>, especially those tagged as <a href="https://github.com/ndcn/omicser/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22">high priority</a>, for more information about immediate plans for development.</p>
+<div class="section level3">
+<h3 id="roadmap">Roadmap<a class="anchor" aria-label="anchor" href="#roadmap"></a>
+</h3>
+<p>Please view our <a href="https://github.com/ndcn/omicser/issues" class="external-link">issues</a>, especially those tagged as <a href="https://github.com/ndcn/omicser/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22" class="external-link">high priority</a>, for more information about immediate plans for development.</p>
 </div>
 </div>
 </div>
@@ -170,51 +171,62 @@
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
-<h2>Links</h2>
+<h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Browse source code at <br><a href="https://github.com/ndcn/omicser/">https://​github.com/​ndcn/​omicser/​</a>
-</li>
-<li>Report a bug at <br><a href="https://github.com/ndcn/omicser/issues">https://​github.com/​ndcn/​omicser/​issues</a>
-</li>
+<li><a href="https://github.com/ndcn/omicser/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/ndcn/omicser/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
+
 <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://opensource.org/licenses/mit-license.php">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
+<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
+
 <div class="community">
-<h2>Community</h2>
+<h2 data-toc-skip>Community</h2>
 <ul class="list-unstyled">
 <li><a href="CONTRIBUTING.html">Contributing guide</a></li>
 <li><a href="CODE_OF_CONDUCT.html">Code of conduct</a></li>
 </ul>
 </div>
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing omicser</a></li>
+</ul>
+</div>
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Andy Henrie <br><small class="roles"> Maintainer, author </small>  </li>
 </ul>
 </div>
 
-  <div class="dev-status">
-<h2>Dev status</h2>
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
 </ul>
 </div>
-</div>
+
+  </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Andy Henrie.</p>
+  <p></p>
+<p>Developed by Andy Henrie.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
@@ -222,6 +234,8 @@
 
   
 
+
+  
 
   </body>
 </html>

@@ -1,5 +1,5 @@
 pandoc: 2.7.3
-pkgdown: 1.6.1
+pkgdown: 2.0.1
 pkgdown_sha: ~
 articles:
   00_quickstart: 00_quickstart.html
@@ -8,8 +8,9 @@ articles:
   03_configuration: 03_configuration.html
   04_sharing: 04_sharing.html
   browsing: browsing.html
+  docker: docker.html
   multiple_databases: multiple_databases.html
-last_built: 2021-11-24T08:31Z
+last_built: 2021-12-03T18:07Z
 urls:
   reference: https://ndcn.github.io/omicser/reference
   article: https://ndcn.github.io/omicser/articles

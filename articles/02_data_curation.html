@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">omicser</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.9.2021-11-03</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.9.2021-11-03</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -72,6 +68,9 @@
       <a href="../articles/browsing.html">Browsing your data</a>
     </li>
     <li>
+      <a href="../articles/docker.html">docker</a>
+    </li>
+    <li>
       <a href="../articles/multiple_databases.html">Adding multiple datasets</a>
     </li>
   </ul>
@@ -82,7 +81,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/ndcn/omicser/">
+  <a href="https://github.com/ndcn/omicser/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -102,9 +101,9 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>2-Data Curation</h1>
             
-            <h4 class="date">10/26/2021</h4>
+            <h4 data-toc-skip class="date">11/26/2021</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/master/vignettes/02_data_curation.Rmd"><code>vignettes/02_data_curation.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/HEAD/vignettes/02_data_curation.Rmd" class="external-link"><code>vignettes/02_data_curation.Rmd</code></a></small>
       <div class="hidden name"><code>02_data_curation.Rmd</code></div>
 
     </div>
@@ -114,54 +113,45 @@
 <p>The most crucial step when setting up your own app is <em>curating</em> your data in preparation for loading into the browser. There are two reasons for these steps:</p>
 <ul>
 <li>formatting the data into <code>AnnData</code> files, which creates a database accessible by the browser</li>
-<li>identifying the variables (e.g., columns in a table) that will be browsable, which specifies how data can be selected and/or manipulated in the browswer interface</li>
+<li>identifying the variables (i.e., columns in a table) that will be browsable, which specifies how data can be selected and/or manipulated in the browswer interface</li>
 </ul>
 <p>As the <em>Curator</em> you have the responsibility to understand the specific research questions involved in your data, and how to allow these questions to be explored using a visualization tool.</p>
 <p>The process of curating your data generally includes the following steps:</p>
 <ol style="list-style-type: decimal">
-<li>
-<strong>Metadata documentation</strong> - define the metadata and context for the dataset</li>
-<li>
-<strong>Format and ingest raw data</strong> - translate the outputs of your quality-controlled (QC) data to database format and pack data into scanpy’s <code>AnnData</code> structure</li>
-<li>
-<strong>Post-processing</strong> - dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.</li>
-<li>
-<strong>Differential expression tables</strong> - compute and/or format existing tables</li>
-<li>
-<strong>Write database</strong> - create database and configuration files and store in a location the browser can locate</li>
+<li><p><strong>Format and ingest raw data</strong> - translate the outputs of your experimental data (post-QC phase) into scanpy’s <code>AnnData</code> structure</p></li>
+<li><p><strong>Post-processing</strong> - create additional columns and fields of interest. E.g. dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.</p></li>
+<li><p><strong>Differential expression tables</strong> - compute and/or format existing tables of the different expression levels relative to experimental conditions</p></li>
+<li><p><strong>Write database</strong> - write the data and configuration files to a named directory which we will define as a <em>database</em>.</p></li>
+<li><p><strong>database context documentation</strong> - define the context and for the dataset. This involves editing/creating the R-markdown file which will render in the browser app ( <code>additional_info.Rmd</code>)</p></li>
 </ol>
-<p>Each step of data curation is generally described below, referencing the PBMC3k dataset from 10X Genomics as an example. The complete script used for curation can be found in <a href="https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R"><code>examples/browse_pbmc3k.R</code></a>. Additional examples of how the data curation process is applied to various data types and use cases can be found in the <a href="https://github.com/ndcn/omicser/tree/main/examples"><code>examples/</code> subdirectory</a>.</p>
-<div id="data-organization" class="section level2">
-<h2 class="hasAnchor">
-<a href="#data-organization" class="anchor"></a>Data organization</h2>
+<p>Each step of data curation is generally described below, referencing the PBMC3k dataset from 10X Genomics as an example. The complete script used for curation can be found in <a href="https://github.com/ndcn/omicser/blob/main/examples/pbmc3k_example.R" class="external-link"><code>examples/browse_pbmc3k.R</code></a>. Additional examples of how the data curation process is applied to various data types and use cases can be found in the <a href="https://github.com/ndcn/omicser/tree/main/examples" class="external-link"><code>examples/</code> subdirectory</a>.</p>
+<div class="section level2">
+<h2 id="data-organization">Data organization<a class="anchor" aria-label="anchor" href="#data-organization"></a>
+</h2>
 <p>There are three main locations you’ll need to specify while curating your data and otherwise preparing your browser app:</p>
 <ul>
 <li>
-<strong>run directory</strong>: location from which the browser is launched. For the PBMC3k example, we will refer to this as <code>OMICSER_RUN_DIR</code>, and create a new directory named <code>omicser_test/</code> which will contain the other content for this project. If you plan to make more extensive modifications to the browser, we recommend cloning the <a href="https://github.com/ndcn/omicser"><code>omicser</code></a> package and using the top level folder for your run directory.</li>
+<strong>run directory</strong>: location from which the browser is launched. For the PBMC3k example, we will refer to this as <code>OMICSER_RUN_DIR</code>, and create a new directory named <code>omicser_test/</code> which will contain the other content for this project. If you plan to make more extensive modifications to the browser, we recommend cloning the <a href="https://github.com/ndcn/omicser" class="external-link"><code>omicser</code></a> package and using the top level folder for your run directory.</li>
 <li>
 <strong>location of data</strong>: folder containing your -omics data, referred to as <code>RAW_DIR</code> and set to <code>raw_data/</code> in the PBMC3k example. This location is only used in the data curation steps.</li>
 <li>
 <strong>location of database</strong>: folder containing the formatted data produced by the data curation steps, packaged to be ingested for visualization in a browser. For the PBMC3k example, it is referred to as <code>DB_ROOT_PATH</code> and set as <code>test_db/</code> we will be working with a single dataset (and single dataset), though it is possible to visualize multiple datasets with the same browser configuration (i.e., this folder can potentially contain multiple databases).</li>
 </ul>
-<div id="example-data-from-10x-genomics" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-data-from-10x-genomics" class="anchor"></a>Example data from 10X Genomics</h3>
-<p>The example data used for this tutorial are from ~3000 peripheral blood mononuclear cells (PBMCs) from a healthy donor. Further information about the data is available at the <a href="https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k">10X Genomics website</a>. These data have also been used in tutorials from <a href="https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html">scanpy</a> and <a href="https://satijalab.org/seurat/archive/v3.0/pbmc3k_tutorial.html">Seurat</a>.</p>
-<p>The <a href="https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R">PBMC3k example script</a> includes code sections to help you install software/environments, download/organize data, and otherwise prepare for the data curation steps below. Please note that the data files from 10X Genomics need to be saved as <code>.gz</code> files for them to be read correctly when importing the data.</p>
+<div class="section level3">
+<h3 id="example-data-from-10x-genomics">Example data from 10X Genomics<a class="anchor" aria-label="anchor" href="#example-data-from-10x-genomics"></a>
+</h3>
+<p>The example data used for this tutorial are from ~3000 peripheral blood mononuclear cells (PBMCs) from a healthy donor. Further information about the data is available at the <a href="https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k" class="external-link">10X Genomics website</a>. These data have also been used in tutorials from <a href="https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html" class="external-link">scanpy</a> and <a href="https://satijalab.org/seurat/archive/v3.0/pbmc3k_tutorial.html" class="external-link">Seurat</a>.</p>
+<p>The <a href="https://github.com/ndcn/omicser/blob/main/examples/browse_pbmc3k.R" class="external-link">PBMC3k example script</a> includes code sections to help you install software/environments, download/organize data, and otherwise prepare for the data curation steps below. Please note that the data files from 10X Genomics need to be saved as <code>.gz</code> files for them to be read correctly when importing the data.</p>
 </div>
 </div>
-<div id="metadata-setup" class="section level2">
-<h2 class="hasAnchor">
-<a href="#metadata-setup" class="anchor"></a>1. Metadata setup</h2>
-<p>Given your intended use for the browser you are developing, you may choose to develop documentation accessible through the browser itself for referencing information about the data’s source(s). In this step, you can create a list of metadata about your dataset, then use <code><a href="../reference/write_db_meta.html">write_db_meta()</a></code> to save the information as <code>db_meta.yml</code>.</p>
-</div>
-<div id="format-and-ingest-raw-data" class="section level2">
-<h2 class="hasAnchor">
-<a href="#format-and-ingest-raw-data" class="anchor"></a>2. Format and ingest raw data</h2>
+<div class="section level2">
+<h2 id="format-and-ingest-raw-data">2. Format and ingest raw data<a class="anchor" aria-label="anchor" href="#format-and-ingest-raw-data"></a>
+</h2>
 <p>The exact steps required to ingest raw data vary widely depending on your data type and how these data are formatted. The general goal is to obtain the data necessary to create an <code>AnnData</code> object containing all data and metadata required for visualization.</p>
-<div id="anndata-schema" class="section level3">
-<h3 class="hasAnchor">
-<a href="#anndata-schema" class="anchor"></a><code>AnnData</code> Schema</h3>
+<div class="section level3">
+<h3 id="anndata-schema">
+<code>AnnData</code> Schema<a class="anchor" aria-label="anchor" href="#anndata-schema"></a>
+</h3>
 <p>The <code>AnnData</code> format includes three types of data:</p>
 <ol style="list-style-type: decimal">
 <li>
@@ -171,61 +161,48 @@
 <li>
 <em><em>SAMPLE</em> METADATA</em> ($obs): a table of sample annotations - e.g. cell types, sample #, batch ID sex, experimental condition, etc.</li>
 </ol>
-<p>More information on this format is available on the <a href="https://cran.r-project.org/web/packages/anndata/readme/README.html">AnnData for R website</a>.</p>
+<p>More information on this format is available on the <a href="https://cran.r-project.org/web/packages/anndata/readme/README.html" class="external-link">AnnData for R website</a>.</p>
 <p><img src="../inst/anndata_for_r.png"></p>
 </div>
-<div id="ingesting-raw-data" class="section level3">
-<h3 class="hasAnchor">
-<a href="#ingesting-raw-data" class="anchor"></a>Ingesting raw data</h3>
+<div class="section level3">
+<h3 id="ingesting-raw-data">Ingesting raw data<a class="anchor" aria-label="anchor" href="#ingesting-raw-data"></a>
+</h3>
 <p>For our example, we’ll read the PBMC3k data files using the <code>read_10x_mtx()</code> function from Python’s <code>scanpy</code> package, then writing the data to file in <code>.h5ad</code> format. We’ll access <code>scanpy</code> using the <code>reticulate</code> R package. If you have difficulty accessing <code>scanpy</code> in this section, please see the <a href="04_configuration.md#troubleshooting">Troubleshooting section of 1-Installation</a>.</p>
-<p>Please see the other <a href="https://github.com/ndcn/omicser/tree/main/examples">example curation scripts</a> to understand how other data can be processed at this step. This may include writing custom helper scripts to standardize data manipulation from files resulting from your data generation processes.</p>
+<p>Please see the other <a href="https://github.com/ndcn/omicser/tree/main/examples" class="external-link">example curation scripts</a> to understand how other data can be processed at this step. This may include writing custom helper scripts to standardize data manipulation from files resulting from your data generation processes.</p>
 </div>
-<div id="formatting-as-anndata" class="section level3">
-<h3 class="hasAnchor">
-<a href="#formatting-as-anndata" class="anchor"></a>Formatting as <code>AnnData</code>
+<div class="section level3">
+<h3 id="formatting-as-anndata">Formatting as <code>AnnData</code><a class="anchor" aria-label="anchor" href="#formatting-as-anndata"></a>
 </h3>
 <p>Our next step will use the raw database we just created and add the consistent structure we’ll need to orient the browser features later. The <code><a href="../reference/setup_database.html">omicser::setup_database()</a></code> function incorporates the three separate data sources (DATA matrix, omic FEATURE METADATA annotations, and SAMPLE METADATA) into the <code>AnnData</code> object.</p>
 <p>For our PBMC3k example, we’ll apply the <code><a href="../reference/setup_database.html">omicser::setup_database()</a></code> function:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># identify location of raw data</span>
-<span class="va">data_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>object <span class="op">=</span> <span class="fu">path</span><span class="op">(</span><span class="va">DB_ROOT_PATH</span>, <span class="va">DB_NAME</span>, <span class="st">"core_data.h5ad"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">data_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>object <span class="op">=</span> <span class="fu">path</span><span class="op">(</span><span class="va">DB_ROOT_PATH</span>, <span class="va">DB_NAME</span>, <span class="st">"core_data.h5ad"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="co"># create database formatted as AnnData</span>
-<span class="va">adata_2</span> <span class="op">&lt;-</span> <span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/setup_database.html">setup_database</a></span><span class="op">(</span>database_name <span class="op">=</span> <span class="va">DB_NAME</span>,
+<span class="va">adata</span> <span class="op">&lt;-</span> <span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/setup_database.html">setup_database</a></span><span class="op">(</span>database_name <span class="op">=</span> <span class="va">DB_NAME</span>,
                                  db_path <span class="op">=</span> <span class="va">DB_ROOT_PATH</span>,
                                  data_in <span class="op">=</span> <span class="va">data_list</span>,
-                                 db_meta <span class="op">=</span> <span class="cn">NULL</span>,
                                  re_pack <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>In this case, all data necessary was ingested in the previous step. This results in a database that is consistently formatted, and thus able to potentially be combined with other datasets in the future. If there were additional metadata files, they could be indicated here (e.g., instead of <code>db_meta = NULL</code>).</p>
+<p>In this case, all data necessary was ingested in the previous step. This results in a database that is consistently formatted, and thus able to potentially be combined with other datasets in the future.</p>
 </div>
 </div>
-<div id="post-processing" class="section level2">
-<h2 class="hasAnchor">
-<a href="#post-processing" class="anchor"></a>3. Post-processing</h2>
-<p>Now that the data are packed into the the <code>AnnData</code> object, we can leverage additional functions from <code>scanpy</code> and <code>reticulate</code> to do perform additional data manipulation, such as dimension reduction and clustering.</p>
+<div class="section level2">
+<h2 id="post-processing">3. Post-processing<a class="anchor" aria-label="anchor" href="#post-processing"></a>
+</h2>
+<p>Now that the data are packed into the the <code>AnnData</code> object, we can leverage additional functions from <code>scanpy</code> via <code>reticulate</code> to do perform additional data post-processing. The for the PMBC3k data includes steps to filter, annotate, and otherwise prepare the data for visualization. The data are periodically saved at intermediate steps, which is useful for optimizing visualizations. such as dimension reduction and clustering.</p>
 <blockquote>
-<p>You have flexibility in the data curation process regarding which approaches you use, and when those steps are performed. For example, clustering and dimension reduction isn’t required to browse data, but is a useful step if you’d like to work with your data in other tools, like <a href="https://github.com/chanzuckerberg/cellxgene"><code>cellxgene</code></a>.</p>
+<p>You have flexibility in the data curation process regarding which approaches you use, and when those steps are performed. For example, clustering and dimension reduction isn’t required to browse data, but is a useful step if you’d like to work with your data in other tools, like <a href="https://github.com/chanzuckerberg/cellxgene" class="external-link"><code>cellxgene</code></a>.</p>
 </blockquote>
-<p>The example below demonstrates dimension reduction with the <code>AnnData</code> object using <code>scanpy</code>. For more information on using <code>scanpy</code> in R, please see the <a href="#troubleshooting">troubleshooting section</a>.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">sc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/import.html">import</a></span><span class="op">(</span><span class="st">"scanpy"</span><span class="op">)</span>
-<span class="co"># run PCA</span>
-<span class="va">sc</span><span class="op">$</span><span class="va">pp</span><span class="op">$</span><span class="fu">pca</span><span class="op">(</span><span class="va">adata</span><span class="op">)</span>
-<span class="co"># compute neighbor graph</span>
-<span class="va">sc</span><span class="op">$</span><span class="va">pp</span><span class="op">$</span><span class="fu">neighbors</span><span class="op">(</span><span class="va">adata</span><span class="op">)</span>
-<span class="co">## infer clusters</span>
-<span class="va">sc</span><span class="op">$</span><span class="va">tl</span><span class="op">$</span><span class="fu">leiden</span><span class="op">(</span><span class="va">adata</span><span class="op">)</span>
-<span class="co"># compute umap</span>
-<span class="va">sc</span><span class="op">$</span><span class="va">tl</span><span class="op">$</span><span class="fu">umap</span><span class="op">(</span><span class="va">adata</span><span class="op">)</span></code></pre></div>
-<p>In addition to dimension reduction, post-processing for the PMBC3k data includes steps to filter, annotate, and otherwise prepare the data for visualization. The data are periodically saved at intermediate steps, which is useful for optimizing visualizations.</p>
+<p>The example below demonstrates a semi-automatic procedure to infering clusters in the data using the <code>scanpy</code> python library for processing <code>AnnData</code> data. For more information on using <code>scanpy</code> in R, please see the <a href="#troubleshooting">troubleshooting section</a>.</p>
 </div>
-<div id="create-differential-expression-tables" class="section level2">
-<h2 class="hasAnchor">
-<a href="#create-differential-expression-tables" class="anchor"></a>4. Create differential expression tables</h2>
+<div class="section level2">
+<h2 id="create-differential-expression-tables">4. Create differential expression tables<a class="anchor" aria-label="anchor" href="#create-differential-expression-tables"></a>
+</h2>
 <p>The ability to identify which -omics features differ among categories is perhaps the most important part of data curation. However, it is also one of the trickiest parts, as some data generation services (especially for proteomics) compute differential expression (DE) using commercial software associated with instrumentation. These algorithms leverage bespoke statistics, with unknown assumptions about the statistical tests involved, so it will be best to reformat those tables. Additionally, the schema below provides a way to standardize comparisons across datasets, which is important for browsers drawing from multi-omics data.</p>
-<div id="de-table-schema" class="section level3">
-<h3 class="hasAnchor">
-<a href="#de-table-schema" class="anchor"></a>DE Table Schema</h3>
+<div class="section level3">
+<h3 id="de-table-schema">DE Table Schema<a class="anchor" aria-label="anchor" href="#de-table-schema"></a>
+</h3>
 <p>The differential expression table has the following fields:</p>
 <ul>
 <li>
@@ -252,9 +229,9 @@
 <code>versus</code> - label which we will choose in the browser</li>
 </ul>
 </div>
-<div id="computing-the-de-table" class="section level3">
-<h3 class="hasAnchor">
-<a href="#computing-the-de-table" class="anchor"></a>Computing the DE table</h3>
+<div class="section level3">
+<h3 id="computing-the-de-table">Computing the DE table<a class="anchor" aria-label="anchor" href="#computing-the-de-table"></a>
+</h3>
 <p>The <code><a href="../reference/compute_de_table.html">omicser::compute_de_table()</a></code> leverages <code>scanpy</code> functions and the <code>AnnData</code> object to compute differential expression and provide a properly formatted DE table. We will need to provide the function with the following parameters:</p>
 <ul>
 <li>
@@ -275,42 +252,43 @@
 </li>
 </ul>
 <p>Here’s an example which computes a differential expression with a <code>wilcoxon</code> test of significance for each <em>disease</em> with respect to the rest of the distease states, AND for each <em>cell_type</em> with-respect-to the “rest of” the <em>cell_type</em> s.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">sc</span> <span class="op">&lt;-</span> <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/import.html">import</a></span><span class="op">(</span><span class="st">"scanpy"</span><span class="op">)</span>
-<span class="va">test_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'wilcoxon'</span><span class="op">)</span>
-<span class="va">comp_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'allVrest'</span><span class="op">)</span>
-<span class="va">obs_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'disease'</span>,<span class="st">'cell_type'</span><span class="op">)</span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">sc</span> <span class="op">&lt;-</span> <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/import.html" class="external-link">import</a></span><span class="op">(</span><span class="st">"scanpy"</span><span class="op">)</span>
+<span class="va">test_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'wilcoxon'</span><span class="op">)</span>
+<span class="va">comp_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'allVrest'</span><span class="op">)</span>
+<span class="va">obs_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'disease'</span>,<span class="st">'cell_type'</span><span class="op">)</span>
 <span class="va">diff_exp</span> <span class="op">&lt;-</span> <span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/compute_de_table.html">compute_de_table</a></span><span class="op">(</span><span class="va">adata</span>,<span class="va">comp_types</span>, <span class="va">test_types</span>, <span class="va">obs_names</span>,<span class="va">sc</span><span class="op">)</span></code></pre></div>
 <p>The DE table output from this function should be saved to the database folder as <code>db_de_table.rds</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">diff_exp</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">DB_ROOT_PATH</span>, <span class="va">DB_NAME</span>, <span class="st">"db_de_table.rds"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">diff_exp</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">DB_ROOT_PATH</span>, <span class="va">DB_NAME</span>, <span class="st">"db_de_table.rds"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
-<div id="write-database" class="section level2">
-<h2 class="hasAnchor">
-<a href="#write-database" class="anchor"></a>5. Write database</h2>
+<div class="section level2">
+<h2 id="write-database">5. Write database<a class="anchor" aria-label="anchor" href="#write-database"></a>
+</h2>
 <p>The last step of data curation is to write the final database to the database directory as <code>db_data.h5ad</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">adata</span><span class="op">$</span><span class="fu">write_h5ad</span><span class="op">(</span>filename<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">DS_ROOT_PATH</span>,<span class="va">DB_NAME</span>,<span class="st">"db_data.h5ad"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">adata</span><span class="op">$</span><span class="fu">write_h5ad</span><span class="op">(</span>filename<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">DS_ROOT_PATH</span>,<span class="va">DB_NAME</span>,<span class="st">"db_data.h5ad"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>At this point, each folder in your database directory should include at least three files. Shiny will look for these files when creating the browser, so their names and location are important:</p>
 <ol style="list-style-type: decimal">
 <li>
 <code>db_data.h5ad</code> - the <code>AnnData</code> object<br>
 </li>
 <li>
-<code>db_de_table.rds</code> - differntial expression table 3, <code>db_meta.yml</code> - list of database ‘meta’ information</li>
+<code>db_de_table.rds</code> - differntial expression table 3, <code>additional_info.Rmd</code> - expository explanation of the context and logic of database</li>
 </ol>
 <p>You may also have intermediate database files created during post-processing: <code>normalized_data.h5ad</code>,<code>core_data.h5ad</code>,and <code>norm_data_plus_dr.h5ad</code>. They are available for your reference, but are not required for further app development.</p>
 <p>Now that the data are formatted and organized appropriately, we’ll continue to the next step and <a href="03_configuration.html">configure the browser</a>.</p>
 </div>
-<div id="troubleshooting" class="section level2">
-<h2 class="hasAnchor">
-<a href="#troubleshooting" class="anchor"></a>Troubleshooting</h2>
-<div id="scanpy-in-r" class="section level3">
-<h3 class="hasAnchor">
-<a href="#scanpy-in-r" class="anchor"></a><code>scanpy</code> in R</h3>
+<div class="section level2">
+<h2 id="troubleshooting">Troubleshooting<a class="anchor" aria-label="anchor" href="#troubleshooting"></a>
+</h2>
+<div class="section level3">
+<h3 id="scanpy-in-r">
+<code>scanpy</code> in R<a class="anchor" aria-label="anchor" href="#scanpy-in-r"></a>
+</h3>
 <p>If you have difficulty accessing <code>scanpy</code>, please see the <a href="01_installation.md#troubleshooting">Troubleshooting section of 1-Installation</a></p>
-<p><code>scanpy</code> was originally written as a Python package, but we are using it within R courtesy of the <code>reticulate</code> R package. The <a href="https://scanpy-tutorials.readthedocs.io/en/latest/index.html">original <code>scanpy</code> documentation</a> can help you understand the assumptions and requirements of functions, which retain the same names between Python and R. For more information on syntax for <code>scanpy</code> in R, please see <a href="https://theislab.github.io/scanpy-in-R/#using-scanpy-functions">this documentation</a>.</p>
+<p><code>scanpy</code> was originally written as a Python package, but we are using it within R courtesy of the <code>reticulate</code> R package. The <a href="https://scanpy-tutorials.readthedocs.io/en/latest/index.html" class="external-link">original <code>scanpy</code> documentation</a> can help you understand the assumptions and requirements of functions, which retain the same names between Python and R. For more information on syntax for <code>scanpy</code> in R, please see <a href="https://theislab.github.io/scanpy-in-R/#using-scanpy-functions" class="external-link">this documentation</a>.</p>
 </div>
 </div>
   </div>
@@ -326,11 +304,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Andy Henrie.</p>
+  <p></p>
+<p>Developed by Andy Henrie.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
@@ -338,6 +318,8 @@
 
   
 
+
+  
 
   </body>
 </html>

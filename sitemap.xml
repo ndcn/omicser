@@ -1,7 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ndcn.github.io/omicser/404.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/CODE_OF_CONDUCT.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/CONTRIBUTING.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/LICENSE-text.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/LICENSE.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/00_quickstart.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/01_installation.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/02_data_curation.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/03_configuration.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/04_sharing.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/browsing.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/docker.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/multiple_databases.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/authors.html</loc>
+  </url>
+  <url>
     <loc>https://ndcn.github.io/omicser/index.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/news/index.html</loc>
   </url>
   <url>
     <loc>https://ndcn.github.io/omicser/reference/compute_de_table.html</loc>
@@ -14,6 +62,9 @@
   </url>
   <url>
     <loc>https://ndcn.github.io/omicser/reference/get_db_meta.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/reference/index.html</loc>
   </url>
   <url>
     <loc>https://ndcn.github.io/omicser/reference/pack_anndata_from_csv.html</loc>
@@ -41,26 +92,5 @@
   </url>
   <url>
     <loc>https://ndcn.github.io/omicser/reference/write_db_meta.html</loc>
-  </url>
-  <url>
-    <loc>https://ndcn.github.io/omicser/articles/00_quickstart.html</loc>
-  </url>
-  <url>
-    <loc>https://ndcn.github.io/omicser/articles/01_installation.html</loc>
-  </url>
-  <url>
-    <loc>https://ndcn.github.io/omicser/articles/02_data_curation.html</loc>
-  </url>
-  <url>
-    <loc>https://ndcn.github.io/omicser/articles/03_configuration.html</loc>
-  </url>
-  <url>
-    <loc>https://ndcn.github.io/omicser/articles/04_sharing.html</loc>
-  </url>
-  <url>
-    <loc>https://ndcn.github.io/omicser/articles/browsing.html</loc>
-  </url>
-  <url>
-    <loc>https://ndcn.github.io/omicser/articles/multiple_databases.html</loc>
   </url>
 </urlset>

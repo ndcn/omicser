@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>0-Overview and Quickstart • omicser</title>
+<title>docker • omicser</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="0-Overview and Quickstart">
+<script src="../pkgdown.js"></script><meta property="og:title" content="docker">
 <meta property="og:description" content="omicser">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -96,40 +96,82 @@
 
       
 
-      </header><script src="00_quickstart_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><script src="docker_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>0-Overview and Quickstart</h1>
+      <h1 data-toc-skip>docker</h1>
             
-            <h4 data-toc-skip class="date">11/26/2021</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/HEAD/vignettes/00_quickstart.Rmd" class="external-link"><code>vignettes/00_quickstart.Rmd</code></a></small>
-      <div class="hidden name"><code>00_quickstart.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/HEAD/vignettes/docker.Rmd" class="external-link"><code>vignettes/docker.Rmd</code></a></small>
+      <div class="hidden name"><code>docker.Rmd</code></div>
 
     </div>
 
     
     
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-<p>If you would like an overview of the features and functionality of the browser, please view the <a href="browsing.html">Browsing vignette</a>.</p>
-<p>The following vignettes are intended to guide curators through the process of creating a web application and formatting data for visualization in the browser. The main vignettes in the series include:</p>
-<ol style="list-style-type: decimal">
-<li>
-<a href="01_installation.html">Installation</a>: install required R packages, dependencies and configuration of the nescessary Python environments</li>
-<li>
-<a href="02_data_curation.html">Data curation</a>: pre-process, filter, and format -omics data</li>
-<li>
-<a href="03_configuration.html">Configuration</a>: connect the database(s) with the application</li>
-<li>
-<a href="04_sharing.html">Launching and sharing</a>: prepare the browser for sharing with collaborators</li>
-</ol>
-<p>An additional vignette on <a href="multiple_databases.html">Adding multiple databases</a> is also available.</p>
-<p>Please view the <a href="https://github.com/ndcn/omicser/tree/main/examples" class="external-link"><code>examples/</code> directory of the GitHub repository</a> for this project to view files and scripts for a variety of use cases.</p>
+<div class="section level1">
+<h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h1>
+<p>This document describes how the docker container was created and how to use it.</p>
+</div>
+<div class="section level1">
+<h1 id="dockerfile">Dockerfile<a class="anchor" aria-label="anchor" href="#dockerfile"></a>
+</h1>
+<p>The <code>Dockerfile</code> was created with <code><a href="https://rdrr.io/pkg/golem/man/dockerfiles.html" class="external-link">golem::add_dockerfile()</a></code>. This generates a <code>Dockerfile</code> with install commands for (almost) all R packages. The generated <code>Dockerfile</code> was used as basis to create the final <code>Dockerfile</code>.</p>
+<p>Packages added manually:</p>
+<ul>
+<li>shinyFiles</li>
+</ul>
+<div class="section level2">
+<h2 id="python-environment">Python environment<a class="anchor" aria-label="anchor" href="#python-environment"></a>
+</h2>
+<p>To create the python environment a small R script was developed (based on installation instruction of <code>omicser</code>). This file is copied into the container and executed during build of the container.</p>
+<p>To make sure the correct python environment is used, an <code>.Renviron</code> file was created which uses an environment from <code>reticulate</code> to force the correct python environment. The <code>.Renviron</code> file is copied and copied to the correct location during build of the container.</p>
+</div>
+<div class="section level2">
+<h2 id="app-configuration">App configuration<a class="anchor" aria-label="anchor" href="#app-configuration"></a>
+</h2>
+<p>The <code>omicser</code> app needs a config file (<code>app_config.yml</code>) to run. For now a config file is already prepared and copied into the container and copied to the correct location. In the <code>app_config.yml</code> you need the database names set correctly for your system. The other parameters you should not need to change!</p>
+</div>
+<div class="section level2">
+<h2 id="file-locations">File locations<a class="anchor" aria-label="anchor" href="#file-locations"></a>
+</h2>
+<p>All the additional files needed to create the docker container or in folder <code>docker_stuff</code>.</p>
+<ul>
+<li>.Renviron</li>
+<li>app_config.yml</li>
+<li>install_py_env.R</li>
+</ul>
+</div>
+</div>
+<div class="section level1">
+<h1 id="databases">Databases<a class="anchor" aria-label="anchor" href="#databases"></a>
+</h1>
+<p>The current setup leaves the database files outside the container. During start up of the container the location of the database files need to be coupled to the database folder inside the container.</p>
+</div>
+<div class="section level1">
+<h1 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
+</h1>
+<div class="section level2">
+<h2 id="build-docker-container">Build docker container<a class="anchor" aria-label="anchor" href="#build-docker-container"></a>
+</h2>
+<p>The location of the <code>Dockerfile</code> needs to be the root of your project folder. Build the container with:</p>
+<pre><code>docker build --tag omicser_container .</code></pre>
+</div>
+<div class="section level2">
+<h2 id="run-the-docker-container">Run the docker container<a class="anchor" aria-label="anchor" href="#run-the-docker-container"></a>
+</h2>
+<p>Run the container as follows:</p>
+<pre><code>docker run -d -p 3939:3939 -v /my_location/of/databases/:/root/DB/ omicser_container</code></pre>
+</div>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 

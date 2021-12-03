@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">omicser</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.9.2021-11-03</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.9.2021-11-03</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -72,6 +68,9 @@
       <a href="../articles/browsing.html">Browsing your data</a>
     </li>
     <li>
+      <a href="../articles/docker.html">docker</a>
+    </li>
+    <li>
       <a href="../articles/multiple_databases.html">Adding multiple datasets</a>
     </li>
   </ul>
@@ -82,7 +81,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/ndcn/omicser/">
+  <a href="https://github.com/ndcn/omicser/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -102,63 +101,61 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>4-Launching and sharing</h1>
             
-            <h4 class="date">10/26/2021</h4>
+            <h4 data-toc-skip class="date">11/26/2021</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/master/vignettes/04_sharing.Rmd"><code>vignettes/04_sharing.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/HEAD/vignettes/04_sharing.Rmd" class="external-link"><code>vignettes/04_sharing.Rmd</code></a></small>
       <div class="hidden name"><code>04_sharing.Rmd</code></div>
 
     </div>
 
     
     
-<div id="launching-the-browser" class="section level2">
-<h2 class="hasAnchor">
-<a href="#launching-the-browser" class="anchor"></a>Launching the browser</h2>
+<div class="section level2">
+<h2 id="launching-the-browser">Launching the browser<a class="anchor" aria-label="anchor" href="#launching-the-browser"></a>
+</h2>
 <p>Once both the data and browser are appropriately formatted and configured, you are ready to browse your data!</p>
-<p>Ensuring your working directory contains the <code>omicser_options.yml</code> file, launch the application by executing the following line of code:</p>
+<p>Ensuring your working directory contains the <code>app_config.yml</code> file, launch the application by executing the following line of code:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/run_app.html">run_app</a></span><span class="op">(</span>options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>launch.browser <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Your application should automatically load in a browser window. Please note that you need to keep RStudio running to work with data in your browser.</p>
+<code class="sourceCode R"><span class="fu">omicser</span><span class="fu">::</span><span class="fu">run_defaults</span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p>Your application should automatically load in a new tab/window of your default browser (tested on Chrome and Firefox). If you prefer, there is also an exported <code><a href="../reference/run_in_browser.html">run_in_browser()</a></code> function which takes the database locations as arguments:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/run_in_browser.html">run_in_browser</a></span><span class="op">(</span>db_root <span class="op">=</span> <span class="st">"/path/to/database/folders"</span>,
+                        database_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>`your db name`<span class="op">=</span><span class="st">"database_folder_name"</span><span class="op">)</span>
+                        <span class="op">)</span></code></pre></div>
+<p>Please note that you need to keep RStudio running to work with data in your browser.</p>
 <blockquote>
 <p>When you are done browsing, you will need to close both the browser window <strong>and</strong> end the process running in RStudio. You can end the process in R by clicking on the red stop sign icon in your Console, or by entering <code>Control C</code> in the Console.</p>
 </blockquote>
 <p>If you would like an overview of the features and functionality of the browser, please view the <a href="browsing.html">Browsing vignette</a>.</p>
 </div>
-<div id="documenting-the-data-and-analysis" class="section level2">
-<h2 class="hasAnchor">
-<a href="#documenting-the-data-and-analysis" class="anchor"></a>Documenting the data and analysis</h2>
+<div class="section level2">
+<h2 id="documenting-the-data-and-analysis">Documenting the data and analysis<a class="anchor" aria-label="anchor" href="#documenting-the-data-and-analysis"></a>
+</h2>
 <p>It is useful, and in many cases necessary, to include information about your data and analysis methods when sharing a visualization tool with your colleagues. This section describes approaches for sharing such information within the browser application.</p>
-<div id="data" class="section level3">
-<h3 class="hasAnchor">
-<a href="#data" class="anchor"></a>Data</h3>
-<p>The first step in <a href="02_data_curation.html">data configuration</a> created <code>db_meta.yml</code>, which documented basic information about the dataset. This metadata is shown in the browser when ingesting data.</p>
-</div>
-<div id="analysis" class="section level3">
-<h3 class="hasAnchor">
-<a href="#analysis" class="anchor"></a>Analysis</h3>
-<p>The <code>Additional info</code> tab in the browser application is available for documenting both analysis methods (pre-processing approaches/assumptions, hypotheses being tested, statistical parameters) as well as information about the project (link to preprint/publication, acknowledgements, etc).</p>
-<p>The content of this tab is rendered from <a href="https://github.com/ndcn/omicser/blob/main/inst/app/www/additional_info.Rmd"><code>additional_info.Rmd</code></a>. If you choose to customize this file, you must organize your browser application files within a copy (clone) of the <a href="https://github.com/ndcn/omicser"><code>omicser</code></a>. This ensures that your modified copy of <code>additional_info.Rmd</code> is read when you launch your browser, instead of the original version from your installed library.</p>
+<div class="section level3">
+<h3 id="database-context">database context<a class="anchor" aria-label="anchor" href="#database-context"></a>
+</h3>
+<p>The box on the right of the <code>Ingest</code> tab in the browser application is available for documenting both analysis methods (pre-processing approaches/assumptions, hypotheses being tested, statistical parameters) as well as information about the project (link to preprint/publication, acknowledgements, etc).</p>
+<p>The content of this tab is rendered from <a href="https://github.com/ndcn/omicser/blob/main/inst/app/www/additional_info.Rmd" class="external-link"><code>additional_info.Rmd</code></a>. If you choose to customize this file, you must organize your browser application files within a copy (clone) of the <a href="https://github.com/ndcn/omicser" class="external-link"><code>omicser</code></a>. This ensures that your modified copy of <code>additional_info.Rmd</code> is read when you launch your browser, instead of the original version from your installed library.</p>
 </div>
 </div>
-<div id="share-your-application" class="section level2">
-<h2 class="hasAnchor">
-<a href="#share-your-application" class="anchor"></a>Share your application</h2>
+<div class="section level2">
+<h2 id="share-your-application">Share your application<a class="anchor" aria-label="anchor" href="#share-your-application"></a>
+</h2>
 <p>Now that you have successfully curated, configured, and launched your application, you may choose to share the tool with your collaborators. There are two main methods for sharing:</p>
 <ul>
-<li>
-<strong>Send a zip file</strong>: Share all database, configuration, and customization files as a zip file. Your collaborators will need to unzip the file, install all necessary software and launch the browser to view the application locally on their own computer.</li>
-<li>
-<strong>Host the application</strong>: Launch the browser on a shared network server that can run R indefinitely. Your collaborators will be able to access the browser via a URL.</li>
+<li><p><strong>Send a zip file</strong>: Share all database, configuration, and customization files as a zip file. Your collaborators will need to unzip the file, install the <code>omicser</code> package (and requirements) and launch the browser to view the application locally on their own computer’s R / RStudio.</p></li>
+<li><p><strong>Host the application</strong>: Launch the browser on a shared network server that can run R indefinitely. Your collaborators will be able to access the browser via a URL.</p></li>
 </ul>
 <blockquote>
 <p>Please be congnizant of possible data privacy and security issues when choosing a method for sharing your application. These issues are specific to your data and research questions.</p>
 </blockquote>
 </div>
-<div id="troubleshooting" class="section level2">
-<h2 class="hasAnchor">
-<a href="#troubleshooting" class="anchor"></a>Troubleshooting</h2>
+<div class="section level2">
+<h2 id="troubleshooting">Troubleshooting<a class="anchor" aria-label="anchor" href="#troubleshooting"></a>
+</h2>
 <ul>
-<li><p><strong>The app didn’t open in my browser! What do I do?</strong> If the app does not load automatically, copy the URL shown into your Console (e.g., <code>http://127.0.0.1:6422</code>) and paste it into your browser of choice.</p></li>
+<li><p><strong>The app didn’t open in my browser! What do I do?</strong> If the app does not load automatically, copy the URL shown into your Console (e.g., <code>http://127.0.0.1:6329</code>) and paste it into your browser of choice. (Chrome recommended.)</p></li>
 <li><p><strong>I closed my browser window! Do I need to relaunch my app?</strong> No, you don’t need to relaunch. Follow the instructions for the question above to view your app in a browser.</p></li>
 </ul>
 </div>
@@ -175,11 +172,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Andy Henrie.</p>
+  <p></p>
+<p>Developed by Andy Henrie.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
@@ -187,6 +186,8 @@
 
   
 
+
+  
 
   </body>
 </html>
