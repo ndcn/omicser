@@ -28,7 +28,7 @@ In addition to the browser package, this project includes documentation about us
 The browser package itself contains the code to create/run the browser,
 as well as a small collection of helper functions to aid in curating and configuring datasets for browsing.
 
-> *Note*:  although the NDCN Omics Browser is not yet officially named, references it as `omicser` or `omxr`.
+> *Note*:  although the NDCN Omics Browser is not yet officially named, references it as `omicser` or `omxr`. We are open to ideas around naming the tool.
 
 There are two types of users for this package:
 
