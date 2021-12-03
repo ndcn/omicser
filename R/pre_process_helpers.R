@@ -2,23 +2,24 @@
 #
 
 
-#' Title
+#' compute_de_table = helper function to create differential expression table
 #'
 #' @param adata the anndata object
-#' @param comp_types what kind of comparisons?  "allVrest" or "{a}V{b}"
+#' @param comp_types what kind of comparisons?  `allVrest` or `a V b`
 #' @param test_types statistical tests - t-test, etc
 #' @param obs_names name of the adata$obs column defining the comparision groups
 #' @param sc scanpy
 #'
-#' @return
+#' @return diff_exp, differential expression table
 #' @export compute_de_table
 #'
 #' @importFrom stringr str_match
+#' @importFrom tidyselect all_of
+#'
 #'
 #' @examples TODO
 compute_de_table <- function(adata,comp_types, test_types, obs_names,sc) {
   # this should update adata in place with the diff_exp data...
-
   diff_exp <- data.frame()
   for (obs_name in obs_names){
     for (test_type in test_types) {
