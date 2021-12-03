@@ -2,14 +2,14 @@
 % Please edit documentation in R/pre_process_helpers.R
 \name{compute_de_table}
 \alias{compute_de_table}
-\title{Title}
+\title{compute_de_table = helper function to create differential expression table}
 \usage{
 compute_de_table(adata, comp_types, test_types, obs_names, sc)
 }
 \arguments{
 \item{adata}{the anndata object}
 
-\item{comp_types}{what kind of comparisons?  "allVrest" or "{a}V{b}"}
+\item{comp_types}{what kind of comparisons?  `allVrest` or `a V b`}
 
 \item{test_types}{statistical tests - t-test, etc}
 
@@ -18,10 +18,10 @@ compute_de_table(adata, comp_types, test_types, obs_names, sc)
 \item{sc}{scanpy}
 }
 \value{
-
+diff_exp, differential expression table
 }
 \description{
-Title
+compute_de_table = helper function to create differential expression table
 }
 \examples{
 TODO
