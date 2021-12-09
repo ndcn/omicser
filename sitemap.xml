@@ -28,7 +28,7 @@
     <loc>https://ndcn.github.io/omicser/articles/03_configuration.html</loc>
   </url>
   <url>
-    <loc>https://ndcn.github.io/omicser/articles/04_sharing.html</loc>
+    <loc>https://ndcn.github.io/omicser/articles/04_launching.html</loc>
   </url>
   <url>
     <loc>https://ndcn.github.io/omicser/articles/browsing.html</loc>
@@ -41,6 +41,9 @@
   </url>
   <url>
     <loc>https://ndcn.github.io/omicser/articles/multiple_databases.html</loc>
+  </url>
+  <url>
+    <loc>https://ndcn.github.io/omicser/articles/sharing.html</loc>
   </url>
   <url>
     <loc>https://ndcn.github.io/omicser/authors.html</loc>

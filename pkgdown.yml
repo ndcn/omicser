@@ -6,11 +6,12 @@ articles:
   01_installation: 01_installation.html
   02_data_curation: 02_data_curation.html
   03_configuration: 03_configuration.html
-  04_sharing: 04_sharing.html
+  04_launching: 04_launching.html
   browsing: browsing.html
   docker: docker.html
   multiple_databases: multiple_databases.html
-last_built: 2021-12-08T20:44Z
+  sharing: sharing.html
+last_built: 2021-12-09T19:42Z
 urls:
   reference: https://ndcn.github.io/omicser/reference
   article: https://ndcn.github.io/omicser/articles
