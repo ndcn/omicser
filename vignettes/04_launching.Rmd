@@ -1,0 +1,53 @@
+---
+title: "4-Launching and browsing"
+date: "12/09/2021"
+output:
+  html_document: 
+    keep_md: yes
+    toc: true
+  md_document:
+    variant: gfm
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Launching the browser
+
+Once both the data and browser are appropriately formatted and configured, 
+you are ready to browse your data!
+
+Ensuring your working directory contains the `app_config.yml` file,
+launch the application by executing the following line of code:
+
+```{r, 4-browse-1, eval=FALSE}
+omicser::run_defaults()
+```
+
+Your application should automatically load in a new tab/window of your default browser (tested on Chrome and Firefox).  If you prefer, there is also an exported `run_in_browser()` function which takes the database locations as arguments:
+
+```{r, 4-browse-2, eval=FALSE}
+omicser::run_in_browser(db_root = "/path/to/database/folders",
+                        database_names = c(`your db name`="database_folder_name")
+                        )
+```
+
+Please note that you need to keep RStudio running to work with data in your browser.
+
+> When you are done browsing,
+> you will need to close both the browser window **and** end the process running in RStudio.
+> You can end the process in R by clicking on the red stop sign icon in your Console,
+> or by entering `Control C` in the Console.
+
+If you would like an overview of the features and functionality of the browser,
+please view the [Browsing vignette](browsing.md).
+
+
+## Troubleshooting
+
+- **The app didn't open in my browser! What do I do?** If the app does not load automatically,
+copy the URL shown into your Console (e.g., `http://127.0.0.1:6329`)
+and paste it into your browser of choice. (Chrome recommended.)
+
+- **I closed my browser window! Do I need to relaunch my app?** No, you don't need to relaunch. Follow the instructions for the question above to view your app in a browser. 

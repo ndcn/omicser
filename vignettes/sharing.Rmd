@@ -1,0 +1,35 @@
+---
+title: "sharing a database"
+date: "12/09/2021"
+output:
+  html_document: 
+    keep_md: yes
+    toc: true
+  md_document:
+    variant: gfm
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Share the database 
+
+Now that you have successfully curated and configured the database
+you may choose to share with your collaborators.  There are several options:
+
+- **Send a zip file**: Share all database, configuration, and customization files as a zip file. Your collaborators will need to unzip the file, install the `omicser` package (and requirements) and launch the browser to view the application locally on their own computer's R / RStudio.
+
+- **Host the application**: Launch the browser on a shared network server that can run R indefinitely. Your collaborators will be able to access the browser via a URL.
+
+
+> Please be congnizant of possible data privacy and security issues when choosing a method for sharing your application. These issues are specific to your data and research questions.
+
+## Troubleshooting
+
+- **The app didn't open in my browser! What do I do?** If the app does not load automatically,
+copy the URL shown into your Console (e.g., `http://127.0.0.1:6329`)
+and paste it into your browser of choice. (Chrome recommended.)
+
+- **I closed my browser window! Do I need to relaunch my app?** No, you don't need to relaunch. Follow the instructions for the question above to view your app in a browser. 
