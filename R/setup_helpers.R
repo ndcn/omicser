@@ -72,7 +72,7 @@ get_config <- function(in_path = NULL) {
       config_list <- list(
         database_names=list(UNDEFINED="UNDEFINED"),
         db_root_path = "UNDEFINED",
-        install = "hack"
+        install_type = "hack"
         )
     } else {
       config_list <- read.config( file = CONFIG_FILE )
