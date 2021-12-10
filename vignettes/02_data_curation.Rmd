@@ -218,6 +218,21 @@ but are not required for further app development.
 Now that the data are formatted and organized appropriately,
 we'll continue to the next step and [configure the browser](03_configuration.md).
 
+## 6. Documenting the data and analysis
+
+It is useful, and in many cases necessary, to include information about your data and analysis methods when sharing a visualization tool with your colleagues.
+This section describes approaches for sharing such information within the browser application.
+
+### database context
+
+The box on the right of the `Ingest` tab in the browser application is available for documenting both analysis methods (pre-processing approaches/assumptions, hypotheses being tested, statistical parameters) as well as information about the project (link to preprint/publication, acknowledgements, etc).
+
+The content of this tab is rendered from [`additional_info.Rmd`](https://github.com/ndcn/omicser/blob/main/inst/app/www/additional_info.Rmd).
+If you choose to customize this file,
+you must organize your browser application files within a copy (clone) of the [`omicser`](https://github.com/ndcn/omicser).
+This ensures that your modified copy of `additional_info.Rmd` is read when you launch your browser,
+instead of the original version from your installed library. 
+
 ## Troubleshooting
 
 ### `scanpy` in R 

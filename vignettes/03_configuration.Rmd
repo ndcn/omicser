@@ -19,8 +19,9 @@ In this section, we'll create two sets of configuration instructions:
 - `app_config.yml` - which identifies the path where the database(s) are located 
 
 
-We'll continue to refer to the [PBMC3k example script](https://github.com/ndcn/omicser/blob/main/examples/pbmc3k_example.R)
+We'll continue to refer to the [PBMC3k example script](https://github.com/ndcn/omicser/blob/main/examples/pbmc3k_curate_and_config.R)
 as our example.
+
 
 ## Database configuration
 

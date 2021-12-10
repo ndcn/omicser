@@ -178,7 +178,7 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
               class   = 'row-border order-column stripe hover display',
               rownames = TRUE, # need to add +1 to column indexes
               extensions = "Buttons",
-              selection = 'single',
+              selection = list(mode = 'single', selected = NULL, target = 'row', selectable = NULL), #'single',
               fillContainer = TRUE,
               options = list(
                 scrollX = TRUE,
@@ -193,6 +193,8 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
                     render = render_num_js)
                 ),
                 pageLength = 50,
+                scrollY = "800px",
+                # paging = FALSE,
                 lengthMenu = c(25, 50, 100,200,500),
                 # ordering = TRUE,
                 # order = list(c(order_col, 'desc')),

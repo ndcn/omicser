@@ -128,4 +128,4 @@ or using the following code:
 install.packages("vroom")
 ```
 
-You may need to reinstall and/or reload other packages as well (if they are dependent on the package you manually installed).
+You may need to re-install and/or reload other packages as well (if they are dependent on the package you manually installed).

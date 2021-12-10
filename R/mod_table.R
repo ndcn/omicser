@@ -80,6 +80,7 @@ mod_table_server <- function(id,dt_in) {
                       targets = select_num_target,
                       render = render_num_js)
                   ),
+                scrollY = "800px",
                 pageLength = 25,
                 lengthMenu = c(25, 50, 100,200,500),
                 dom = 'Bfrtip',
