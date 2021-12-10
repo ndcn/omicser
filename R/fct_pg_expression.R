@@ -246,11 +246,12 @@ make_cx_heatmap = function(in_mat,
                                   # border = border,
                                   name = units_label,
                                   column_title = samp_title,
-                                  row_title = feats_title) + r_annots
-    # ,
-    #                               raster_quality = 1,
-    #                               #show_parent_dend_line = TRUE,
-    #                               use_raster = FALSE)
+                                  row_title = feats_title,
+                                  raster_quality = 2,
+                                  #show_parent_dend_line = TRUE,
+                                  use_raster = FALSE
+                                  ) + r_annots
+
     # # ,
     # #                               raster_device = "png")
 
