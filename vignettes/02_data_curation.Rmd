@@ -1,6 +1,6 @@
 ---
 title: "2-Data Curation"
-date: "11/26/2021"
+date: "12/13/2021"
 output:
   html_document: 
     keep_md: yes
@@ -28,7 +28,6 @@ The process of curating your data generally includes the following steps:
 2. **Post-processing** - create additional columns and fields of interest. E.g. dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.
 3. **Differential expression tables** - compute and/or format existing tables of the different expression levels relative to experimental conditions
 4. **Write database** - write the data and configuration files to a named directory which we will define as a _database_.  
-
 5. **database context documentation** - define the context and for the dataset. This involves editing/creating the R-markdown file which will render in the browser app ( `additional_info.Rmd`)
 
 
@@ -74,16 +73,15 @@ The `AnnData` format includes three types of data:
 
 More information on this format is available on the [AnnData for R website](https://cran.r-project.org/web/packages/anndata/readme/README.html).
 
-![](../inst/anndata_for_r.png)
-
+![](inst/anndata_for_r.png)
+![](https://raw.githubusercontent.com/dynverse/anndata/master/man/readme_files/anndata_for_r.png)
 ### Ingesting raw data
 
 For our example, we'll read the PBMC3k data files using the `read_10x_mtx()` function
 from Python's `scanpy` package,
 then writing the data to file in `.h5ad` format.
 We'll access `scanpy` using the `reticulate` R package.
-If you have difficulty accessing `scanpy` in this section,
-please see the [Troubleshooting section of 1-Installation](04_configuration.md#troubleshooting).
+If you have difficulty accessing `scanpy` in this section,please see the [troubleshooting section below](#troubleshooting).
 
 Please see the other [example curation scripts](https://github.com/ndcn/omicser/tree/main/examples)
 to understand how other data can be processed at this step.
@@ -133,7 +131,7 @@ such as dimension reduction and clustering.
 
 The example below demonstrates a semi-automatic procedure to infering clusters in the data using the `scanpy` python library for processing `AnnData` data.
 For more information on using `scanpy` in R,
-please see the [troubleshooting section](#troubleshooting).
+please see the [troubleshooting section below](#troubleshooting).
 
 
 

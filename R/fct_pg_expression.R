@@ -249,7 +249,8 @@ make_cx_heatmap = function(in_mat,
                                   row_title = feats_title,
                                   raster_quality = 2,
                                   #show_parent_dend_line = TRUE,
-                                  use_raster = FALSE
+                                  use_raster = TRUE,
+                                  raster_by_magick = TRUE
                                   ) + r_annots
 
     # # ,

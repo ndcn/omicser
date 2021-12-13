@@ -1,6 +1,6 @@
 ---
 title: "1-Installation"
-date: "11/26/2021"
+date: "12/13/2021"
 output:
   html_document: 
     toc: yes
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Creating and running your own browser requires both Python and R.
 We recommend using R to install Python and setup your environment.
 
-> If you prefer to work on the command line, please see the troubleshooting section [Command line installation](#command-line-installation).
+> If you prefer to work on the command line, please see the troubleshooting section [below](#troubleshooting).
 
 First ensure you have [R](https://www.r-project.org/)
 and [RStudio](https://www.rstudio.com/products/rstudio/download/) installed.
@@ -65,10 +65,8 @@ reticulate::use_condaenv(condaenv = OMICSER_PYTHON,
 
 ## Installing `omicser`
 
-Now that we've set up our environment,
-we can install the package from which we'll build the browser application.
-We want to receive the most up-to-date version of the package possible,
-so we'll install the current code from GitHub using the `devtools` package:
+Now that we've set up our environment, we can install the package from which we'll build the browser application.
+using the `devtools` package:
 
 ```{r, RM-install-1, eval=FALSE}
 devtools::install_github("ndcn/omicser")
@@ -84,7 +82,22 @@ we recommend you do so.
 If you have successfully complete all steps in this section,
 you are now ready for [data curation](02_data_curation.md). 
 
+### _dev_ Installation
+
+If you also intend to develop the code to contribute features to the opensource project or just to extend the functionality for you use, you should download the repo code and use the `{golem}` framework tools to help load the code locally.  
+For instance _after_ cloning the repo, make sure you are in the repo directory (i.e. `omicser/`) and run:
+```{r, RM-dev-install-1, eval=FALSE}
+library("golem")
+OMICSER_RUN_DIR <- getwd()
+golem::document_and_reload(pkg = OMICSER_RUN_DIR)
+```
+which will load the omicser package into your R-session exposing all of the `omicser` functions.
+
 ## Troubleshooting
+
+### command line installation
+
+WIP.  [conda] (https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
 
 
 ### `reticulate` and `conda`
