@@ -104,7 +104,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>3-Configuration</h1>
             
-            <h4 data-toc-skip class="date">11/26/2021</h4>
+            <h4 data-toc-skip class="date">12/13/2021</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/HEAD/vignettes/03_configuration.Rmd" class="external-link"><code>vignettes/03_configuration.Rmd</code></a></small>
       <div class="hidden name"><code>03_configuration.Rmd</code></div>
@@ -120,47 +120,42 @@
 </h2>
 <p>Creating the configuration file for a database provides the basic instructions to the browser for how data will be represented to and manipulated by the viewers of the application while browsing. This involves defining the experimental factors as well as visualization parameters.</p>
 <p>The example below matches the PBMC3k. Please see the <a href="https://github.com/ndcn/omicser/tree/main/examples" class="external-link"><code>examples/</code></a> for additional examples (e.g. proteomics).</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Step 10:  configure browser ----</span>
-
-<span class="va">omic_type</span> <span class="op">&lt;-</span> <span class="st">"transcript"</span> <span class="co">#c("transcript","prote","metabol","lipid","other")</span>
-<span class="va">aggregate_by_default</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="kw">if</span> <span class="op">(</span><span class="va">omic_type</span><span class="op">==</span><span class="st">"transcript"</span><span class="op">)</span> <span class="cn">TRUE</span> <span class="kw">else</span> <span class="cn">FALSE</span> <span class="op">)</span> <span class="co">#e.g.  single cell</span>
-<span class="co"># choose top 40 proteins by variance across dataset as our "targets"</span>
-<span class="va">target_features</span> <span class="op">&lt;-</span> <span class="va">adata</span><span class="op">$</span><span class="va">var_names</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">adata</span><span class="op">$</span><span class="va">var</span><span class="op">$</span><span class="va">var_rank</span> <span class="op">&lt;=</span> <span class="fl">40</span><span class="op">)</span><span class="op">]</span>
-<span class="co">#if we care we need to explicitly state. defaults will be the order...</span>
-<span class="va">config_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
-  <span class="co"># meta-tablel grouping "factors"</span>
-  group_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"leiden"</span><span class="op">)</span>,
-  group_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decile"</span>,<span class="st">"highly_variable"</span><span class="op">)</span>,
-
-  <span class="co"># LAYERS</span>
-  <span class="co"># each layer needs a label/explanation</span>
-  layer_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"X"</span>,<span class="st">"raw"</span><span class="op">)</span>,
-  layer_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"norm-count"</span>,<span class="st">"counts"</span> <span class="op">)</span>,
-
-  <span class="co"># ANNOTATIONS / TARGETS</span>
-  <span class="co"># what adata$obs do we want to make default values for...</span>
-  <span class="co"># # should just pack according to UI?</span>
-  default_obs <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Condition"</span>,<span class="st">"leiden"</span><span class="op">)</span>, <span class="co">#subset &amp; ordering</span>
-
-  obs_annots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="st">"leiden"</span>,<span class="st">"n_genes"</span>,<span class="st">"n_genes_by_counts"</span>,
-                  <span class="st">"total_counts"</span>,<span class="st">"total_counts_mt"</span>,<span class="st">"pct_counts_mt"</span><span class="op">)</span>,
-
-  default_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decile"</span><span class="op">)</span>, <span class="co">#just use them in order as defined</span>
-  var_annots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>
-    <span class="st">"n_cells"</span>,
-    <span class="st">"mt"</span>,
-    <span class="st">"n_cells_by_counts"</span>,
-    <span class="st">"mean_counts"</span>,
-    <span class="st">"pct_dropout_by_counts"</span>,
-    <span class="st">"total_counts"</span>,
-    <span class="st">"highly_variable"</span>,
-    <span class="st">"dispersions_norm"</span>,
-    <span class="st">"decile"</span><span class="op">)</span>,
-
-
-  target_features <span class="op">=</span> <span class="va">target_features</span>,
-  feature_deets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="st">"feature_name"</span>,
+<p>We need to specify the <code>omic_type</code>, <code>target_features</code>, and the top-level grouping factors for the features (<code>group_var</code>) and samples (<code>group_obs</code>). These are columns from the meta tables.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># Step 10:  configure browser ----</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>omic_type &lt;-<span class="st"> "transcript"</span> <span class="co">#c("transcript","prote","metabol","lipid","other")</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>aggregate_by_default &lt;-<span class="st"> </span>(<span class="cf">if</span> (omic_type<span class="op">==</span><span class="st">"transcript"</span>) <span class="ot">TRUE</span> <span class="cf">else</span> <span class="ot">FALSE</span> ) <span class="co">#e.g.  single cell</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co"># choose top 40 proteins by variance across dataset as our "targets"</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>target_features &lt;-<span class="st"> </span>adata<span class="op">$</span>var_names[<span class="kw">which</span>(adata<span class="op">$</span>var<span class="op">$</span>var_rank <span class="op">&lt;=</span><span class="st"> </span><span class="dv">40</span>)]</span>
+<span id="cb1-6"><a href="#cb1-6"></a></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="co"># meta-tablel grouping "factors"</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>group_obs =<span class="st"> </span><span class="kw">c</span>(<span class="st">"leiden"</span>),</span>
+<span id="cb1-9"><a href="#cb1-9"></a>group_var =<span class="st"> </span><span class="kw">c</span>(<span class="st">"decile"</span>,<span class="st">"highly_variable"</span>),</span></code></pre></div>
+<p>Next we’ll specify the data-matrix layers <em>values</em> we have – typically <code>X</code> and <code>raw</code> which are the defaults in the <code>AnnData</code> object – and also the <em>names</em> which will be used for labeling. Default meta-columns as well as a list of annotating columns for giving context to the heatmap visualization.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>  <span class="co"># LAYERS</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>  <span class="co"># each layer needs a label/explanation</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>  layer_values &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"X"</span>,<span class="st">"raw"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4"></a>  layer_names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"norm-count"</span>,<span class="st">"counts"</span> )</span>
+<span id="cb2-5"><a href="#cb2-5"></a>  </span>
+<span id="cb2-6"><a href="#cb2-6"></a>  <span class="co"># ANNOTATIONS / TARGETS</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>  default_obs &lt;-<span class="st">  </span><span class="kw">c</span>(<span class="st">"Condition"</span>,<span class="st">"leiden"</span>) <span class="co">#subset &amp; ordering</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>  default_var &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"decile"</span>), <span class="co">#just use them in order as defined</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a></span>
+<span id="cb2-10"><a href="#cb2-10"></a>  obs_annots &lt;-<span class="st"> </span><span class="kw">c</span>( <span class="st">"leiden"</span>,<span class="st">"n_genes"</span>,<span class="st">"n_genes_by_counts"</span>,</span>
+<span id="cb2-11"><a href="#cb2-11"></a>                  <span class="st">"total_counts"</span>,<span class="st">"total_counts_mt"</span>,<span class="st">"pct_counts_mt"</span>)</span>
+<span id="cb2-12"><a href="#cb2-12"></a></span>
+<span id="cb2-13"><a href="#cb2-13"></a>  var_annots &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
+<span id="cb2-14"><a href="#cb2-14"></a>    <span class="st">"n_cells"</span>,</span>
+<span id="cb2-15"><a href="#cb2-15"></a>    <span class="st">"mt"</span>,</span>
+<span id="cb2-16"><a href="#cb2-16"></a>    <span class="st">"n_cells_by_counts"</span>,</span>
+<span id="cb2-17"><a href="#cb2-17"></a>    <span class="st">"mean_counts"</span>,</span>
+<span id="cb2-18"><a href="#cb2-18"></a>    <span class="st">"pct_dropout_by_counts"</span>,</span>
+<span id="cb2-19"><a href="#cb2-19"></a>    <span class="st">"total_counts"</span>,</span>
+<span id="cb2-20"><a href="#cb2-20"></a>    <span class="st">"highly_variable"</span>,</span>
+<span id="cb2-21"><a href="#cb2-21"></a>    <span class="st">"dispersions_norm"</span>,</span>
+<span id="cb2-22"><a href="#cb2-22"></a>    <span class="st">"decile"</span>)</span></code></pre></div>
+<p>The browser will also render a list of meta-info as you browse individual omic-features in the volcano plot and table views of the <em>playground</em>. These feature details are set as <code>feature_details</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R">  <span class="va">feature_details</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="st">"feature_name"</span>,
                      <span class="st">"gene_ids"</span>,
                      <span class="st">"n_cells"</span>,
                      <span class="st">"mt"</span>,
@@ -175,54 +170,89 @@
                      <span class="st">"mean"</span>,
                      <span class="st">"std"</span>,
                      <span class="st">"var_rank"</span>,
-                     <span class="st">"decile"</span> <span class="op">)</span>,
-
-  filter_feature <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dispersions_norm"</span><span class="op">)</span>, <span class="co">#if null defaults to "fano_factor"</span>
-
-  xr_groupby <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decile"</span>,<span class="st">"highly_variable"</span><span class="op">)</span>,
-  var_subset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decile"</span>,<span class="st">"highly_variable"</span><span class="op">)</span>,
-
-  <span class="co"># differential expression</span>
-  diffs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span> diff_exp_comps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">diff_exp</span><span class="op">$</span><span class="va">versus</span><span class="op">)</span><span class="op">)</span>,
+                     <span class="st">"decile"</span> <span class="op">)</span></code></pre></div>
+<p>The browser automatically filters for “highly variable” features to make the responsivity of large datasets more performant. By default this is calculated according to a “mean variance ratio” (<a href="https://en.wikipedia.org/wiki/Index_of_dispersion" class="external-link">MVR a.k.a. index of dispersion</a>) of expression values, but can be set to another factor from the meta-table via the <code>filter_feature</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R">  <span class="va">filter_feature</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dispersions_norm"</span><span class="op">)</span> <span class="co">#if null defaults to "fano_factor"</span></code></pre></div>
+<p>The following lines programmically collect the fields from the differential expression table calculated during configuration [TODO: LINK] as well as the dimension reduction fields in the AnnData object (currently depricated.)</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R">  <span class="co"># differential expression</span>
+  <span class="va">diffs</span><span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span> diff_exp_comps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">diff_exp</span><span class="op">$</span><span class="va">versus</span><span class="op">)</span><span class="op">)</span>,
                 diff_exp_obs_name <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">diff_exp</span><span class="op">$</span><span class="va">obs_name</span><span class="op">)</span><span class="op">)</span>,
                 diff_exp_tests <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">diff_exp</span><span class="op">$</span><span class="va">test_type</span><span class="op">)</span><span class="op">)</span>
-  <span class="op">)</span>,
+  <span class="op">)</span>
 
   <span class="co"># Dimension reduction (depricated)</span>
-  dimreds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>obsm <span class="op">=</span> <span class="va">adata</span><span class="op">$</span><span class="fu">obsm_keys</span><span class="op">(</span><span class="op">)</span>,
-                 varm <span class="op">=</span> <span class="va">adata</span><span class="op">$</span><span class="fu">varm_keys</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,
+  <span class="va">dimreds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>obsm <span class="op">=</span> <span class="va">adata</span><span class="op">$</span><span class="fu">obsm_keys</span><span class="op">(</span><span class="op">)</span>,
+                 varm <span class="op">=</span> <span class="va">adata</span><span class="op">$</span><span class="fu">varm_keys</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p>Finally, we want to collect some top-level “meta-meta” info about the dataset and the context under which the data was collected and curated.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R">  <span class="va">meta_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+              annotation_database <span class="op">=</span>  <span class="cn">NA</span>,
+              publication <span class="op">=</span> <span class="st">"TBD"</span>,
+              method <span class="op">=</span> <span class="st">"bulk"</span>, <span class="co"># c("single-cell","bulk","other")</span>
+              omic_type <span class="op">=</span> <span class="va">omic_type</span>, <span class="co">#c("transcript","prote","metabol","lipid","other")</span>
+              aggregate_by_default <span class="op">=</span> <span class="va">aggregate_by_default</span>, <span class="co">#e.g.  single cell</span>
+              organism <span class="op">=</span> <span class="st">"human"</span>,
+              lab <span class="op">=</span> <span class="st">""</span>,
+              source <span class="op">=</span> <span class="st">"peripheral blood mononuclear cells (PBMCs)"</span>,
+              annotation_database <span class="op">=</span>  <span class="st">""</span>,
+              title <span class="op">=</span> <span class="st">"pbmc3k"</span>,
+              omic_type <span class="op">=</span> <span class="va">omic_type</span>,
+              measurment <span class="op">=</span> <span class="st">"normalized counts"</span>,
+              pub <span class="op">=</span> <span class="st">"10X Genomics"</span>,
+              url <span class="op">=</span> <span class="st">"https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k"</span>,
+              date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"%a %b %d %X %Y"</span><span class="op">)</span>
+          <span class="op">)</span></code></pre></div>
+<p>All of these values need to be packed into a list of values which will be loaded by the browser app as the configured variables. The script calls this the <code>config_list</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co">#if we care we need to explicitly state. defaults will be the order...</span>
+<span class="va">config_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+  <span class="co"># meta-tablel grouping "factors"</span>
+  group_obs <span class="op">=</span> <span class="va">group_obs</span>,
+  group_var <span class="op">=</span> <span class="va">group_var</span>,
+  
+  <span class="co"># LAYERS</span>
+  <span class="co"># each layer needs a label/explanation</span>
+  layer_values <span class="op">=</span> <span class="va">layer_values</span>,
+  layer_names <span class="op">=</span> <span class="va">layer_names</span>,
+  
+  <span class="co"># ANNOTATIONS / TARGETS</span>
+  default_obs <span class="op">=</span>  <span class="va">default_obs</span>, 
+  obs_annots <span class="op">=</span> <span class="va">obs_annots</span>,
+  default_var <span class="op">=</span> <span class="va">default_var</span>,
+  var_annots <span class="op">=</span> <span class="va">var_annots</span>,
+  target_features <span class="op">=</span> <span class="va">target_features</span>,
+  
+  feature_details <span class="op">=</span> <span class="va">feature_details</span>,
+  filter_feature <span class="op">=</span> <span class="va">filter_feature</span>,
 
-
+  diffs <span class="op">=</span> <span class="va">diffs</span>, <span class="co"># differential expression</span>
+  dimreds <span class="op">=</span> <span class="va">dimreds</span>,   <span class="co"># Dimension reduction (depricated)</span>
+  
   <span class="co">#meta info</span>
-  annotation_database <span class="op">=</span>  <span class="cn">NA</span>,
-  publication <span class="op">=</span> <span class="st">"TBD"</span>,
-  method <span class="op">=</span> <span class="st">"bulk"</span>, <span class="co"># c("single-cell","bulk","other")</span>
-  omic_type <span class="op">=</span> <span class="va">omic_type</span>, <span class="co">#c("transcript","prote","metabol","lipid","other")</span>
-  aggregate_by_default <span class="op">=</span> <span class="va">aggregate_by_default</span>, <span class="co">#e.g.  single cell</span>
-
-  organism <span class="op">=</span> <span class="st">"human"</span>,
-  lab <span class="op">=</span> <span class="st">""</span>,
-  source <span class="op">=</span> <span class="st">"peripheral blood mononuclear cells (PBMCs)"</span>,
-  annotation_database <span class="op">=</span>  <span class="st">""</span>,
-  title <span class="op">=</span> <span class="st">"pbmc3k"</span>,
-  omic_type <span class="op">=</span> <span class="va">omic_type</span>,
-  measurment <span class="op">=</span> <span class="st">"normalized counts"</span>,
-  pub <span class="op">=</span> <span class="st">"10X Genomics"</span>,
-  url <span class="op">=</span> <span class="st">"https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k"</span>,
-  date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"%a %b %d %X %Y"</span><span class="op">)</span>
-<span class="op">)</span>
-
-<span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/write_db_conf.html">write_db_conf</a></span><span class="op">(</span><span class="va">config_list</span>,<span class="va">DB_NAME</span>, db_root <span class="op">=</span> <span class="va">DB_ROOT_PATH</span><span class="op">)</span></code></pre></div>
+  meta_info <span class="op">=</span> <span class="va">meta_info</span>
+<span class="op">)</span></code></pre></div>
+<p>Finally, this list of variables is written to a yaml file (<code>db_config.yml</code>) in our database directory via one of our helper function, <code>write_db_conf</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/write_db_conf.html">write_db_conf</a></span><span class="op">(</span><span class="va">config_list</span>,<span class="va">DB_NAME</span>, db_root <span class="op">=</span> <span class="va">DB_ROOT_PATH</span><span class="op">)</span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="configureation-updates">Configureation updates<a class="anchor" aria-label="anchor" href="#configureation-updates"></a>
+</h2>
+<blockquote>
+<p>The “Ingest” tab of the browser now allows the configurations to be updated dynamically.</p>
+</blockquote>
 </div>
 <div class="section level2">
 <h2 id="browser-configuration">Browser configuration<a class="anchor" aria-label="anchor" href="#browser-configuration"></a>
 </h2>
-<p>Top-level configuration lets the browser know where the database can be found. The following code</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>The last step for configuration is to let the browser know where the database can be found. This can also be specified as arguments to the Shiny app when spawning the app, but is most conveniently via the following code:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># define omicser options</span>
 <span class="va">omicser_options</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>database_names <span class="op">=</span> <span class="va">DB_NAME</span>,
                         db_root_path <span class="op">=</span> <span class="va">DB_ROOT_PATH</span>,
-                        conda_environment <span class="op">=</span> <span class="va">CONDA_ENV</span><span class="op">)</span>
+                        install <span class="op">=</span> <span class="st">"pre-configured"</span><span class="op">)</span>
 
 <span class="co"># write omicser_options.yml to run directory</span>
 <span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/write_config.html">write_config</a></span><span class="op">(</span><span class="va">omicser_options</span>, in_path <span class="op">=</span> <span class="va">OMICSER_RUN_DIR</span><span class="op">)</span></code></pre></div>

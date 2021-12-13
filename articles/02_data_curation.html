@@ -254,12 +254,12 @@
 <code>sc</code> - the scanpy data object we imported with <code>reticulate</code>
 </li>
 </ul>
-<p>Here’s an example which computes a differential expression with a <code>wilcoxon</code> test of significance for each <em>disease</em> with respect to the rest of the distease states, AND for each <em>cell_type</em> with-respect-to the “rest of” the <em>cell_type</em> s.</p>
+<p>Here’s an example which computes a differential expression with a <code>wilcoxon</code> test of significance for each of our inferred groups (<code>leiden</code>) with respect to the rest of the groups. (These groups were inferred programmically via dimension reductions and a “leiden” clustering procedure via <code>Scanpy</code> tools.cf line 207 of <code>pbmc3k_curate_and_config.R</code>)</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">sc</span> <span class="op">&lt;-</span> <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/import.html" class="external-link">import</a></span><span class="op">(</span><span class="st">"scanpy"</span><span class="op">)</span>
 <span class="va">test_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'wilcoxon'</span><span class="op">)</span>
-<span class="va">comp_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'allVrest'</span><span class="op">)</span>
-<span class="va">obs_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'disease'</span>,<span class="st">'cell_type'</span><span class="op">)</span>
+<span class="va">comp_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grpVrest"</span><span class="op">)</span>
+<span class="va">obs_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'leiden'</span><span class="op">)</span>
 <span class="va">diff_exp</span> <span class="op">&lt;-</span> <span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/compute_de_table.html">compute_de_table</a></span><span class="op">(</span><span class="va">adata</span>,<span class="va">comp_types</span>, <span class="va">test_types</span>, <span class="va">obs_names</span>,<span class="va">sc</span><span class="op">)</span></code></pre></div>
 <p>The DE table output from this function should be saved to the database folder as <code>db_de_table.rds</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
