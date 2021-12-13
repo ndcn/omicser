@@ -1,6 +1,6 @@
 ---
 title: "4-Launching and browsing"
-date: "12/09/2021"
+date: "12/13/2021"
 output:
   html_document: 
     keep_md: yes
@@ -45,6 +45,9 @@ please view the [Browsing vignette](browsing.md).
 
 
 ## Troubleshooting
+
+
+- **Do I have to use RStudio** No! You can run the functions from any R session. 
 
 - **The app didn't open in my browser! What do I do?** If the app does not load automatically,
 copy the URL shown into your Console (e.g., `http://127.0.0.1:6329`)

@@ -1,4 +1,5 @@
 database_names:
-    pbmc3k: pbmc3k
-db_root_path: /Volumes/MAC OS/Users/ahenrie/omicser_databases
+    mypbmc: pbmc3k
+    Domenico DIA: domenico_stem_cell
+db_root_path: /Users/ergonyc/Projects/NDCN_dev/testing/omxr/databases
 install: configured
