@@ -397,7 +397,7 @@ config_list <- list(
 
 
   target_features = target_features,
-  feature_deets = c("Genes",
+  feature_details = c("Genes",
                 "ProteinDescriptions",
                 "ProteinNames",
                 "GO.Cellular.Component",

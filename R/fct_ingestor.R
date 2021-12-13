@@ -260,19 +260,29 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
     omxr_def$obs_annots <- conf_list$obs_annots
     omxr_def$var_annots <- conf_list$var_annots
     omxr_def$target_features <- conf_list$target_features # first 20
-    omxr_def$feature_deets <- conf_list$feature_deets
+    omxr_def$feature_details <- conf_list$feature_details
     omxr_def$filter_feature  <- conf_list$filter_feature
 
-    #meta info
-    omxr_def$annotation_database <- conf_list$annotation_database
-    omxr_def$publication <- conf_list$publication
-    omxr_def$method <- conf_list$method
-    omxr_def$omic_type <- conf_list$omic_type
-    omxr_def$aggregate_by_default <- conf_list$aggregate_by_default
-    omxr_def$organism <- conf_list$organism
-    omxr_def$lab <- conf_list$lab
-    omxr_def$title <- conf_list$title
-    omxr_def$date<-  format(Sys.time(), "%a %b %d %X %Y")
+    # #meta info
+    # meta_info
+    #   annotation_database
+    #   publication
+    #   method
+    #   organism
+    #   lab
+    #   source
+    #   title
+    #   measurment
+    #   pub
+    #   url
+    #   date
+
+    omxr_def$omic_type <- conf_list$meta_info$omic_type
+    omxr_def$meta_info <- conf_list$meta_info
+    # depricate these?
+    omxr_def$aggregate_by_default <- conf_list$meta_info$aggregate_by_default
+    omxr_def$organism <- conf_list$meta_info$organism
+    omxr_def$annotation_database <- conf_list$meta_info$annotation_database
 
     # WRITE FILES  ----------------------------------------
 

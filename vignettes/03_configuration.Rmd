@@ -1,6 +1,6 @@
 ---
 title: "3-Configuration"
-date: "11/26/2021"
+date: "12/13/2021"
 output:
   html_document: 
     keep_md: yes
@@ -25,44 +25,42 @@ as our example.
 
 ## Database configuration
 
-Creating the configuration file for a database provides the basic instructions 
-to the browser for how data will be represented to and manipulated 
-by the viewers of the application while browsing.
-This involves defining the experimental factors as well as visualization parameters.
+Creating the configuration file for a database provides the basic instructions to the browser for how data will be represented to and manipulated by the viewers of the application while browsing. This involves defining the experimental factors as well as visualization parameters.
 
 The example below matches the PBMC3k.
 Please see the [`examples/`](https://github.com/ndcn/omicser/tree/main/examples) for additional examples (e.g. proteomics).
 
+
+We need to specify the `omic_type`, `target_features`, and the top-level grouping factors for the features (`group_var`) and samples (`group_obs`). These are columns from the meta tables.  
 ``` {r, 4-config-1, eval=FALSE}
-
-
 # Step 10:  configure browser ----
-
 omic_type <- "transcript" #c("transcript","prote","metabol","lipid","other")
 aggregate_by_default <- (if (omic_type=="transcript") TRUE else FALSE ) #e.g.  single cell
 # choose top 40 proteins by variance across dataset as our "targets"
 target_features <- adata$var_names[which(adata$var$var_rank <= 40)]
-#if we care we need to explicitly state. defaults will be the order...
-config_list <- list(
-  # meta-tablel grouping "factors"
-  group_obs = c("leiden"),
-  group_var = c("decile","highly_variable"),
 
+# meta-tablel grouping "factors"
+group_obs = c("leiden"),
+group_var = c("decile","highly_variable"),
+
+```
+
+
+Next we'll specify the data-matrix layers _values_ we have -- typically `X` and `raw` which are the defaults in the `AnnData` object -- and also the _names_ which will be used for labeling.  Default meta-columns as well as a list of annotating columns for giving context to the heatmap visualization. 
+``` {r, 4-config-3, eval=FALSE}
   # LAYERS
   # each layer needs a label/explanation
-  layer_values = c("X","raw"),
-  layer_names = c("norm-count","counts" ),
-
+  layer_values <- c("X","raw")
+  layer_names <- c("norm-count","counts" )
+  
   # ANNOTATIONS / TARGETS
-  # what adata$obs do we want to make default values for...
-  # # should just pack according to UI?
-  default_obs =  c("Condition","leiden"), #subset & ordering
+  default_obs <-  c("Condition","leiden") #subset & ordering
+  default_var <- c("decile"), #just use them in order as defined
 
-  obs_annots = c( "leiden","n_genes","n_genes_by_counts",
-                  "total_counts","total_counts_mt","pct_counts_mt"),
+  obs_annots <- c( "leiden","n_genes","n_genes_by_counts",
+                  "total_counts","total_counts_mt","pct_counts_mt")
 
-  default_var = c("decile"), #just use them in order as defined
-  var_annots = c(
+  var_annots <- c(
     "n_cells",
     "mt",
     "n_cells_by_counts",
@@ -71,11 +69,15 @@ config_list <- list(
     "total_counts",
     "highly_variable",
     "dispersions_norm",
-    "decile"),
+    "decile")
+```
 
 
-  target_features = target_features,
-  feature_deets = c( "feature_name",
+The browser will also render a list of meta-info as you browse individual omic-features in the volcano plot and table views of the _playground_.  These feature details are set as `feature_details`.
+
+``` {r, 4-config-4, eval=FALSE}
+
+  feature_details <- c( "feature_name",
                      "gene_ids",
                      "n_cells",
                      "mt",
@@ -90,63 +92,114 @@ config_list <- list(
                      "mean",
                      "std",
                      "var_rank",
-                     "decile" ),
-
-  filter_feature = c("dispersions_norm"), #if null defaults to "fano_factor"
-
-  xr_groupby = c("decile","highly_variable"),
-  var_subset = c("decile","highly_variable"),
-
-  # differential expression
-  diffs = list( diff_exp_comps = levels(factor(diff_exp$versus)),
-                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
-                diff_exp_tests =  levels(factor(diff_exp$test_type))
-  ),
-
-  # Dimension reduction (depricated)
-  dimreds = list(obsm = adata$obsm_keys(),
-                 varm = adata$varm_keys()),
+                     "decile" )
+```
 
 
-  #meta info
-  annotation_database =  NA,
-  publication = "TBD",
-  method = "bulk", # c("single-cell","bulk","other")
-  omic_type = omic_type, #c("transcript","prote","metabol","lipid","other")
-  aggregate_by_default = aggregate_by_default, #e.g.  single cell
+The browser automatically filters for "highly variable" features to make the responsivity of large datasets more performant.  By default this is calculated according to a "mean variance ratio" ([MVR a.k.a. index of dispersion](https://en.wikipedia.org/wiki/Index_of_dispersion)) of expression values, but can be set to another factor from the meta-table via the `filter_feature`.
+``` {r, 4-config-4, eval=FALSE}
 
-  organism = "human",
-  lab = "",
-  source = "peripheral blood mononuclear cells (PBMCs)",
-  annotation_database =  "",
-  title = "pbmc3k",
-  omic_type = omic_type,
-  measurment = "normalized counts",
-  pub = "10X Genomics",
-  url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k",
-  date = format(Sys.time(), "%a %b %d %X %Y")
-)
-
-omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
-
-
+  filter_feature <- c("dispersions_norm") #if null defaults to "fano_factor"
 
 ```
 
-## Browser configuration
 
-Top-level configuration lets the browser know where the database can be found.
-The following code 
+
+The following lines programmically collect the fields from the differential expression table calculated during configuration [TODO: LINK] as well as the dimension reduction fields in the AnnData object (currently depricated.)
+
+``` {r, 4-config-diffs, eval=FALSE}
+  # differential expression
+  diffs<- list( diff_exp_comps = levels(factor(diff_exp$versus)),
+                diff_exp_obs_name =  levels(factor(diff_exp$obs_name)),
+                diff_exp_tests =  levels(factor(diff_exp$test_type))
+  )
+
+  # Dimension reduction (depricated)
+  dimreds <- list(obsm = adata$obsm_keys(),
+                 varm = adata$varm_keys())
+```
+
+
+
+Finally, we want to collect some top-level "meta-meta" info about the dataset and the context under which the data was collected and curated. 
+``` {r, 4-config-meta, eval=FALSE}
+  meta_info <- list(
+              annotation_database =  NA,
+              publication = "TBD",
+              method = "bulk", # c("single-cell","bulk","other")
+              omic_type = omic_type, #c("transcript","prote","metabol","lipid","other")
+              aggregate_by_default = aggregate_by_default, #e.g.  single cell
+              organism = "human",
+              lab = "",
+              source = "peripheral blood mononuclear cells (PBMCs)",
+              annotation_database =  "",
+              title = "pbmc3k",
+              omic_type = omic_type,
+              measurment = "normalized counts",
+              pub = "10X Genomics",
+              url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k",
+              date = format(Sys.time(), "%a %b %d %X %Y")
+          )
+```
+
+
+
+All of these values need to be packed into a list of values which will be loaded by the browser app as the configured variables.  The script calls this the `config_list`:
+``` {r, 4-config-2, eval=FALSE}
+#if we care we need to explicitly state. defaults will be the order...
+config_list <- list(
+  # meta-tablel grouping "factors"
+  group_obs = group_obs,
+  group_var = group_var,
+  
+  # LAYERS
+  # each layer needs a label/explanation
+  layer_values = layer_values,
+  layer_names = layer_names,
+  
+  # ANNOTATIONS / TARGETS
+  default_obs =  default_obs, 
+  obs_annots = obs_annots,
+  default_var = default_var,
+  var_annots = var_annots,
+  target_features = target_features,
+  
+  feature_details = feature_details,
+  filter_feature = filter_feature,
+
+  diffs = diffs, # differential expression
+  dimreds = dimreds,   # Dimension reduction (depricated)
+  
+  #meta info
+  meta_info = meta_info
+)
+```
+
+
+Finally, this list of variables is written to a yaml file (`db_config.yml`) in our database directory via one of our helper function, `write_db_conf`:
+``` {r, 4-config-end, eval=FALSE}
+omicser::write_db_conf(config_list,DB_NAME, db_root = DB_ROOT_PATH)
+```
+
+
+## Configureation updates
+> The "Ingest" tab of the browser now allows the configurations to be updated dynamically.
+
+## Browser configuration
+The last step for configuration is to let the browser know where the database can be found.  This can also be specified as arguments to the Shiny app when spawning the app, but is most conveniently via the following code: 
 
 ```{r, omicser-options, eval=FALSE}
 # define omicser options
 omicser_options <- list(database_names = DB_NAME,
                         db_root_path = DB_ROOT_PATH,
-                        conda_environment = CONDA_ENV)
+                        install = "pre-configured")
 
 # write omicser_options.yml to run directory
 omicser::write_config(omicser_options, in_path = OMICSER_RUN_DIR)
 ```
+
+
+
 
 To configure a the browser for multiple databases,
 please see the [Visualizing multiple datasets](multiple_databases.md) information.

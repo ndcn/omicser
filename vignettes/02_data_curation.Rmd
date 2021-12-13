@@ -178,18 +178,18 @@ We will need to provide the function with the following parameters:
   - `obs_names` - name of the `adata$obs` column defining the comparision groups
   - `sc` - the scanpy data object we imported with `reticulate`
 
-Here's an example which computes a differential expression with a `wilcoxon` test of significance for each _disease_ with respect to the rest of the distease states, AND for each _cell_type_ with-respect-to the "rest of" the _cell_type_ s. 
+Here's an example which computes a differential expression with a `wilcoxon` test of significance for each of our inferred groups (`leiden`) with respect to the rest of the groups.  (These groups were inferred programmically via dimension reductions and a "leiden" clustering procedure via `Scanpy` tools.cf line 207 of `pbmc3k_curate_and_config.R`)
 
 ```{r, RM-prep-5, eval=FALSE}
 sc <- reticulate::import("scanpy")
 test_types <- c('wilcoxon')
-comp_types <- c('allVrest')
-obs_names <- c('disease','cell_type')
+comp_types <- c("grpVrest")
+obs_names <- c('leiden')
 diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc)
 ```
 
-The DE table output from this function should be saved to the database folder as `db_de_table.rds`:
 
+The DE table output from this function should be saved to the database folder as `db_de_table.rds`:
 ```{r, 3-saverds, eval = FALSE}
 saveRDS(diff_exp, file = file.path(DB_ROOT_PATH, DB_NAME, "db_de_table.rds"))
 ```

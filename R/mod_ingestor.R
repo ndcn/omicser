@@ -483,7 +483,7 @@ mod_ingestor_server <- function(id) {
 
       updateSelectInput(inputId = "SI_feat_deets", #label= "Choose omic feature meta-info"
                         choices = var_choices, #multiple=TRUE
-                        selected = temp_rv$default$feature_deets)
+                        selected = temp_rv$default$feature_details)
 
       updateSelectInput(inputId = "SI_feature_filter",# label="Choose omic feature for filtering `highly variable`"
                         choices = var_choices, #multiple=FALSE
@@ -524,7 +524,7 @@ mod_ingestor_server <- function(id) {
       conf_list_old$obs_annots <- input$SI_exp_annot
       conf_list_old$group_var <- input$SI_omic_feat
       conf_list_old$var_annots <- input$SI_feat_annot
-      conf_list_old$feature_deets <- input$SI_feat_deets
+      conf_list_old$feature_details <- input$SI_feat_deets
       conf_list_old$filter_feature <- input$SI_feature_filter
 
       # use a modal?  or simply send everything from the ingest UI as update?
@@ -553,11 +553,10 @@ mod_ingestor_server <- function(id) {
       to_return$db_meta$name<-db$name
       to_return$db_meta$db_dir<-db$dir
 
+
+
       to_return$db_meta$omics_type<-temp_rv$default$db_meta$omic_type
-      to_return$db_meta$measurment<-temp_rv$default$db_meta$measurement
-      to_return$db_meta$organism<-temp_rv$default$db_meta$organizm
-      to_return$db_meta$publication<-temp_rv$default$db_meta$pub
-      to_return$db_meta$etc<-temp_rv$default$db_meta$annotation_database
+      to_return$db_meta$meta_info<-temp_rv$default$db_meta$meta_info
 
       to_return$trigger <- to_return$trigger + 1
 

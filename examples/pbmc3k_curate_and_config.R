@@ -268,8 +268,7 @@ config_list <- list(
   # # should just pack according to UI?
   default_obs =  c("Condition","leiden"), #subset & ordering
 
-  obs_annots = c( "leiden",
-                  "n_genes","n_genes_by_counts","total_counts","total_counts_mt","pct_counts_mt"),
+  obs_annots = c( "leiden", "n_genes","n_genes_by_counts","total_counts","total_counts_mt","pct_counts_mt"),
 
   default_var = c("decile"),#just use them in order as defined
   var_annots = c(
@@ -285,7 +284,7 @@ config_list <- list(
 
 
   target_features = target_features,
-  feature_deets = c( "feature_name",
+  feature_details = c( "feature_name",
                      "gene_ids",
                      "n_cells",
                      "mt",
