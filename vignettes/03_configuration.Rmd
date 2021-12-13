@@ -97,7 +97,7 @@ The browser will also render a list of meta-info as you browse individual omic-f
 
 
 The browser automatically filters for "highly variable" features to make the responsivity of large datasets more performant.  By default this is calculated according to a "mean variance ratio" ([MVR a.k.a. index of dispersion](https://en.wikipedia.org/wiki/Index_of_dispersion)) of expression values, but can be set to another factor from the meta-table via the `filter_feature`.
-``` {r, 4-config-4, eval=FALSE}
+``` {r, 4-config-5, eval=FALSE}
 
   filter_feature <- c("dispersions_norm") #if null defaults to "fano_factor"
 
