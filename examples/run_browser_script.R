@@ -4,7 +4,6 @@
 omicser::run_defaults()
 
 
-
 OMICSER_RUN_DIR <- getwd()
 #Run browser script
 DB_ROOT_PATH <- file.path(OMICSER_RUN_DIR,"examples/test_db") #for example
