@@ -60,3 +60,4 @@ then click "Load database."
 ## Troubleshooting FAQs
 
 - **My visualization isn't loading!** The performance of the application is contingent on the amount of data it is processing. If the visualizations you have selected are lagging (or not loading at all), select a smaller subset of data. 
+

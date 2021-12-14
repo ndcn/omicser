@@ -429,6 +429,7 @@ mod_ingestor_server <- function(id) {
       db$dir <- input$SI_database
       db$name <- names(which(db$list==input$SI_database))
       # zero out the data_meta until we "load"
+    browser()
       output$ui_data_meta <- renderUI({h4("Press `LOAD` to activate data") })
       # load data
       temp_rv$de <- readRDS(file = file.path(db$root,db$dir,"db_de_table.rds"))

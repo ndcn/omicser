@@ -116,11 +116,12 @@ listed in the Python paths
 (e.g., `r-miniconda/envs/my_py_env_name/bin/python`).
 
 If you do not see your environment listed in the paths,
-you can load your environment:
+you can set the `RETICULATED_PYTHON`:
 
 ```{r, eval = FALSE}
 reticulate::use_condaenv(condaenv = "my_py_env_name", required = TRUE)
 ```
+
 
 This may also require you to restart your R session.
 For more information, please see the [`reticulate` website](https://rstudio.github.io/reticulate/index.html)
