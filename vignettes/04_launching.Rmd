@@ -13,6 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ## Launching the browser
 
 Once both the data and browser are appropriately formatted and configured, 
@@ -40,11 +41,43 @@ Please note that you need to keep RStudio running to work with data in your brow
 > You can end the process in R by clicking on the red stop sign icon in your Console,
 > or by entering `Control C` in the Console.
 
+An example script illustrating all the different ways to spawn the app can be found in the examples path  [`examples/run_browser_script.R`](https://github.com/ndcn/omicser/blob/main/examples/run_browser_script.R).
+
 If you would like an overview of the features and functionality of the browser,
 please view the [Browsing vignette](browsing.md).
 
 
 ## Troubleshooting
+
+
+
+### Assert the nescessary environment
+
+You can  check to see what python is set up on the backend with:
+```{r, 4-browse-3, eval=FALSE}
+reticulate::py_discover_config()
+```
+
+
+We can ensure / enforce that the correct python (with `anndata` and/or `scanpy` libraries available) by using  `reticulate` and R `Sys` calls.  For instance we can make sure we have an environment with: 
+```{r, 4-browse-4, eval=FALSE}
+OMICSER_PYTHON <-  "pyenv_omicser"
+OMICSER_PYTHON_EXISTS <- any(reticulate::conda_list()["name"]==OMICSER_PYTHON)
+```
+
+And we can force `reticulate` to use our properly configured python by setting the `RETICULATED_PYTHON` environment variable:
+```{r, 4-browse-5, eval=FALSE}
+if ( !Sys.getenv("RETICULATE_PYTHON")=="OMICSER_PYTHON" ) {
+  Sys.setenv("RETICULATE_PYTHON"=reticulate::conda_python(envname = OMICSER_PYTHON))
+}
+```
+
+If `py_discover_config()` does not now show your configured python environment, you will need to restart your R-session and set the `RETICULATED_PYTHON` environment variable again before spawning the browser.
+
+
+
+- **What if I have a dev intallation of `omicser`?**  You should make sure to re-load the code before running the browser using the `golem` helpers.  Please see
+ [`examples/dev_run_browser_script.R`](https://github.com/ndcn/omicser/blob/main/examples/dev_run_browser_script.R).
 
 
 - **Do I have to use RStudio** No! You can run the functions from any R session. 

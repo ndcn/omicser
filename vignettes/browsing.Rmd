@@ -1,6 +1,6 @@
 ---
 title: "Browsing your data"
-date: "10/26/2021"
+date: "12/13/2021"
 output:
   html_document: 
     keep_md: yes
@@ -40,7 +40,7 @@ then click "Load database."
 
 ### Playground
 
-- identify comparisons to visualize
+- identify comparisons to visualize using the "Side Selector" (left browsing bar)
 - choose subsets of data 
 - select type of visualization
 
@@ -60,3 +60,4 @@ then click "Load database."
 ## Troubleshooting FAQs
 
 - **My visualization isn't loading!** The performance of the application is contingent on the amount of data it is processing. If the visualizations you have selected are lagging (or not loading at all), select a smaller subset of data. 
+
