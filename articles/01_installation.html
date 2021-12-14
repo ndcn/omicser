@@ -104,7 +104,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>1-Installation</h1>
             
-            <h4 data-toc-skip class="date">11/26/2021</h4>
+            <h4 data-toc-skip class="date">12/13/2021</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/HEAD/vignettes/01_installation.Rmd" class="external-link"><code>vignettes/01_installation.Rmd</code></a></small>
       <div class="hidden name"><code>01_installation.Rmd</code></div>
@@ -115,7 +115,7 @@
     
 <p>Creating and running your own browser requires both Python and R. We recommend using R to install Python and setup your environment.</p>
 <blockquote>
-<p>If you prefer to work on the command line, please see the troubleshooting section <a href="#command-line-installation">Command line installation</a>.</p>
+<p>If you prefer to work on the command line, please see the troubleshooting section <a href="#troubleshooting">below</a>.</p>
 </blockquote>
 <p>First ensure you have <a href="https://www.r-project.org/" class="external-link">R</a> and <a href="https://www.rstudio.com/products/rstudio/download/" class="external-link">RStudio</a> installed. This project was developed using R version 4.1.0 and RStudio v1.4.1717.</p>
 <div class="section level2">
@@ -150,7 +150,7 @@
 <div class="section level2">
 <h2 id="installing-omicser">Installing <code>omicser</code><a class="anchor" aria-label="anchor" href="#installing-omicser"></a>
 </h2>
-<p>Now that we’ve set up our environment, we can install the package from which we’ll build the browser application. We want to receive the most up-to-date version of the package possible, so we’ll install the current code from GitHub using the <code>devtools</code> package:</p>
+<p>Now that we’ve set up our environment, we can install the package from which we’ll build the browser application. using the <code>devtools</code> package:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"ndcn/omicser"</span><span class="op">)</span></code></pre></div>
 <p>We are relying on this command to install not only the <code>omicser</code> package, but a large number of additional packages that will support data formatting and app development. If you are prompted to install and/or update any of these packages, we recommend you do so.</p>
@@ -158,20 +158,37 @@
 <p>If you receive a message indicating a package failed to install (resulting in a failure to install <code>omicser</code>), please see the troubleshooting section <a href="#r-packages-failing-to-load">R packages failing to load</a>.</p>
 </blockquote>
 <p>If you have successfully complete all steps in this section, you are now ready for <a href="02_data_curation.html">data curation</a>.</p>
+<div class="section level3">
+<h3 id="dev-installation">
+<em>dev</em> Installation<a class="anchor" aria-label="anchor" href="#dev-installation"></a>
+</h3>
+<p>If you also intend to develop the code to contribute features to the opensource project or just to extend the functionality for you use, you should download the repo code and use the <a href="https://github.com/ThinkR-open/golem" class="external-link">golem</a> framework tools to help load the code locally.<br>
+For instance <em>after</em> cloning the repo, make sure you are in the repo directory (i.e. <code>omicser/</code>) and run:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/ThinkR-open/golem" class="external-link">"golem"</a></span><span class="op">)</span>
+<span class="va">OMICSER_RUN_DIR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>
+<span class="fu">golem</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/golem/man/document_and_reload.html" class="external-link">document_and_reload</a></span><span class="op">(</span>pkg <span class="op">=</span> <span class="va">OMICSER_RUN_DIR</span><span class="op">)</span></code></pre></div>
+<p>which will load the omicser package into your R-session exposing all of the <code>omicser</code> functions.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="troubleshooting">Troubleshooting<a class="anchor" aria-label="anchor" href="#troubleshooting"></a>
 </h2>
 <div class="section level3">
+<h3 id="command-line-installation">command line installation<a class="anchor" aria-label="anchor" href="#command-line-installation"></a>
+</h3>
+<p>WIP. [conda] (<a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html" class="external-link uri">https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html</a>)</p>
+</div>
+<div class="section level3">
 <h3 id="reticulate-and-conda">
 <code>reticulate</code> and <code>conda</code><a class="anchor" aria-label="anchor" href="#reticulate-and-conda"></a>
 </h3>
 <p>If you have difficulty loading <code>scanpy</code> (e.g., “ModuleNotFoundError: No module named ‘scanpy’”), you can check the details of your Python environment:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/py_discover_config.html" class="external-link">py_discover_config</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p>Because you used <code>reticulate</code> to create an environment for you with the relevant packages installed, you should see your environment name listed in the Python paths (e.g., <code>r-miniconda/envs/my_py_env_name/bin/python</code>).</p>
-<p>If you do not see your environment listed in the paths, you can load your environment:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>If you do not see your environment listed in the paths, you can set the <code>RETICULATED_PYTHON</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/use_python.html" class="external-link">use_condaenv</a></span><span class="op">(</span>condaenv <span class="op">=</span> <span class="st">"my_py_env_name"</span>, required <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p>This may also require you to restart your R session. For more information, please see the <a href="https://rstudio.github.io/reticulate/index.html" class="external-link"><code>reticulate</code> website</a></p>
 </div>
@@ -180,7 +197,7 @@
 </h3>
 <p>If you receive output in your console indicating one of these additional packages did not install correctly, you can manually install it. This may also be necessary in a later step of this series of tutorials, if you realize a function and/or package are not available.</p>
 <p>For example, the download for <code>vroom</code> may have stalled, resulting in an error in your console saying the package isn’t available. You can install this package alone using the Packages interface in RStudio, or using the following code:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"vroom"</span><span class="op">)</span></code></pre></div>
 <p>You may need to re-install and/or reload other packages as well (if they are dependent on the package you manually installed).</p>
 </div>

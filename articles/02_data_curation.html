@@ -104,7 +104,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>2-Data Curation</h1>
             
-            <h4 data-toc-skip class="date">11/26/2021</h4>
+            <h4 data-toc-skip class="date">12/13/2021</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ndcn/omicser/blob/HEAD/vignettes/02_data_curation.Rmd" class="external-link"><code>vignettes/02_data_curation.Rmd</code></a></small>
       <div class="hidden name"><code>02_data_curation.Rmd</code></div>
@@ -121,11 +121,17 @@
 <p>As the <em>Curator</em> you have the responsibility to understand the specific research questions involved in your data, and how to allow these questions to be explored using a visualization tool.</p>
 <p>The process of curating your data generally includes the following steps:</p>
 <ol style="list-style-type: decimal">
-<li><p><strong>Format and ingest raw data</strong> - translate the outputs of your experimental data (post-QC phase) into scanpy’s <code>AnnData</code> structure</p></li>
-<li><p><strong>Post-processing</strong> - create additional columns and fields of interest. E.g. dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.</p></li>
-<li><p><strong>Differential expression tables</strong> - compute and/or format existing tables of the different expression levels relative to experimental conditions</p></li>
-<li><p><strong>Write database</strong> - write the data and configuration files to a named directory which we will define as a <em>database</em>.</p></li>
-<li><p><strong>database context documentation</strong> - define the context and for the dataset. This involves editing/creating the R-markdown file which will render in the browser app ( <code>additional_info.Rmd</code>)</p></li>
+<li>
+<strong>Format and ingest raw data</strong> - translate the outputs of your experimental data (post-QC phase) into scanpy’s <code>AnnData</code> structure</li>
+<li>
+<strong>Post-processing</strong> - create additional columns and fields of interest. E.g. dimension reduction, compute relevant marginal quantities, define additional annotation and grouping variables, etc.</li>
+<li>
+<strong>Differential expression tables</strong> - compute and/or format existing tables of the different expression levels relative to experimental conditions</li>
+<li>
+<strong>Write database</strong> - write the data and configuration files to a named directory which we will define as a <em>database</em>.<br>
+</li>
+<li>
+<strong>database context documentation</strong> - define the context and for the dataset. This involves editing/creating the R-markdown file which will render in the browser app ( <code>additional_info.Rmd</code>)</li>
 </ol>
 <p>Each step of data curation is generally described below, referencing the PBMC3k dataset from 10X Genomics as an example. The complete script used for curation can be found in <a href="https://github.com/ndcn/omicser/blob/main/examples/pbmc3k_example.R" class="external-link"><code>examples/browse_pbmc3k.R</code></a>. Additional examples of how the data curation process is applied to various data types and use cases can be found in the <a href="https://github.com/ndcn/omicser/tree/main/examples" class="external-link"><code>examples/</code> subdirectory</a>.</p>
 <div class="section level2">
@@ -165,12 +171,8 @@
 <em><em>SAMPLE</em> METADATA</em> ($obs): a table of sample annotations - e.g. cell types, sample #, batch ID sex, experimental condition, etc.</li>
 </ol>
 <p>More information on this format is available on the <a href="https://cran.r-project.org/web/packages/anndata/readme/README.html" class="external-link">AnnData for R website</a>.</p>
-<p><img src="../inst/anndata_for_r.png"></p>
-</div>
-<div class="section level3">
-<h3 id="ingesting-raw-data">Ingesting raw data<a class="anchor" aria-label="anchor" href="#ingesting-raw-data"></a>
-</h3>
-<p>For our example, we’ll read the PBMC3k data files using the <code>read_10x_mtx()</code> function from Python’s <code>scanpy</code> package, then writing the data to file in <code>.h5ad</code> format. We’ll access <code>scanpy</code> using the <code>reticulate</code> R package. If you have difficulty accessing <code>scanpy</code> in this section, please see the <a href="04_configuration.md#troubleshooting">Troubleshooting section of 1-Installation</a>.</p>
+<p><img src="inst/anndata_for_r.png"><img src="https://raw.githubusercontent.com/dynverse/anndata/master/man/readme_files/anndata_for_r.png"> ### Ingesting raw data</p>
+<p>For our example, we’ll read the PBMC3k data files using the <code>read_10x_mtx()</code> function from Python’s <code>scanpy</code> package, then writing the data to file in <code>.h5ad</code> format. We’ll access <code>scanpy</code> using the <code>reticulate</code> R package. If you have difficulty accessing <code>scanpy</code> in this section,please see the <a href="#troubleshooting">troubleshooting section below</a>.</p>
 <p>Please see the other <a href="https://github.com/ndcn/omicser/tree/main/examples" class="external-link">example curation scripts</a> to understand how other data can be processed at this step. This may include writing custom helper scripts to standardize data manipulation from files resulting from your data generation processes.</p>
 </div>
 <div class="section level3">
@@ -197,7 +199,7 @@
 <blockquote>
 <p>You have flexibility in the data curation process regarding which approaches you use, and when those steps are performed. For example, clustering and dimension reduction isn’t required to browse data, but is a useful step if you’d like to work with your data in other tools, like <a href="https://github.com/chanzuckerberg/cellxgene" class="external-link"><code>cellxgene</code></a>.</p>
 </blockquote>
-<p>The example below demonstrates a semi-automatic procedure to infering clusters in the data using the <code>scanpy</code> python library for processing <code>AnnData</code> data. For more information on using <code>scanpy</code> in R, please see the <a href="#troubleshooting">troubleshooting section</a>.</p>
+<p>The example below demonstrates a semi-automatic procedure to infering clusters in the data using the <code>scanpy</code> python library for processing <code>AnnData</code> data. For more information on using <code>scanpy</code> in R, please see the <a href="#troubleshooting">troubleshooting section below</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="create-differential-expression-tables">4. Create differential expression tables<a class="anchor" aria-label="anchor" href="#create-differential-expression-tables"></a>
