@@ -8,7 +8,7 @@ DB_NAME <- list("10x PBMC3k" = "pbmc3k") # name our database
 
 #-#_#_#_#_#_#_#_#_#_#_#_#_#_#_#__#_#_#_#_#_#_
 #  Step 1: Set paths--------------
-OMICSER_RUN_DIR <- getwd() # /path/to/cloned/omicser or just where you run from
+OMICSER_RUN_DIR <- getwd() # /path/to/cloned/omicser/examples or just where you run from
 
 RAW_DATA_DIR <- file.path(OMICSER_RUN_DIR,"raw_data") # set the path for where the raw_data lives...
                                                       # here its going to be in our OMCISER_RUN_DIR
@@ -138,14 +138,16 @@ setwd(OMICSER_RUN_DIR)
 # N/A
 
 # Step 6: load helper tools via the "omicser" browser package ---------
-CLONED_OMICSER <- FALSE
+CLONED_OMICSER <- TRUE
 if ( CLONED_OMICSER ) {
   require("golem")
-  golem::document_and_reload(pkg = OMICSER_RUN_DIR)
+  REPO_DIR -> getwd()
+  golem::document_and_reload(pkg = REPO_DIR)
 } else {
   require("omicser")
   #see install_script.R if not installed
 }
+
 
 
 # Steps 7-9: CURATION
