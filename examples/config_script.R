@@ -6,32 +6,30 @@ DEV_OMICSER <- TRUE
 
 
 if (DEV_OMICSER){
-  # this should be a full path... e.g. ~/Projects/NDCN_dev/omicser
-  # but for github, we will set relative to the repo BASE
-  REPO_PATH <- "/Users/ahenrie/Projects/NDCN_dev/omicser"
-  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
+  REPO_PATH <- getwd()  #/path/to/cloned/repo
   golem::document_and_reload(pkg = REPO_PATH)
 } else {
 
-  require(omicser)
-  OMICSER_RUN_DIR <- file.path(REPO_PATH,"quickstart")
+  library(omicser)
 
 }
 
-db_root_path <- "test_db"
+OMICSER_RUN_DIR <- file.path(REPO_PATH,"examples") # "/path/to/folder_with_app_config"
 
+DB_ROOT_PATH <- OMICSER_RUN_DIR <- file.path(OMICSER_RUN_DIR,"databases") #/path/to/databases
+
+# for example the databases curated with `pbmc3k_curate_and_config.R` & `proteomics_curate_and_config.R`
 database_names <- list(
   "Domenico DIA" = "domenico_stem_cell",
-  "Vilas Microglia (sceasy)" = "vilas_microglia_sceasy",
-  "Yassene Lipid concentraions & compositions" ="yassene_lipid"
+  "mypbmc" = "pbmc3k",
 )
 
 
-conda_environment = 'omxr'
 omicser_options <- list(database_names=database_names,
-                        db_root_path=db_root_path,
-                        conda_environment=conda_environment)
+                        db_root_path=DB_ROOT_PATH,
+                        install="configured")
 
+#write the `app_config.yml` into our OMICSER_RUN_DIR (e.g. getwd())
 omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
 
 
