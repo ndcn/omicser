@@ -67,7 +67,7 @@ OMICSER_PYTHON_EXISTS <- any(reticulate::conda_list()["name"]==OMICSER_PYTHON)
 
 And we can force `reticulate` to use our properly configured python by setting the `RETICULATED_PYTHON` environment variable:
 ```{r, 4-browse-5, eval=FALSE}
-if ( !Sys.getenv("RETICULATE_PYTHON")=="OMICSER_PYTHON" ) {
+if ( Sys.getenv("RETICULATE_PYTHON") != "OMICSER_PYTHON" ) {
   Sys.setenv("RETICULATE_PYTHON"=reticulate::conda_python(envname = OMICSER_PYTHON))
 }
 ```

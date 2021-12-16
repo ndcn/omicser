@@ -40,18 +40,29 @@ then click "Load database."
 
 ### Playground
 
-- identify comparisons to visualize using the "Side Selector" (left browsing bar)
-- choose subsets of data 
-- select type of visualization
+- identify comparisons to visualize using the "Side Selector" (left browsing bar). e.g.
+  - choose subsets of data 
+  - specify target features
+  - choose grouping features
+- select type of visualization from tabs: 
+  - *Expression* - annotated heatmaps
+  - *Diff. Expr.* - volcano plots of the differential expression
+  - *Table* - a table browser for distribution of expression
 
-### Additional info
-
-- context for data and analysis 
 
 ### Data table
 
-- view and filter data in tabular format
-- export subset data
+- browse the anotation tables for 
+  - features and 
+  - samples
+- browse a "wide" version of the differential expression table
+
+
+### Help
+
+- links to
+  - the github repo
+  - this documentaion site
 
 ## An example browsing session
 

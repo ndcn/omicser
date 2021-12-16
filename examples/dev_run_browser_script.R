@@ -1,5 +1,5 @@
 
-#
+# make sure you are in the directory where the repo is cloned. e.g. in `omicser/`
 
 REPO_DIR <- getwd()  #/path/to/cloned/repo
 golem::document_and_reload(pkg = REPO_DIR) #use golem to make sure the code is loaded as `omicser`
