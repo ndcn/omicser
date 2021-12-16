@@ -4,6 +4,7 @@ library("omicser")
 
 
 OMICSER_RUN_DIR <- "/path/to/folder_with_app_config"
+
 setwd(OMICSER_RUN_DIR)
 
 

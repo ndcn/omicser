@@ -23,17 +23,16 @@ if (BROWSER_ONLY){
 }
 
 
-    reticulate::install_miniconda() #in case it is not already installed
-    reticulate::conda_create(OMICSER_PYTHON, python_version = 3.8)
-    reticulate::conda_install(envname=OMICSER_PYTHON,
-                            channel = "conda-forge",
-                            packages = packages )
-
-    reticulate::use_condaenv(condaenv = OMICSER_PYTHON,
-                                    conda = reticulate::conda_binary(),
-                                    required = TRUE)
+reticulate::install_miniconda() #in case it is not already installed
+reticulate::conda_create(OMICSER_PYTHON, python_version = 3.8)
+reticulate::conda_install(envname = OMICSER_PYTHON,
+                          channel = "conda-forge",
+                         packages = packages )
 
 
+if ( Sys.getenv("RETICULATE_PYTHON")!="OMICSER_PYTHON" ) {
+    Sys.setenv("RETICULATE_PYTHON"=reticulate::conda_python(envname = OMICSER_PYTHON))
+}
 
 # install omicser package
 devtools::install_github("ndcn/omicser")
