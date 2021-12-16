@@ -14,6 +14,7 @@ if (!OMICSER_PYTHON_EXISTS){  #you should already have installed miniconda and c
                             packages =  packages )
 }
 
+
 # set the `RETICULATE_PYTHON` env variable
 if ( Sys.getenv("RETICULATE_PYTHON") != "OMICSER_PYTHON" ) {
   Sys.setenv("RETICULATE_PYTHON"=reticulate::conda_python(envname = OMICSER_PYTHON))
