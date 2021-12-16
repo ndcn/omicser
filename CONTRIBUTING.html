@@ -82,21 +82,53 @@
 
 <div id="contributing-guidelines" class="section level1">
 
-<blockquote>
-<p><strong>These guidelines are under construction!</strong></p>
-</blockquote>
-<p>Reference Code of Conduct</p>
-<p>Overview of ways to contribute</p>
-<p>Links to GitHub issues and NDCN contact email</p>
+<p>We’re glad you’re interested in contributing to this project! Before getting started, please review our <a href="CODE_OF_CONDUCT.html">Code of Conduct</a>. We expect all interactions related to this project follow these guidelines.</p>
+<p>These contribution guidelines assume you have a <a href="https://github.com/" class="external-link">GitHub account</a> and are able to contribute via the project’s <a href="https://github.com/ndcn/omicser" class="external-link">GitHub repository</a>. If you are not familiar with GitHub, you may find it useful to read through GitHub’s <a href="https://docs.github.com/en/get-started/quickstart/hello-world" class="external-link">Quickstart guide</a>. You can contribute in two main ways via GitHub:</p>
+<ul><li>
+<a href="#issues">Issues</a>: sharing bug reports and ideas for new features; requires minimal coding and/or GitHub skills</li>
+<li>
+<a href="#pull-requests">Pull requests</a>: providing updates to the code and/or documentation in the repository; experience with GitHub (and potentially code) suggested</li>
+</ul><p>Additional guidance on these two contribution methods are included below.</p>
 <div class="section level2">
-<h2 id="contributing-changes-via-github">Contributing changes via GitHub<a class="anchor" aria-label="anchor" href="#contributing-changes-via-github"></a></h2>
-<p>Links to GitHub tutorials for these tasks</p>
-<ul><li>fork this repository</li>
-<li>make changes and commit</li>
-<li>submit a PR with a meaningful message explaining what your change accomplishes and why</li>
-</ul></div>
+<h2 id="issues">Issues<a class="anchor" aria-label="anchor" href="#issues"></a></h2>
+<p><a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues" class="external-link">Issues in GitHub</a> are a great way to communicate with us about this project, whether it is filing a bug report (about something that doens’t quite work for you in the browser) or suggesting a new feature (adding new functionality to the browser). Browse the <a href="https://github.com/ndcn/omicser/issues" class="external-link">existing issues</a> to see whether there is a current conversation related to your idea or problem.</p>
+<p>You are welcome to add feedback to existing issues, including comments and reactions to posts in the issue discussion. If no conversation about your idea currently exists, please <a href="https://github.com/ndcn/omicser/issues/new" class="external-link">submit a new issue</a>. If you are filing an issue about a problem with rendering in the browser, we appreciate you sharing a screen shot by <a href="https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/attaching-files" class="external-link">attaching a file to the conversation</a>!</p>
+</div>
 <div class="section level2">
-<h2 id="website-documentation-and-tutorials">Website, documentation, and tutorials<a class="anchor" aria-label="anchor" href="#website-documentation-and-tutorials"></a></h2>
+<h2 id="pull-requests">Pull requests<a class="anchor" aria-label="anchor" href="#pull-requests"></a></h2>
+<p><a href="(https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)" class="external-link">Pull requests (PRs)</a> are the GitHub mechanism that allows you to suggest changes to someone else’s repository (in this case, our project!). This section includes three types of information:</p>
+<ul><li>
+<a href="#pr-workflow">PR workflow</a>: the process to create and submit a PR</li>
+<li>
+<a href="#documentation-prs">Documentation PRs</a>: specific information about PRs involving documentation (including the project’s website and tutorials)</li>
+<li>
+<a href="#code-prs">Code PRs</a>: code style and format guidelines for PRs involving <code>shiny</code> and/or other scripts</li>
+</ul><div class="section level3">
+<h3 id="pr-workflow">PR workflow<a class="anchor" aria-label="anchor" href="#pr-workflow"></a></h3>
+<p>If your PR is correcting a small typo in documentation, or if you are learning how PRs work, the most straightforward approach is to use the GitHub web interface to make changes and submit the PR. The general process is outlined below, but is also described in more detail in the <a href="https://docs.github.com/en/get-started/quickstart/github-flow" class="external-link">GitHub Quickstart section on GitHub flow</a>:</p>
+<ol style="list-style-type: decimal"><li>
+<a href="https://github.com/ndcn/omicser/fork" class="external-link">Fork</a> the project</li>
+<li>Create a new <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch" class="external-link">branch</a>.</li>
+<li>Alter the content on the page using the <a href="https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files" class="external-link">editor in the web interface</a>.</li>
+<li>
+<a href="https://github.com/ndcn/omicser/compare" class="external-link">Submit a pull request</a> to our repository from your fork’s branch containing the changes.</li>
+</ol><p>A member of the core team will review your PR and inform you how to proceed.</p>
+<p>If you are making more complex changes involving multiple files and/or code, it is likely you will need to make your changes on a local version of the repository. The PR workflow then requires Git to be installed and accessible on your local machine, such as the <a href="https://docs.github.com/en/desktop" class="external-link">GitHub Desktop app</a>, <a href="https://docs.github.com/en/github-cli" class="external-link">GitHub CLI</a>, or <a href="https://git-scm.com/book/en/v2/Getting-Started-The-Command-Line" class="external-link">git command line tools</a>.<br>
+Then the workflow becomes:</p>
+<ol style="list-style-type: decimal"><li>
+<a href="https://github.com/ndcn/omicser/fork" class="external-link">Fork</a> the project</li>
+<li>Create a new <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches" class="external-link">branch</a>.</li>
+<li>
+<a href="https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository" class="external-link">Clone</a> the project to create a local copy on your own computer.</li>
+<li>Alter the code, check to ensure the changes still allow the browser to launch, and commit your changes.</li>
+<li>
+<a href="https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository" class="external-link">Push</a> your changes to the remote repository.</li>
+<li>
+<a href="https://github.com/ndcn/omicser/compare" class="external-link">Submit a pull request</a> to our repository from your fork’s branch containing the changes.</li>
+</ol><p>The specific steps may differ slightly depending on the method with which you interact with Git on your own computer.</p>
+</div>
+<div class="section level3">
+<h3 id="documentation-prs">Documentation PRs<a class="anchor" aria-label="anchor" href="#documentation-prs"></a></h3>
 <p>The <a href="https://ndcn.github.io/omicser/"><code>omicser</code> website</a> is built using <a href="https://pkgdown.r-lib.org/" class="external-link"><code>pkgdown</code></a>.</p>
 <p>When applicable, please edit the <code>Rmd</code> version of a file (rather than the <code>md</code>) version. If you would like to recommend changes to the tutorials listed under the “Articles” drop-down menu, you can find the source files in the <code>vignettes</code> directory.</p>
 <p>The site will need to be rebuilt as follows for these changes to be visible on the website:</p>
@@ -106,9 +138,12 @@
 <p>All changes from this command will need to be committed to the repository for the website to be updated.</p>
 <p>If you are proposing changes to the front page of the website, you should edit the top-level <code>README.Rmd</code> file in the repository. The file needs to be knit (to create <code>README.md</code>) and then the site rebuilt for these changes to be published to the website.</p>
 </div>
-<div class="section level2">
-<h2 id="code-fixes-and-enhancements-to-the-web-app">Code fixes and enhancements to the web app<a class="anchor" aria-label="anchor" href="#code-fixes-and-enhancements-to-the-web-app"></a></h2>
-<p>TBA</p>
+<div class="section level3">
+<h3 id="code-prs">Code PRs<a class="anchor" aria-label="anchor" href="#code-prs"></a></h3>
+<blockquote>
+<p><strong>These guidelines are under construction!</strong></p>
+</blockquote>
+</div>
 </div>
 </div>
 
