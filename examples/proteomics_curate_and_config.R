@@ -17,7 +17,7 @@ OMICSER_RUN_DIR <- getwd() # /path/to/cloned/omicser/examples or just where you 
 
 RAW_DATA_DIR <- file.path(OMICSER_RUN_DIR,"raw_data") # set the path for where the raw_data lives...
                                                       # here its going to be in our OMCISER_RUN_DIR
-RAW_DATA_DIR <- file.path("/Users/ergonyc/Projects/NDCN_dev/testing/omxr","raw_data","DOMENICO_A")
+              # file.path("/Users/ergonyc/Projects/NDCN_dev/testing/omxr","raw_data","DOMENICO_A")
 
 
 if (!dir.exists(RAW_DATA_DIR)) {
@@ -25,8 +25,7 @@ if (!dir.exists(RAW_DATA_DIR)) {
 }
 
 # set the path for where the databases live... here its going to be in our OMCISER_RUN_DIR
-DB_ROOT_PATH <- file.path(OMICSER_RUN_DIR,"databases")
-DB_ROOT_PATH <- "/Users/ergonyc/Projects/NDCN_dev/testing/omxr/databases"
+DB_ROOT_PATH <- file.path(OMICSER_RUN_DIR,"databases") # "/Users/ergonyc/Projects/NDCN_dev/testing/omxr/databases"
 
 if (!dir.exists(DB_ROOT_PATH)) {
   dir.create(DB_ROOT_PATH)
@@ -34,7 +33,6 @@ if (!dir.exists(DB_ROOT_PATH)) {
 
 OMICSER_PYTHON <-  "pyenv_omicser"
 # installation type (see install_script.R)
-
 
 
 # Step 2: Assert python back-end --------------------------------
@@ -49,12 +47,13 @@ if (!CONDA_INSTALLED){  #you should already have installed miniconda and created
 
 if (!OMICSER_PYTHON_EXISTS){  #you should already have installed miniconda and created the env
   # simpler pip pypi install
-  packages <- c("scanpy[leiden]")
+  packages <- c("scanpy", "leidenalg")
   reticulate::conda_create(OMICSER_PYTHON, python_version = 3.8)
   reticulate::conda_install(envname=OMICSER_PYTHON,
                             # channel = "conda-forge",
                             pip = TRUE,
                             packages =  packages )
+  
 
 }
 

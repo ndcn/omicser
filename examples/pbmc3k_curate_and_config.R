@@ -43,7 +43,7 @@ if (!CONDA_INSTALLED){  #you should already have installed miniconda and created
 
 if (!OMICSER_PYTHON_EXISTS){  #you should already have installed miniconda and created the env
   # simpler pip pypi install
-  packages <- c("scanpy[leiden]")
+  packages <- c("scanpy", "leidenalg")
   reticulate::conda_create(OMICSER_PYTHON, python_version = 3.8)
   reticulate::conda_install(envname=OMICSER_PYTHON,
                             # channel = "conda-forge",
@@ -138,7 +138,7 @@ setwd(OMICSER_RUN_DIR)
 # N/A
 
 # Step 6: load helper tools via the "omicser" browser package ---------
-CLONED_OMICSER <- TRUE
+CLONED_OMICSER <- 
 if ( CLONED_OMICSER ) {
   require("golem")
   REPO_DIR -> getwd()
@@ -252,7 +252,7 @@ if (FALSE) adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"
 # Step 10:  configure browser ----
 omic_type <- "transcript" #c("transcript","prote","metabol","lipid","other")
 aggregate_by_default <- (if (omic_type=="transcript") TRUE else FALSE ) #e.g.  single cell
-# choose top 40 proteins by variance across dataset as our "targets"
+# choose top 40 genes by variance across dataset as our "targets"
 target_features <- adata$var_names[which(adata$var$var_rank <= 40)]
 #if we care we need to explicitly state. defaults will be the order...
 config_list <- list(
@@ -326,7 +326,7 @@ config_list <- list(
     lab = "?",
     source = "peripheral blood mononuclear cells (PBMCs)",
     title = "pbmc3k",
-    measurment = "normalized counts",
+    measurment = "normalized counts- via regression",
     pub = "10X Genomics",
     url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k",
     date = format(Sys.time(), "%a %b %d %X %Y")

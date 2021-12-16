@@ -16,7 +16,6 @@ omicser::run_defaults()
 
 
 
-
 # 2. call `run_in_browser` with arguments specifying where to find databases
 DB_ROOT_PATH <- OMICSER_RUN_DIR <- file.path(OMICSER_RUN_DIR,"databases") #/path/to/databases
 

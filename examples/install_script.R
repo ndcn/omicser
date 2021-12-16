@@ -19,14 +19,14 @@ BROWSER_ONLY <- FALSE
 if (BROWSER_ONLY){
     packages <- c("anndata") # needed for browser
 } else {
-    packages <- c("scanpy[leiden]")  #need scanpy for curation helpers, also installs anndata
+    packages <- c("scanpy","leidenalg")  #need scanpy for curation helpers, also installs anndata
 }
 
 
 reticulate::install_miniconda() #in case it is not already installed
 reticulate::conda_create(OMICSER_PYTHON, python_version = 3.8)
 reticulate::conda_install(envname = OMICSER_PYTHON,
-                          channel = "conda-forge",
+                          pip = TRUE,
                          packages = packages )
 
 
