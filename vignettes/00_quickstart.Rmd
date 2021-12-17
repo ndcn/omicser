@@ -35,3 +35,5 @@ An additional vignette on [Adding multiple databases](multiple_databases.md) is 
 
 Please view the [`examples/` directory of the GitHub repository](https://github.com/ndcn/omicser/tree/main/examples)
 for this project to view files and scripts for a variety of use cases.
+
+A short [installation & configuration tutorial video](https://www.youtube.com/watch?v=lwJmsxk0vTU) is also available which roughly follows this sequence of vignettes: 
