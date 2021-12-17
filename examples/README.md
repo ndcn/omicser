@@ -7,6 +7,7 @@ we recommend starting with our example script for
 Additional scripts include:
 
 - `install_script.R`: installs R and Python packages, creates environment 
+- `assert_python_script.R`: short script for asserting that we are using the configured python environment via `reticulate`
 - example curation scripts for various data types:
   - `proteomics_curate_and_config.R`: proteomics
   - `pbmc3k_curate_and_config.R`: single-cell transcriptomics
@@ -18,6 +19,10 @@ Example files include:
 
 
 See also:
-- `app_config.yml`: in the repo root.  This is an example configuration file for a browser with multiple databases
+- `app_config.yml`: This is an example configuration file for a browser with multiple databases
+- `dev_run_browser_script.R`: shows how to load the repo locally and run the browser, as in a _development_ installation via a cloned repo
+- `download_examples_script.R`:  short script which will download and extract just the `examples/` directory from the `omicser` directory.
+
+A short [installation & configuration tutorial video](https://www.youtube.com/watch?v=lwJmsxk0vTU) is also available which roughly follows this sequence of vignettes: 
 
 Files not listed here are used by project developers and are not intended for other users.
