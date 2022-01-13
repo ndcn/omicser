@@ -112,33 +112,33 @@
 
     
     
-<div class="section level1">
-<h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
-</h1>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
 <p>This document describes how the docker container was created and how to use it.</p>
 </div>
-<div class="section level1">
-<h1 id="dockerfile">Dockerfile<a class="anchor" aria-label="anchor" href="#dockerfile"></a>
-</h1>
+<div class="section level2">
+<h2 id="dockerfile">Dockerfile<a class="anchor" aria-label="anchor" href="#dockerfile"></a>
+</h2>
 <p>The <code>Dockerfile</code> was created with <code><a href="https://rdrr.io/pkg/golem/man/dockerfiles.html" class="external-link">golem::add_dockerfile()</a></code>. This generates a <code>Dockerfile</code> with install commands for (almost) all R packages. The generated <code>Dockerfile</code> was used as basis to create the final <code>Dockerfile</code>.</p>
 <p>Packages added manually:</p>
 <ul>
 <li>shinyFiles</li>
 </ul>
-<div class="section level2">
-<h2 id="python-environment">Python environment<a class="anchor" aria-label="anchor" href="#python-environment"></a>
-</h2>
+<div class="section level3">
+<h3 id="python-environment">Python environment<a class="anchor" aria-label="anchor" href="#python-environment"></a>
+</h3>
 <p>To create the python environment a small R script was developed (based on installation instruction of <code>omicser</code>). This file is copied into the container and executed during build of the container.</p>
 <p>To make sure the correct python environment is used, an <code>.Renviron</code> file was created which uses an environment from <code>reticulate</code> to force the correct python environment. The <code>.Renviron</code> file is copied and copied to the correct location during build of the container.</p>
 </div>
-<div class="section level2">
-<h2 id="app-configuration">App configuration<a class="anchor" aria-label="anchor" href="#app-configuration"></a>
-</h2>
+<div class="section level3">
+<h3 id="app-configuration">App configuration<a class="anchor" aria-label="anchor" href="#app-configuration"></a>
+</h3>
 <p>The <code>omicser</code> app needs a config file (<code>app_config.yml</code>) to run. For now a config file is already prepared and copied into the container and copied to the correct location. In the <code>app_config.yml</code> you need the database names set correctly for your system. The other parameters you should not need to change!</p>
 </div>
-<div class="section level2">
-<h2 id="file-locations">File locations<a class="anchor" aria-label="anchor" href="#file-locations"></a>
-</h2>
+<div class="section level3">
+<h3 id="file-locations">File locations<a class="anchor" aria-label="anchor" href="#file-locations"></a>
+</h3>
 <p>All the additional files needed to create the docker container or in folder <code>docker_stuff</code>.</p>
 <ul>
 <li>.Renviron</li>
@@ -147,23 +147,23 @@
 </ul>
 </div>
 </div>
-<div class="section level1">
-<h1 id="databases">Databases<a class="anchor" aria-label="anchor" href="#databases"></a>
-</h1>
+<div class="section level2">
+<h2 id="databases">Databases<a class="anchor" aria-label="anchor" href="#databases"></a>
+</h2>
 <p>The current setup leaves the database files outside the container. During start up of the container the location of the database files need to be coupled to the database folder inside the container.</p>
 </div>
-<div class="section level1">
-<h1 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
-</h1>
 <div class="section level2">
-<h2 id="build-docker-container">Build docker container<a class="anchor" aria-label="anchor" href="#build-docker-container"></a>
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
+<div class="section level3">
+<h3 id="build-docker-container">Build docker container<a class="anchor" aria-label="anchor" href="#build-docker-container"></a>
+</h3>
 <p>The location of the <code>Dockerfile</code> needs to be the root of your project folder. Build the container with:</p>
 <pre><code>docker build --tag omicser_container .</code></pre>
 </div>
-<div class="section level2">
-<h2 id="run-the-docker-container">Run the docker container<a class="anchor" aria-label="anchor" href="#run-the-docker-container"></a>
-</h2>
+<div class="section level3">
+<h3 id="run-the-docker-container">Run the docker container<a class="anchor" aria-label="anchor" href="#run-the-docker-container"></a>
+</h3>
 <p>Run the container as follows:</p>
 <pre><code>docker run -d -p 3939:3939 -v /my_location/of/databases/:/root/DB/ omicser_container</code></pre>
 </div>
@@ -187,7 +187,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>
