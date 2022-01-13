@@ -80,3 +80,29 @@ run_defaults <- function(){
           install_type = INSTALL_TYPE
           ) #with = "shinyAppDir"
 }
+
+#'  run_dockers - shortcut to launch with default settings for the docker container
+#'
+#' @return
+#' @export
+#'
+#' @examples TODO
+run_docker <- function(){
+  # load yaml and add launch.browser = TRUE to the list
+  #
+  #
+  #
+  CONFIG <- omicser::get_config()
+  DB_NAMES <- CONFIG$database_names
+  DB_ROOT <- CONFIG$db_root_path
+  INSTALL_TYPE <- CONFIG$install #production, dev,
+
+  # TODO:  assert ptython settings
+  #reticulate::py_module_available("anndata")
+
+  run_app(#options = list(launch.browser = FALSE),
+    db_root = DB_ROOT,
+    database_names = DB_NAMES,
+    install_type = INSTALL_TYPE
+  ) #with = "shinyAppDir"
+}
