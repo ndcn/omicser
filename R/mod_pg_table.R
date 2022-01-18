@@ -149,8 +149,8 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
 
       render_num_js = JS(
         "function(data, type, row, meta){",
-        "return type === 'display' ?",
-        "data.toExponential(2) : data;",
+        "return type === 'display' && data === null ?",
+        "data : data.toExponential(2);",
         "}")
 
       init_js <- JS(
