@@ -555,8 +555,8 @@ mod_ingestor_server <- function(id) {
 
 
 
-      to_return$db_meta$omics_type<-temp_rv$default$db_meta$omic_type
-      to_return$db_meta$meta_info<-temp_rv$default$db_meta$meta_info
+      to_return$db_meta$omics_type<-temp_rv$default$omic_type
+      to_return$db_meta$meta_info<-temp_rv$default$meta_info
 
       to_return$trigger <- to_return$trigger + 1
 
@@ -573,7 +573,7 @@ mod_ingestor_server <- function(id) {
 
       # will this work?  or is the "observing" affecting a reactive with this render?
       output$ui_data_meta <- renderUI({
-        out_text <- HTML(paste("from the <i>", temp_rv$default$db_meta$lab),"</i> lab")
+        out_text <- HTML(paste("from the <i>", temp_rv$default$lab),"</i> lab")
         ret_tags <-  tagList(
           h4(to_return$db_meta$omics_type),
           #"some more text",
