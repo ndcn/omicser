@@ -133,18 +133,18 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">OMICSER_PYTHON</span> <span class="op">&lt;-</span> <span class="st">"my_py_env_name"</span>
 
-<span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/install_miniconda.html" class="external-link">install_miniconda</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#in case it is not already installed</span>
+<span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/install_miniconda.html" class="external-link">install_miniconda</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#in case it is not already installed</span>
 <span class="co"># simpler pip pypi install</span>
 <span class="va">packages</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"scanpy[leiden]"</span><span class="op">)</span>
-<span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/conda-tools.html" class="external-link">conda_create</a></span><span class="op">(</span><span class="va">OMICSER_PYTHON</span>, python_version <span class="op">=</span> <span class="fl">3.8</span><span class="op">)</span>
-<span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/conda-tools.html" class="external-link">conda_install</a></span><span class="op">(</span>envname<span class="op">=</span><span class="va">OMICSER_PYTHON</span>,
+<span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/conda-tools.html" class="external-link">conda_create</a></span><span class="op">(</span><span class="va">OMICSER_PYTHON</span>, python_version <span class="op">=</span> <span class="fl">3.8</span><span class="op">)</span>
+<span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/conda-tools.html" class="external-link">conda_install</a></span><span class="op">(</span>envname<span class="op">=</span><span class="va">OMICSER_PYTHON</span>,
                           channel <span class="op">=</span> <span class="st">"conda-forge"</span>,
                           pip <span class="op">=</span> <span class="cn">TRUE</span>,
                           packages <span class="op">=</span>  <span class="va">packages</span> <span class="op">)</span></code></pre></div>
-<p>Start a fresh R-session and force reticulate to use our <code>OMICSER_PYTHON</code> by calling <code><a href="https://rdrr.io/pkg/reticulate/man/use_python.html" class="external-link">reticulate::use_condaenv</a></code>.</p>
+<p>Start a fresh R-session and force reticulate to use our <code>OMICSER_PYTHON</code> by calling <code><a href="https://rstudio.github.io/reticulate/reference/use_python.html" class="external-link">reticulate::use_condaenv</a></code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/use_python.html" class="external-link">use_condaenv</a></span><span class="op">(</span>condaenv <span class="op">=</span> <span class="va">OMICSER_PYTHON</span>,
-                                conda <span class="op">=</span> <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/conda-tools.html" class="external-link">conda_binary</a></span><span class="op">(</span><span class="op">)</span>,
+<code class="sourceCode R"><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/use_python.html" class="external-link">use_condaenv</a></span><span class="op">(</span>condaenv <span class="op">=</span> <span class="va">OMICSER_PYTHON</span>,
+                                conda <span class="op">=</span> <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/conda-tools.html" class="external-link">conda_binary</a></span><span class="op">(</span><span class="op">)</span>,
                                 required <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
@@ -185,11 +185,11 @@ For instance <em>after</em> cloning the repo, make sure you are in the repo dire
 </h3>
 <p>If you have difficulty loading <code>scanpy</code> (e.g., “ModuleNotFoundError: No module named ‘scanpy’”), you can check the details of your Python environment:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/py_discover_config.html" class="external-link">py_discover_config</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/py_discover_config.html" class="external-link">py_discover_config</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p>Because you used <code>reticulate</code> to create an environment for you with the relevant packages installed, you should see your environment name listed in the Python paths (e.g., <code>r-miniconda/envs/my_py_env_name/bin/python</code>).</p>
 <p>If you do not see your environment listed in the paths, you can set the <code>RETICULATED_PYTHON</code>:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/use_python.html" class="external-link">use_condaenv</a></span><span class="op">(</span>condaenv <span class="op">=</span> <span class="st">"my_py_env_name"</span>, required <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/use_python.html" class="external-link">use_condaenv</a></span><span class="op">(</span>condaenv <span class="op">=</span> <span class="st">"my_py_env_name"</span>, required <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p>This may also require you to restart your R session. For more information, please see the <a href="https://rstudio.github.io/reticulate/index.html" class="external-link"><code>reticulate</code> website</a></p>
 </div>
 <div class="section level3">
