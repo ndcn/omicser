@@ -50,8 +50,8 @@ mod_table_server <- function(id,dt_in) {
 
       render_num_js = JS(
         "function(data, type, row, meta){",
-        "return type === 'display' ?",
-        "data.toExponential(2) : data;",
+        "return type === 'display' && data === null ?",
+        "data : data.toExponential(2);",
         "}")
 
 

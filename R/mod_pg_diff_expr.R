@@ -26,30 +26,36 @@ mod_pg_diff_expr_ui <- function(id){
         br(),
 
         # this dynamicall makes all of our test/group selectors
-          uiOutput(outputId = ns("UI_comp_group_selection"))
+        uiOutput(outputId = ns("UI_comp_group_selection")),
+        # select which p-value you want
+        radioButtons(inputId = ns("RB_select_pval"),
+                     label = "Select p-value:",
+                     choices = c("raw p-value" = "pvals",
+                                 "adjusted p-value" = "pvals_adj"),
+                     selected = "pvals")
 
       ), # End of column (6 space)
       column(10,
              #uiOutput(ns("UI_viz_output")),
-               plotlyOutput(outputId = ns("volcano_plot"),height = "800px")
-             )
-      ),
-      fluidRow(
-        box(id = ns("omic_boxplot"),
-            title = "Expression Distribution",
-            solidHeader = TRUE,
-            status = "primary",
-            plotlyOutput(outputId = ns("test_boxplot")),
-            width = 8),
-        # Info on metab selected on volcano plot
-        box(id = ns("omic_info"),
-            title = "Feature Meta-info",
-            solidHeader = TRUE,
-            status = "primary",
-            htmlOutput(ns("UI_meta_box")),
-            #uiOutput(outputId = ns("UI_meta_box")), #htmlOutput(ns("metabinfo")),
-            width = 4)
+             plotlyOutput(outputId = ns("volcano_plot"),height = "800px")
       )
+    ),
+    fluidRow(
+      box(id = ns("omic_boxplot"),
+          title = "Expression Distribution",
+          solidHeader = TRUE,
+          status = "primary",
+          plotlyOutput(outputId = ns("test_boxplot")),
+          width = 8),
+      # Info on metab selected on volcano plot
+      box(id = ns("omic_info"),
+          title = "Feature Meta-info",
+          solidHeader = TRUE,
+          status = "primary",
+          htmlOutput(ns("UI_meta_box")),
+          #uiOutput(outputId = ns("UI_meta_box")), #htmlOutput(ns("metabinfo")),
+          width = 4)
+    )
 
   ) #taglist
 
@@ -87,12 +93,11 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
       # # TODO: change to data.frame
       # # filter according to current "cases"
       #filter
-      de <- diff_exp[test_type == input$RB_select_test & versus == input$SI_comp_fact
-                 ][,f := 1
-                  ][, significant := pvals_adj < 0.01
-                  ][,point_color := ifelse(significant,"#FF7F00", "#1F78B4")
-                    ][,neglogpval := -log10(pvals_adj)
-                      ]
+      de <- diff_exp[test_type == input$RB_select_test & versus == input$SI_comp_fact][
+        , f := 1][
+          , significant :=lapply(.SD, function(x) x < 0.01), .SDcols = input$RB_select_pval][
+            , point_color := ifelse(significant, "#FF7F00", "#1F78B4")][
+              , neglogpval := lapply(.SD, function(x) -log10(x)), .SDcols = input$RB_select_pval]
 
       selected_ <- de$names %in% rv_selections$selected_omics$target_omics
       de$point_color[selected_] <- "#FF6347"
@@ -224,9 +229,14 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
                        " (score: ",
                        format( de$scores, digits = 3, scientific = TRUE),
                        "</br>Q-value: ",
-                       format(de$pvals_adj, digits = 3, scientific = TRUE)),
+                       format(de[ , input$RB_select_pval, with = FALSE], digits = 3, scientific = TRUE)),
           hoverinfo = "text",
           color = ~I(de$point_color) )
+
+        # make the y-label
+        y_label_vol_plot <- switch(input$RB_select_pval,
+                                   "pvals" = "-log10 p-value",
+                                   "pvals_adj" = "-log10 adjusted p-value")
 
         volc <- volc %>%
           # Adding markers for a custom legend.  Technically,
@@ -270,19 +280,19 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
           #       color = 'rgb(231, 99, 250)',
           #       width = 1
           #     )
-          #   ),
-          #   showlegend = FALSE) %>%
+        #   ),
+        #   showlegend = FALSE) %>%
 
-          plotly::layout(
-            title = list(text = title_text,
-                         x = 0),
-            xaxis = list(zeroline = FALSE,
-                         title = "log2FC"), #, range = c(-8, 8)),
-            yaxis = list(title = "-log10 p-val"), #, range = c(-0.1, 60.25))
-            shapes = list(vline(-1),
-                          vline(1),
-                          hline(-log10(0.01))),
-            legend = list(orientation = "h",x = 0.1, y = 0.9)) %>%
+        plotly::layout(
+          title = list(text = title_text,
+                       x = 0),
+          xaxis = list(zeroline = FALSE,
+                       title = "log2FC"), #, range = c(-8, 8)),
+          yaxis = list(title = y_label_vol_plot), #, range = c(-0.1, 60.25))
+          shapes = list(vline(-1),
+                        vline(1),
+                        hline(-log10(0.01))),
+          legend = list(orientation = "h",x = 0.1, y = 0.9)) %>%
 
 
           # plotly::layout(
@@ -314,6 +324,13 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
       omic_name <- filtered_de()$names[selected]
 
       data_vec <- active_layer_data$data[,omic_name]
+      # check if there is data present
+      validate(
+        need(
+          !is.null(data_vec),
+          "Please click **Plot now!** to load the data for the boxplot!"
+        )
+      )
 
       grouping_var <- filtered_de()$obs_name[1]
       omic_counts <- data.frame( rv_data$anndata$obs_names,
@@ -391,43 +408,43 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
 
     })
 
-        # "<b>Super Pathway</b>: ", metab_meta$`Super Pathway`[metab_meta$Metabolite == metab_name], "</br>",
-        # "<b>Sub Pathway:</b> ", metab_meta$`Sub Pathway`[metab_meta$Metabolite == metab_name],
-        # # Link to HMDB, if ID is available
-        # ifelse(
-        #   !is.na(metab_meta$`HMDB ID`[metab_meta$Metabolite == metab_name]),
-        #   paste(
-        #     "</br><b>HMDB ID:</b> ",
-        #     metab_meta$`HMDB ID`[metab_meta$Metabolite == metab_name]
-        #   ),
-        #   ""
-        # ),
-        # # Link to PubChem, if ID is available
-        # ifelse(
-        #   !is.na(metab_meta$`PubChem ID`[metab_meta$Metabolite == metab_name]),
-        #   paste("</br><b>PubChem ID:</b> ",
-        #         metab_meta$`PubChem ID`[metab_meta$Metabolite == metab_name]
-        #   ),
-        #   ""
-        # ),
-        # ifelse(
-        #   !is.na(metab_name),
-        #   paste(
-        #     # "</br><b>ADAD vs CO effect (q):</b> &nbsp&nbsp&nbsp",
-        #     # format(volcano_data_adadvsco$effects[volcano_data_adadvsco$metabs == metab_name], digits = 3, scientific = TRUE),
-        #     # " (", format(volcano_data_adadvsco$pvals_adj[volcano_data_adadvsco$metabs == metab_name], digits = 3, scientific = TRUE), ")", "</br>",
-        #     # "<b>AD vs CO effect (q)</b>: &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
-        #     # format(volcano_data_cavsco$effects[volcano_data_cavsco$metabs == metab_name], digits = 3, scientific = TRUE),
-        #     # " (", format(volcano_data_cavsco$pvals_adj[volcano_data_cavsco$metabs == metab_name], digits = 3, scientific = TRUE), ")", "</br>",
-        #     # "<b>TREM2 vs CO effect (q)</b>: &nbsp",
-        #     # format(volcano_data_trem2vsco$effects[volcano_data_trem2vsco$metabs == metab_name], digits = 3, scientific = TRUE),
-        #     # " (", format(volcano_data_trem2vsco$pvals_adj[volcano_data_trem2vsco$metabs == metab_name], digits = 3, scientific = TRUE), ")", "</br>",
-        #     # # "<b>ADAD vs AD effect (q)</b>: &nbsp&nbsp&nbsp",
-        #     # # format(volcano_data_adadvsca$effects[volcano_data_adadvsca$metabs == metab_name], digits = 3, scientific = TRUE),
-        #     # # " (", format(volcano_data_adadvsca$pvals_adj[volcano_data_adadvsca$metabs == metab_name], digits = 3, scientific = TRUE), ")",
-        #     sep = ""),
-        #   ""
-        # )
+    # "<b>Super Pathway</b>: ", metab_meta$`Super Pathway`[metab_meta$Metabolite == metab_name], "</br>",
+    # "<b>Sub Pathway:</b> ", metab_meta$`Sub Pathway`[metab_meta$Metabolite == metab_name],
+    # # Link to HMDB, if ID is available
+    # ifelse(
+    #   !is.na(metab_meta$`HMDB ID`[metab_meta$Metabolite == metab_name]),
+    #   paste(
+    #     "</br><b>HMDB ID:</b> ",
+    #     metab_meta$`HMDB ID`[metab_meta$Metabolite == metab_name]
+    #   ),
+    #   ""
+    # ),
+    # # Link to PubChem, if ID is available
+    # ifelse(
+    #   !is.na(metab_meta$`PubChem ID`[metab_meta$Metabolite == metab_name]),
+    #   paste("</br><b>PubChem ID:</b> ",
+    #         metab_meta$`PubChem ID`[metab_meta$Metabolite == metab_name]
+    #   ),
+    #   ""
+    # ),
+    # ifelse(
+    #   !is.na(metab_name),
+    #   paste(
+    #     # "</br><b>ADAD vs CO effect (q):</b> &nbsp&nbsp&nbsp",
+    #     # format(volcano_data_adadvsco$effects[volcano_data_adadvsco$metabs == metab_name], digits = 3, scientific = TRUE),
+    #     # " (", format(volcano_data_adadvsco$pvals_adj[volcano_data_adadvsco$metabs == metab_name], digits = 3, scientific = TRUE), ")", "</br>",
+    #     # "<b>AD vs CO effect (q)</b>: &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
+    #     # format(volcano_data_cavsco$effects[volcano_data_cavsco$metabs == metab_name], digits = 3, scientific = TRUE),
+    #     # " (", format(volcano_data_cavsco$pvals_adj[volcano_data_cavsco$metabs == metab_name], digits = 3, scientific = TRUE), ")", "</br>",
+    #     # "<b>TREM2 vs CO effect (q)</b>: &nbsp",
+    #     # format(volcano_data_trem2vsco$effects[volcano_data_trem2vsco$metabs == metab_name], digits = 3, scientific = TRUE),
+    #     # " (", format(volcano_data_trem2vsco$pvals_adj[volcano_data_trem2vsco$metabs == metab_name], digits = 3, scientific = TRUE), ")", "</br>",
+    #     # # "<b>ADAD vs AD effect (q)</b>: &nbsp&nbsp&nbsp",
+    #     # # format(volcano_data_adadvsca$effects[volcano_data_adadvsca$metabs == metab_name], digits = 3, scientific = TRUE),
+    #     # # " (", format(volcano_data_adadvsca$pvals_adj[volcano_data_adadvsca$metabs == metab_name], digits = 3, scientific = TRUE), ")",
+    #     sep = ""),
+    #   ""
+    # )
 
 
 

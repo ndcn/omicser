@@ -17,10 +17,10 @@ mod_omic_selector_ui <- function(id){
 
     h4("Target Features"),
     fluidRow(
-         selectizeInput(
-                        ns("SI_omics_select"), "Select (<100)", "",
-                        multiple=TRUE, options = list(placeholder = "Choose omic feature (i.e. genes,proteins,lipids...)")
-                      )
+      selectizeInput(
+        ns("SI_omics_select"), "Select (<100)", "",
+        multiple=TRUE, options = list(placeholder = "Choose omic feature (i.e. genes,proteins,lipids...)")
+      )
 
     ), #fluidRow 2
 
@@ -32,19 +32,23 @@ mod_omic_selector_ui <- function(id){
       column(width = 2, offset = 0,style="border-right: 2px solid black",
              #style='padding-left:0px; padding-right:1px',
              actionButton(ns("AB_omics_def"), "Default", class = "btn btn-primary" ) #class="hidableDefault"
-      ),
+      )
+    ),
+    HTML("<br><br>"),
+    fluidRow(
       column(width = 6, offset = 0,
-              textInput(
-                inputId = ns("text_omic_add"),
-                label = "omics to add", width = "100%",
-                value = ""
-                #value = "Gene1,Gene2"
-                )
+             textInput(
+               inputId = ns("text_omic_add"),
+               label = "omics to add", width = "100%",
+               value = ""
+               #value = "Gene1,Gene2"
+             )
       ),
       column(
         2,
         style='padding-left:0px; padding-right:1px',
         actionButton(ns("AB_text_omic_add"),"add \u2934",class = "btn btn-primary" )
+
       )
     ),
 
@@ -94,9 +98,9 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
 
     # Define return rvs: `selected_omics`  -----------------
     selected_omics <- reactiveValues(
-                              target_omics=NULL, #isolate(def_omics()),
-                              all_omics= NULL, #isolate(active_omics()),
-                              freeze = NULL
+      target_omics=NULL, #isolate(def_omics()),
+      all_omics= NULL, #isolate(active_omics()),
+      freeze = NULL
     )
 
 
@@ -187,12 +191,12 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
                       faster computation ! <br> Continue by pressing "Clear".
                       </div>
                       </body>')))
-            })
+        })
 
 
       } else {
         #omics_choice_list <- rv_in$var[[rv_in$omics_feature]]
-         #assert that the choices are updated...
+        #assert that the choices are updated...
 
         omics_choice_list <- active_omics()
 
@@ -228,7 +232,7 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
       #selected_omics$all_omics <- active_omics()
       print(length(selected_omics$target_omics))
 
-      })
+    })
 
     observeEvent(input$AB_omics_def, {
       selected_omics$target_omics <- def_omics()
@@ -238,14 +242,14 @@ mod_omic_selector_server <- function(id, active_omics, def_omics){ #, new_db_tri
 
     observeEvent(
       selected_omics$freeze, {  # new database loaded
-      # selected_omics$target_omics <- isolate(input$SI_omics_select) #include direct selection from protein-box when pressing submit
-      # selected_omics$all_omics <- isolate(active_omics())
-      selected_omics$target_omics <- input$SI_omics_select #include direct selection from protein-box when pressing submit
+        # selected_omics$target_omics <- isolate(input$SI_omics_select) #include direct selection from protein-box when pressing submit
+        # selected_omics$all_omics <- isolate(active_omics())
+        selected_omics$target_omics <- input$SI_omics_select #include direct selection from protein-box when pressing submit
 
       })
 
 
-  return(selected_omics)
+    return(selected_omics)
 
   })
 
