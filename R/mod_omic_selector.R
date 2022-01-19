@@ -46,8 +46,9 @@ mod_omic_selector_ui <- function(id){
       ),
       column(
         2,
-        style = "padding-left:0px; padding-right:1px;margin-top: 25px;",
-        actionButton(ns("AB_text_omic_add"),"add ⤴",class = "btn btn-primary" )
+        style='padding-left:0px; padding-right:1px',
+        actionButton(ns("AB_text_omic_add"),"add \u2934",class = "btn btn-primary" )
+
       )
     ),
 
