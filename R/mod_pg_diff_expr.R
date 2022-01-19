@@ -314,6 +314,13 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
       omic_name <- filtered_de()$names[selected]
 
       data_vec <- active_layer_data$data[,omic_name]
+      # check if there is data present
+      validate(
+        need(
+          !is.null(data_vec),
+          "Please click **Plot now!** to load the data for the boxplot!"
+        )
+      )
 
       grouping_var <- filtered_de()$obs_name[1]
       omic_counts <- data.frame( rv_data$anndata$obs_names,
