@@ -277,13 +277,13 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
     #   url
     #   date
 
-    omxr_def$omic_type <- conf_list$meta_info$omic_type
+    omxr_def$omic_type <- conf_list$omic_type
     omxr_def$meta_info <- conf_list$meta_info
     # depricate these?
-    omxr_def$aggregate_by_default <- conf_list$meta_info$aggregate_by_default
-    omxr_def$organism <- conf_list$meta_info$organism
-    omxr_def$lab <- conf_list$meta_info$lab
-    omxr_def$annotation_database <- conf_list$meta_info$annotation_database
+    omxr_def$aggregate_by_default <- conf_list$aggregate_by_default
+    omxr_def$organism <- conf_list$organism
+    omxr_def$lab <- conf_list$lab
+    omxr_def$annotation_database <- conf_list$annotation_database
 
     # WRITE FILES  ----------------------------------------
 
