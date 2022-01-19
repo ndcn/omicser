@@ -229,7 +229,7 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
                        " (score: ",
                        format( de$scores, digits = 3, scientific = TRUE),
                        "</br>Q-value: ",
-                       format(de$pvals_adj, digits = 3, scientific = TRUE)),
+                       format(de[ , input$RB_select_pval, with = FALSE], digits = 3, scientific = TRUE)),
           hoverinfo = "text",
           color = ~I(de$point_color) )
 
