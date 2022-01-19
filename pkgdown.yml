@@ -11,7 +11,7 @@ articles:
   docker: docker.html
   multiple_databases: multiple_databases.html
   sharing: sharing.html
-last_built: 2022-01-19T20:09Z
+last_built: 2022-01-19T20:10Z
 urls:
   reference: https://ndcn.github.io/omicser/reference
   article: https://ndcn.github.io/omicser/articles
