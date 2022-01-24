@@ -198,7 +198,7 @@ mod_side_selector_server <- function(id, rv_data){
         out_text <- "No data loaded"
       } else {
           out_text <- paste("<i>",rv_data$db_meta$omics_type,
-                            "</i> databse:  <b>", rv_data$db_meta$name,
+                            "</i> database:  <b>", rv_data$db_meta$name,
                             "</b>")
       }
       out_text <- HTML(out_text)
