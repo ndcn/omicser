@@ -7,7 +7,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @importFrom shiny NS tagList downloadButton
 mod_pg_expression_ui <- function(id){
   ns <- NS(id)
   tag_list <- tagList(
@@ -23,7 +23,7 @@ mod_pg_expression_ui <- function(id){
      column(
        2, style="border-right: 2px solid black",
 
-       checkboxInput(ns("CB_aggregate_conditions"), "aggregate conditions?", value = FALSE),
+       checkboxInput(ns("CB_aggregate_conditions"), "aggregate conditions?", value = TRUE),
        checkboxInput(ns("CB_scale"), "Scale values?", value = TRUE),
 
        hr(style = "border-top: 1px dashed grey;"),
@@ -38,7 +38,7 @@ mod_pg_expression_ui <- function(id){
        hr(style = "border-top: 1px dashed grey;"),
        ">DISABLED<",
        shinyjs::disabled(checkboxInput(ns("CB_show_all_feats"), "show all features?", value = TRUE)),
-       "(coming soon)"
+       "(coming soon)",
 
        #"warning! this will be slow",
        # shinyjs::disabled(
@@ -50,37 +50,25 @@ mod_pg_expression_ui <- function(id){
        # A
        #uiOutput(outputId = ns("UI_comp_group_selection"))
 
+       downloadButton(ns("DB_heatmap_pdf"), "Download PDF"),
+       downloadButton(ns("DB_heatmap_png"), "Download PNG"), br(),
+       div(style="display:inline-block",
+           numericInput(ns("heatmap_h"), "PDF / PNG height:", width = "138px",
+                        min = 4, max = 20, value = 10, step = 0.5)),
+       div(style="display:inline-block",
+           numericInput(ns("heatmap_w"), "PDF / PNG width:", width = "138px",
+                        min = 4, max = 20, value = 10, step = 0.5))
+
      ), # End of column (6 space)
      column(10,
             uiOutput(ns("UI_heatmap_header")),
             plotOutput(ns("plot_heatmap_out"), height = "1200px")
 
-            # downloadButton("Van_d1oup.pdf", "Download pDF"),
-            # downloadButton("Van_d1oup.png", "Download pNG"), br(),
-            # div(style="display:inline-block",
-            #     numericInput("Van_d1oup.h", "pDF / pNG height:", width = "138px",
-            #                  min = 4, max = 20, value = 10, step = 0.5)),
-            # div(style="display:inline-block",
-            #     numericInput("Van_d1oup.w", "pDF / pNG width:", width = "138px",
-            #                  min = 4, max = 20, value = 10, step = 0.5))
-     #)  # End of column (6 space)
-     )
-   # ),    # End of fluidRow (4 space)
-   # fluidRow(
-   #   hr(style = "border-top: 1px dashed grey;"),
-   #   h4(htmlOutput(ns("HTML_header"))),
-   #   uiOutput(ns("UI_heatmap_all"))
-   #   # downloadButton("Van_d1oup.pdf", "Download pDF"),
-   #   # downloadButton("Van_d1oup.png", "Download pNG"), br(),
-   #   # div(style="display:inline-block",
-   #   #     numericInput("Van_d1oup.h", "pDF / pNG height:", width = "138px",
-   #   #                  min = 4, max = 20, value = 10, step = 0.5)),
-   #   # div(style="display:inline-block",
-   #   #     numericInput("Van_d1oup.w", "pDF / pNG width:", width = "138px",
-   #   #                  min = 4, max = 20, value = 10, step = 0.5))
-   #   #)  # End of column (6 space)
-    )    # End of fluidRow (4 space)
-   )
+
+     )  # End of column (6 space)
+
+   )#fluid_row
+   )#tag_list
 
   return(tag_list)
 }
@@ -130,7 +118,6 @@ mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #},
     })
 
 
-
     output$UI_heatmap_header <- renderUI({
       #if (rv_selections$target_omics$viz_now) {
       req(heat_data$mat,
@@ -150,10 +137,12 @@ mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #},
       return(to_return)
     })
 
+    heatmap_initialized = reactiveVal(FALSE)
 
 
-    # plot_heatmap_out renderPlot---------------------------------
-    output$plot_heatmap_out <- renderPlot( {
+    # REACTIVEVALUES =================================
+    reactive_heatmap <- reactive({
+
       req(heat_data$mat)
       message("starting: plot_heatmap_out packer")
 
@@ -161,7 +150,6 @@ mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #},
       wtr$show()
 
       in_mat <- heat_data$mat  #imported as samples X features
-
       # Scale if required
       units_label <- 'expression'
       if(input$CB_scale) {
@@ -218,11 +206,8 @@ mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #},
       feat_grp <- heat_data$feat_grp
       feat_grp_nm <- heat_data$feat_grp_nm
 
-
       cluster_feats <- input$CB_cluster_rows
       cluster_samps <- input$CB_cluster_cols
-
-
 
       samp_split <- input$CB_show_grp_cols
       # if we are trying to show everything we need to wubset...
@@ -247,15 +232,12 @@ mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #},
         # } else {
         #   cluster_rows <- FALSE
         # }
-
         show_row_names <- TRUE
         feats_title <- "target features"
 
         # subset side annotations...?
         right_annotations <- right_annotations[omics_at,]
-
         feat_grp <- feat_grp[omics_at]
-
 
       }
 
@@ -266,16 +248,38 @@ mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #},
         feat_grp <- NULL
       }
 
-
       hm <- make_cx_heatmap(in_mat,
-                          cluster_samps, samp_grp, samp_grp_nm, samp_title, samp_aggregated, samp_split,
-                          cluster_feats, feat_grp, feat_grp_nm, feats_title,
-                          units_label,
-                          omics, omics_at,
-                          top_annotations, right_annotations)
+                            cluster_samps, samp_grp, samp_grp_nm, samp_title, samp_aggregated, samp_split,
+                            cluster_feats, feat_grp, feat_grp_nm, feats_title,
+                            units_label,
+                            omics, omics_at,
+                            top_annotations, right_annotations)
+
+      # tryCatch({
+      #   dev.null()
+      #   if(inherits(hm, "Heatmap")) {
+      #     hm = draw(hm + NULL)
+      #     message("inherited hm + NULL")
+      #   } else {
+      #     if(!hm@layout$initialized) {
+      #       hm = draw(hm)
+      #       message("!initialized ")
+      #     }
+      #   }
+      # }, finally = ComplexHeatmap:::dev.off2() )
 
 
-      return(hm)
+      return( hm )
+
+      })
+
+
+    # plot_heatmap_out renderPlot---------------------------------
+    output$plot_heatmap_out <- renderPlot( {
+      hm <- reactive_heatmap()
+      message(class(hm))
+
+      ComplexHeatmap::draw(hm, merge_legend = TRUE)
 
     })
 
@@ -286,7 +290,6 @@ mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #},
       req(heat_data$mat)
       out_text <- paste("hm dim: ", paste(dim(heat_data$mat),collapse = " x "))
 
-
       to_return <-  tagList(
         h4("full heatmap"),
         #"some more text",
@@ -295,7 +298,6 @@ mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #},
         plotOutput(outputId = ns("plot_heatmap_all_out"),
                    height = "1200px")
       )
-
 
       return(to_return)
     })
@@ -310,9 +312,110 @@ mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #},
     })
 
 
+    # output$heatmap_download_button = downloadHandler(
+    #
+    #   filename = function() {
+    #     format = as.numeric(input$heatmap_download_format)
+    #     fm = c("png", "pdf", "svg")[format]
+    #     paste0(heatmap_id, "_heatmap",fm)
+    #   },
+    #   content = function(file) {
+    #     format = as.numeric(input$heatmap_download_format)
+    #     fm = c("png", "pdf", "svg")[format]
+    #     dev = list(png, pdf, svglite::svglite)[[format]]
+    #
+    #     showNotification(paste0("Download heatmap in ",fm), duration = 2, type = "message")
+    #     message(paste0(Sys.time(), " Download heatmap in ",fm))
+    #
+    #     temp = tempfile()
+    #     width = input$heatmap_w
+    #     height = input$heatmap_h
+    #
+    #     if(fm == "png") {
+    #       dev(temp, width = width*2, height = height*2, res = 72*2)
+    #     } else if(fm == "pdf") {
+    #       dev(temp, width = width/100*4/3, height = height/100*4/3)
+    #     } else {
+    #       dev(temp, width = width, height = height)
+    #     }
+    #     if(heatmap_initialized()) {
+    #       draw(ht_list())
+    #     } else {
+    #       grid.newpage()
+    #       grid.text("No heatmap is available.")
+    #     }
+    #     dev.off()
+    #
+    #     file.copy(temp, file)
+    #   }
+    # )
 
-  })
-}
+
+    output$DB_heatmap_pdf <- downloadHandler(
+              filename = function() {
+                #TODO: make the filename something sensible wrt database name...
+                #  e.g.  db_name_layer_omics_type.pdf?
+                fnm <- paste0(Sys.time(),"heatmap_",input$heatmap_h,"_",input$heatmap_w,".pdf")
+                message(fnm)
+                return( fnm )
+               },
+              content = function(file) {
+
+                showNotification("Download heatmap in PDF", duration = 2, type = "message")
+                message(paste0(Sys.time(), " Download heatmap as PDF") )
+                temp = tempfile()
+                width = input$heatmap_w
+                height = input$heatmap_h
+
+                pdf(temp, width = width*4/3, height = height*4/3)
+
+                hm <- reactive_heatmap()
+                print(class(hm))
+                #draw(hm)
+                ComplexHeatmap::draw(hm, merge_legend = TRUE)
+
+                dev.off()
+
+                file.copy(temp, file)
+              })
+
+    #
+    # content = function(file) { ggplot2::ggsave(file,
+    #                          device = "pdf",
+    #                          height = input$heatmap_h,
+    #                          width = input$heatmap_w,
+    #                          plot = reactive_heatmap() )}
+    #
+    output$DB_heatmap_png <- downloadHandler(
+                filename = function() {
+                  fnm <- paste0(Sys.time(),"heatmap_",input$heatmap_h,"_",input$heatmap_w,".png")
+                  message(fnm)
+                  return(fnm)
+                  },
+                content = function(file) {
+                  showNotification("Download heatmap as PNG", duration = 2, type = "message")
+                  message(paste0(Sys.time(), " Download heatmap as PNG "))
+
+                  hm <- reactive_heatmap()
+                  print(class(hm))
+
+                  temp = tempfile()
+                  res <- 72*2
+                  width = input$heatmap_w*res
+                  height = input$heatmap_h*res
+
+                  png(temp, width = width*4/3, height = height*4/3, res = res)
+
+                  #draw(hm)
+                  ComplexHeatmap::draw(hm, merge_legend = TRUE)
+                  dev.off()
+
+                  file.copy(temp, file)
+                  }
+            )
+   }
+)}
+
 
 ## To be copied in the UI
 # mod_pg_expression_ui("pg_vis_raw_ui_1")

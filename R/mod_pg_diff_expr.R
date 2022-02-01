@@ -303,7 +303,13 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
           # Disable the legend click since our traces do not correspond to the
           # actual legend labels
           htmlwidgets::onRender("function(el,x){el.on('plotly_legendclick', function(){ return false; })}") %>%
-          plotly::config(displayModeBar = FALSE) %>%
+          plotly::config(displayModeBar = TRUE,
+                         toImageButtonOptions = list(format= 'png', # one of png, svg, jpeg, webp
+                                                  filename= 'diff_expr_volcano',
+                                                  height= 600,
+                                                  width= 700,
+                                                  scale= 1 )) %>%
+
           plotly::event_register('plotly_click')
 
 
@@ -370,7 +376,13 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
           xaxis = list( title = filtered_de()$obs_name[1] ),
           showlegend = FALSE
         ) %>%
-        plotly::config(displayModeBar = FALSE)
+        #plotly::config(displayModeBar = FALSE)
+        plotly::config(displayModeBar = TRUE,
+                       toImageButtonOptions = list(format= 'png', # one of png, svg, jpeg, webp
+                                                 filename= 'expr_box',
+                                                 height= 300,
+                                                 width= 600,
+                                                 scale= 1 ))
     })
 
     # Information on omics selected on volcano plot

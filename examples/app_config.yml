@@ -1,5 +1,5 @@
 database_names:
-    mypbmc: pbmc3k
-    Domenico DIA: domenico_stem_cell
-db_root_path: /Users/ergonyc/Projects/NDCN_dev/testing/omxr/databases
+    answer ALS cntrl: answr_als
+db_root_path: /Users/ahenrie/Projects/NDCN_dev/test_omicser/omicser/examples/databases
+install_type: hack
 install: configured
