@@ -53,7 +53,7 @@ but is also described in more detail in the [GitHub Quickstart section on GitHub
 3. Alter the content on the page using the [editor in the web interface](https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files).
 4. [Submit a pull request](https://github.com/ndcn/omicser/compare) to our repository from your fork's branch containing the changes.
 
-A member of the core team will review your PR and inform you how to proceed.
+A member of the core team will review your PR and inform you how to proceed. (see also our [GOVERNANCE document](https://github.com/ndcn/omicser/GOVERNANCE_draft.md))
 
 If you are making more complex changes involving multiple files and/or code,
 it is likely you will need to make your changes on a local version of the repository.
