@@ -3,7 +3,6 @@
 This document describes the contribution process and governance policies of the NDCN Omicser project.  As this project aims to solve for a broad set of needs across the NDCN community there will need to be honest and thoughtful discussion around features and priorities.
 
 ## Contribution Process
-See also 
 Before making a contribution, please take the following steps:
 1. Check whether there's already an open issue related to your proposed contribution. If there is, join the discussion and propose your contribution there.
 2. If there isn't already a relevant issue, create one, describing your contribution and the problem you're trying to solve.
@@ -11,7 +10,8 @@ Before making a contribution, please take the following steps:
 4. Fork the project repository and prepare your proposed contribution.
 5. Submit a pull request.
 
-NOTE: All contributors are implicitly sharing open license to the code submitted
+NOTE: All contributors are implicitly sharing open license to the code submitted.  See also our [CONTRIBUTION document](https://github.com/ndcn/omicser/CONTRIBUTION.md)
+
 
 ## Governance
 
