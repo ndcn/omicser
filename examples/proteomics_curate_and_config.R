@@ -17,7 +17,7 @@ OMICSER_RUN_DIR <- getwd() # /path/to/cloned/omicser/examples or just where you 
 
 RAW_DATA_DIR <- file.path(OMICSER_RUN_DIR,"raw_data") # set the path for where the raw_data lives...
                                                       # here its going to be in our OMCISER_RUN_DIR
-              # file.path("/Users/ergonyc/Projects/NDCN_dev/testing/omxr","raw_data","DOMENICO_A")
+RAW_DATA_DIR <- file.path("/Users/ergonyc/Projects/NDCN_dev/testing/omxr","raw_data","DOMENICO_A")
 
 
 if (!dir.exists(RAW_DATA_DIR)) {
@@ -53,7 +53,7 @@ if (!OMICSER_PYTHON_EXISTS){  #you should already have installed miniconda and c
                             # channel = "conda-forge",
                             pip = TRUE,
                             packages =  packages )
-  
+
 
 }
 

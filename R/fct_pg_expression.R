@@ -257,8 +257,7 @@ make_cx_heatmap = function(in_mat,
     # #                               raster_device = "png")
 
     message("plot_heatmap_out: FINISHED ComplexHeatmap::Heatmap")
-
-    ht <- ComplexHeatmap::draw(ht, merge_legend = TRUE)
+    return(ht)
 }
 
 

@@ -1,5 +1,5 @@
 database_names:
-    mypbmc: pbmc3k
-    Domenico DIA: domenico_stem_cell
-db_root_path: /Users/ergonyc/Projects/NDCN_dev/testing/omxr/databases
+    answer als: answr_als_transcript
+    answer ALS proteomics: answr_als_prote
+db_root_path: /Users/ahenrie/Projects/NDCN_dev/omicser/quickstart/test_db
 install: configured
