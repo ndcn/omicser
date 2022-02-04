@@ -6,7 +6,7 @@
 ####
 require("reticulate")
 
-DB_NAME <- list("answer ALS cntrl" = "answr_als") # name our database
+DB_NAME <- list("answer ALS proteomics" = "answr_als_prote") # name our database
 
 #-#_#_#_#_#_#_#_#_#_#_#_#_#_#_#__#_#_#_#_#_#_
 #  Step 1: Set paths--------------
@@ -18,12 +18,10 @@ OMICSER_RUN_DIR <- file.path(getwd(),"examples") # /path/to/cloned/omicser/examp
 RAW_DATA_DIR <- file.path(Sys.getenv("HOME"),"omicser_databases","answerALS")
 
 
-if (!dir.exists(RAW_DATA_DIR)) {
-  dir.create(RAW_DATA_DIR) #fails if the path has multiple levels to generate
-}
-
 # set the path for where the databases live... here its going to be in our OMCISER_RUN_DIR
+
 DB_ROOT_PATH <- file.path(OMICSER_RUN_DIR,"databases")
+#DB_ROOT_PATH <- "/Users/ahenrie/Projects/NDCN_dev/omicser/quickstart/test_db"
 
 if (!dir.exists(DB_ROOT_PATH)) {
   dir.create(DB_ROOT_PATH)
@@ -117,55 +115,12 @@ if (!dir.exists(DB_DIR)) {
   dir.create(DB_DIR)
 }
 
-# change paths to make data manipulations easier
-#
 
 
-#
-proteomics_data_file <- "AnswerALS-204-P-v1-release5_protein-level-matrix.csv"
-#
-transcriptomics_data_file <- "AnswerALS-290-T-v1-release5_rna-counts-matrix.csv"
-
-meta_data_file <- "aals_participants.csv"
-meta_data_file <- "aals_dataportal_datatable.csv"
-clinical_file <- "Clinical_Dictionary.csv"
-
-
-
-# Step 6: Format and ingest raw data
-ptable <- data.table::fread(file.path(RAW_DATA_DIR,proteomics_data_file))
-ttable <- data.table::fread(file.path(RAW_DATA_DIR,transcriptomics_data_file))
-mtable <- data.table::fread(file.path(RAW_DATA_DIR,"metadata",meta_data_file))
-
-clin_dict <- data.table::fread(file.path(RAW_DATA_DIR,"metadata",clinical_file))
 
 # Step 5:  define for source helper functions -------------------------
 # N/A
-
-meta_to_agg <- c( "AALSDXFX", "AALSHXFX",
-                  "ALSFRS_R" ,
-                  #"ALS_CBS",
-                  "ALS_Gene_Mutations",
-                  "ANSASFD",
-                  #"ANSWER_ALS_Medications_Log",
-                  #"ANSWER_ALS_MobileApp",
-                  "Ashworth_Spasticity_Scale",
-                  #"Auxiliary_Chemistry",
-                  #"Auxiliary_Chemistry_Labs",
-                  #"CNS_Lability_Scale",
-                  #"Cerebrospinal_Fluid",
-                  "DNA_Sample_Collection",
-                  "Demographics"
-                  #"Diaphragm_Pacing_System_Device",
-                  #"Family_History_Log" ,"Feeding_Tube_Placement",
-                  #"Grip_Strength_Testing","Hand_Held_Dynamometry", "Medical_History",
-                  #"Mortality" ,"NEUROLOG","NIV_Log",
-                  #"PBMC_Sample_Collection" , "Permanent_Assisted_Ventilation","Plasma_Sample",
-                  #"Reflexes", "Serum_Sample", "Tracheostomy",
-                  #"Vital_Capacity", "Vital_Signs","subjects"
-                  )
-
-make_meta_table <- function(RAW_DATA_DIR,mtable,meta_to_agg){
+make_meta_table <- function(RAW_DATA_DIR,mtable,clin_dict,meta_to_agg){
   #forms <- unique(clin_dict[,Form_Name])
   forms <- meta_to_agg
   key_list <- list()
@@ -199,21 +154,13 @@ make_meta_table <- function(RAW_DATA_DIR,mtable,meta_to_agg){
 
 
 
-
-
-proteomics_data_file <- "AnswerALS-204-P-v1-release5_protein-level-matrix.csv"
-#
-transcriptomics_data_file <- "AnswerALS-290-T-v1-release5_rna-counts-matrix.csv"
-meta_data_file <- "aals_participants.csv"
-
-
-prep_ANSALS_files <- function(proteomics_data_file,transcriptomics_data_file,meta_data_file,path_root){
-
-
+prep_ANSALS_files <- function(proteomics_data_file,transcriptomics_data_file,meta_data_file,clinical_file,path_root,trans_or_prot){
+  #trans_or_prot <- c("trans", "prot")[trans_or_prot]  #i.e. trans=1, prot=2
   # Step 6: Format and ingest raw data
   ptable <- data.table::fread(file.path(path_root,proteomics_data_file))
   ttable <- data.table::fread(file.path(path_root,transcriptomics_data_file))
   mtable <- data.table::fread(file.path(path_root,"metadata",meta_data_file))
+  clin_dict <- data.table::fread(file.path(path_root,"metadata",clinical_file))
 
   meta_to_agg <- c( "AALSDXFX", "AALSHXFX",
                     "ALSFRS_R" ,
@@ -239,7 +186,7 @@ prep_ANSALS_files <- function(proteomics_data_file,transcriptomics_data_file,met
   )
 
 
-  meta_tab <- make_meta_table(path_root,mtable,meta_to_agg)
+  meta_tab <- make_meta_table(path_root,mtable,clin_dict,meta_to_agg)
 
   proteins <- ptable$Protein
   #p_subjID <- colnames(ptable)[-1]
@@ -248,9 +195,6 @@ prep_ANSALS_files <- function(proteomics_data_file,transcriptomics_data_file,met
   qProt <- (meta_tab$Participant_ID %in% p_subjID)
   colnames(ptable)<-c("Proteins",p_subjID)
   pdata_mat <- as.matrix(ptable,rownames=1)
-
-
-
 
 
   ensembleIDs <- ttable$V1
@@ -269,72 +213,52 @@ prep_ANSALS_files <- function(proteomics_data_file,transcriptomics_data_file,met
   # data3 <- as(data1, "dgTMatrix") #151MB
 
 
+  p_omics <- rownames(pdata_mat)
+  t_omics <- rownames(tdata_mat)
 
-
-  # we have 1145 "subjects", but transcriptomics for just <300 adn proteomics for ~200
-
-    raw_data <- process_sn_prot_quant(file.path(path_root, matrix_data_file))
-    de_annot <- process_DIA_annot_de (file.path(path_root, annot_de_file ))
-    conditions_table <- get_DIA_conditions( file.path(path_root,conditions_table_file) )
-
-
-  features <- row.names(raw_data) #protein names
-  # the file name names suck as obs_names... lets call them "Sample_1" "Sample_2" etc...
-  obs_names <- paste0("Sample_",conditions_table$X)
-  row.names(conditions_table) <- obs_names
-
-  # re-order to conditions_table
-  raw_data <- raw_data[conditions_table$File.Name,]
-
-  # force the data matrix to match our obs(conditions_table) and var (annots)
-  data <- raw_data[conditions_table$File.Name,de_annot$annot$UniProtIds]
-  var_names <- row.names(data)
 
   # add some marginal statistics
-  tmp_mat <- data
-  tmp_mat[is.na(tmp_mat)] <- 0
+  if (trans_or_prot==1) {
+    tmp_mat <- tdata_mat
+    sample_ID <- t_subjID
+    features <- t_omics
+  } else {
+    tmp_mat <- pdata_mat
+    sample_ID <- p_subjID
+    features <- p_omics
+  }
+  tmp_mat[is.na(tmp_mat)] <- 0 #defensive
 
-  de_annot$annot$expr_geomean <- Matrix::colMeans( log(data),na.rm = TRUE) #exp minus 1?
-  de_annot$annot$expr_mean <- Matrix::colMeans(data,na.rm = TRUE)
-  de_annot$annot$expr_var  <- matrixStats::colVars(data,na.rm = TRUE)
-  de_annot$annot$expr_frac <- Matrix::colMeans(tmp_mat>0)
+  obs_meta <-  meta_tab[sample_ID,]# meta_tab[meta_tab$Participant_ID %in% sample_ID,]
 
-  conditions_table$expr_var <- matrixStats::rowVars(data,na.rm=TRUE)
-  conditions_table$expr_mean <- Matrix::rowMeans(data,na.rm=TRUE)
-  conditions_table$expr_frac <- Matrix::rowMeans(tmp_mat>0)
+  obs_meta$expr_geomean <- Matrix::colMeans( log1p(tmp_mat),na.rm = TRUE) #exp minus 1?
+  obs_meta$expr_mean <- Matrix::colMeans(tmp_mat,na.rm = TRUE)
+  obs_meta$expr_var  <- matrixStats::colVars(tmp_mat,na.rm = TRUE)
+  obs_meta$expr_frac <- Matrix::colMeans(tmp_mat>0)
 
-  # scema       #c("object", "data_mat","obs_meta","var_annot","omics","sample_ID","etc")
-  data_list <- list(data_mat = data,
-                    obs_meta = conditions_table,
-                    var_annot = de_annot$annot,
-                    omics = rownames(de_annot$annot),
-                    sample_ID = rownames(data),
-                    etc = NULL,
-                    de = de_annot$de )
+
+  var_annot <- data.table::data.table(features=features)
+
+  var_annot$expr_var <- matrixStats::rowVars(tmp_mat,na.rm=TRUE)
+  var_annot$expr_mean <- Matrix::rowMeans(tmp_mat,na.rm=TRUE)
+  var_annot$expr_frac <- Matrix::rowMeans(tmp_mat>0)
+
+
+  # TODO:  strategy for mapping t_omics and p_omics to ids...
+
+  data_list <- list(data_mat = tmp_mat,
+                    obs_meta = obs_meta,
+                    var_annot =var_annot,
+                    omics = features,
+                    sample_ID = sample_ID,
+                    etc = NULL)
 
   return(data_list)
 }
 
 
-process_DIA_annot_de <- function( annot_de_file_path ){
-  # full plath
-  de_annot_data <- read.delim( annot_de_file_path, as.is = TRUE)
+  # we have 1145 "subjects", but transcriptomics for just <300 adn proteomics for ~200
 
-  # converte d_data inot diff_exp
-  # TODO:  add the "test_type" currently it is just read from teh file which i think is
-  # output from proprietary software.   check with Domenico...
-  #   rather... --> pass off "ownership" of DIA prep functions to Domenico.
-  diff_exp <- de_annot_data %>% dplyr::transmute(group = gsub(" / ", "V", Comparison..group1.group2.),
-                                                 names = Group,
-                                                 obs_name = "Condition",
-                                                 test_type = "unknown-test",
-                                                 reference = Condition.Denominator,
-                                                 comp_type = 'grpVref',
-                                                 logfoldchanges = AVG.Log2.Ratio,
-                                                 scores = NA,
-                                                 pvals = Pvalue,
-                                                 pvals_adj = Qvalue,
-                                                 versus = gsub(" / ", " vs. ", Comparison..group1.group2.) )
 
   ###
   # the differential expression table has these fields:
@@ -351,24 +275,6 @@ process_DIA_annot_de <- function( annot_de_file_path ){
   # versus - label which we will choose in the browser
   ###
 
-  feat_annots <- unique(de_annot_data[, c("UniProtIds",
-                                          "Genes",
-                                          "ProteinDescriptions",
-                                          "ProteinNames",
-                                          "GO.Cellular.Component",
-                                          "GO.Molecular.Function",
-                                          "GO.Biological.Process")])
-
-  all_proteins <- unique(de_annot_data$UniProtIds)
-  row.names(feat_annots) <- feat_annots$UniProtIds
-
-
-  return(
-    list(de=diff_exp,
-         annot=feat_annots)
-  )
-
-}
 
 
 # Step 6: load helper tools via the "omicser" browser package ---------
@@ -382,6 +288,28 @@ if ( CLONED_OMICSER ) {
   #see install_script.R if not installed
 }
 
+# Step 6: Format and ingest raw data
+
+# change paths to make data manipulations easier
+#
+
+#
+proteomics_data_file <- "AnswerALS-204-P-v1-release5_protein-level-matrix.csv"
+#
+transcriptomics_data_file <- "AnswerALS-290-T-v1-release5_rna-counts-matrix.csv"
+
+meta_data_file <- "aals_participants.csv"
+#meta_data_file <- "aals_dataportal_datatable.csv"
+
+clinical_file <- "Clinical_Dictionary.csv"
+#
+# ptable <- data.table::fread(file.path(RAW_DATA_DIR,proteomics_data_file))
+# ttable <- data.table::fread(file.path(RAW_DATA_DIR,transcriptomics_data_file))
+# mtable <- data.table::fread(file.path(RAW_DATA_DIR,"metadata",meta_data_file))
+#
+# clin_dict <- data.table::fread(file.path(RAW_DATA_DIR,"metadata",clinical_file))
+
+# process proteomics & transcriptomics together for meta-info, but only use one..
 
 
 # Steps 7-9: CURATION
@@ -389,14 +317,8 @@ SAVE_INTERMEDIATE_FILES <- FALSE
 # Step 7:  pack data into AnnData format --------------
 # identify location of raw data
 
-proteomics_data_file <- "AnswerALS-204-P-v1-release5_protein-level-matrix.csv"
-#
-transcriptomics_data_file <- "AnswerALS-290-T-v1-release5_rna-counts-matrix.csv"
-meta_data_file <- "aals_participants.csv"
-
-
-
-data_list <- list(object=file.path(DB_ROOT_PATH,DB_NAME,"core_data.h5ad"))
+trans_or_prot = 2
+data_list <- prep_ANSALS_files(proteomics_data_file,transcriptomics_data_file,meta_data_file,clinical_file, RAW_DATA_DIR,trans_or_prot)
 
 # create database formatted as AnnData
 adata <- omicser::setup_database(database_name = DB_NAME,
@@ -408,49 +330,87 @@ adata <- omicser::setup_database(database_name = DB_NAME,
 
 # Step 8: additional data processing ----
 adata$var_names_make_unique()
-# unnecessary if using `var_names='gene_ids'` in `sc.read_10x_mtx`
 
-# filter data
-sc$pp$filter_cells(adata, min_genes=200)
-sc$pp$filter_genes(adata, min_cells=10)
+# use scanpy to do some scaling and calculations...
+sc <- reticulate::import("scanpy")
 
-# annotate the group of mitochondrial genes as 'mt'
-adata$var['mt'] <- startsWith(adata$var_names,'MT-')
-sc$pp$calculate_qc_metrics(adata, qc_vars=list('mt'), percent_top=NULL, log1p=FALSE, inplace=TRUE)
 
-# filter data
-adata <- adata[adata$obs$n_genes_by_counts < 2500, ]
-adata <- adata[adata$obs$pct_counts_mt < 5, ]
-sc$pp$normalize_total(adata, target_sum=1e4)
-sc$pp$log1p(adata)
-sc$pp$highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)
+# Add the raw field
+raw <- adata$copy()
 
-# transform data
-#adata = adata[, adata$var$highly_variable]
-sc$pp$regress_out(adata, list('total_counts', 'pct_counts_mt'))
-sc$pp$scale(adata, max_value=10)
+#create layers, and raw
+# na_to_0 (raw but zeroed)
+# scaled
+# X_is_scaled_na_to_0
 
-# choose top 40 genes by variance across dataset as "targets"
-adata$var$var_rank <- order(adata$var$dispersions_norm)
+zro_na <- adata$copy()
+zro_na$X[is.na(zro_na$X)]<-0
+zro_na <- zro_na$copy()
 
-# calculate deciles
-adata$var$decile <- dplyr::ntile(adata$var$dispersions_norm, 10)
-#raw <- ad$raw$to_adata()
+scaled <- adata$copy() #scaled
+sc$pp$scale(scaled)
 
-# save intermediate database file
-if (SAVE_INTERMEDIATE_FILES){
+ad_out <- adata$copy()
+
+ad_out$X[is.na(ad_out$X)]<-0
+adata <- ad_out$copy()
+sc$pp$scale(adata)
+
+ad_copy <- adata$copy()
+adata$layers <- list(zro_na=zro_na$X,
+                     scaled=scaled$X,
+                     X_is_scaled_na_to_0=ad_copy$X) #list('count'=layers)
+
+adata$raw <- raw
+adata$raw$to_adata()
+#adata <- adata$copy()
+
+adata$var$vmr <- adata$var$expr_var/adata$var$expr_mean
+# set vmr to zero when mean is zero
+adata$var$vmr[adata$var$expr_mean==0] <- 0
+
+# computer no-matter what,
+tmp_X <- log1p(adata$X)
+tmp_mu <- colMeans(tmp_X,na.rm = TRUE)
+tmp_vmr <- matrixStats::colVars(tmp_X,na.rm = TRUE)-tmp_mu
+
+adata$var$logvmr <- tmp_vmr
+
+adata$var$vmr_rank <- order(adata$var$logvmr)
+
+# curate a decile
+adata$var$vmr_decile <- dplyr::ntile(adata$var$logvmr, 10)
+
+# fix anotation fators
+#
+facts <- sapply(adata$var, is.factor)
+adata$var[facts] <- lapply(adata$var[facts], as.character)
+
+if (SAVE_INTERMEDIATE_FILES) {
+  # save an intermediate file (incase we want to revert...)
   adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"normalized_data.h5ad"))
 }
 
 #7-b. dimension reduction - PCA / umap
-#pca
+zro_na <- adata$copy()
+zro_na$X <- adata$layers$get('zro_na')
+sc$pp$pca(zro_na)
+sc$pp$neighbors(zro_na)
+## Step 4: Infer clusters with the leiden algorithm
+sc$tl$leiden(zro_na)
+## Step 5: Compute tsne and umap embeddings
+sc$tl$umap(zro_na)
+
 sc$pp$pca(adata)
-# compute neighbor graph
 sc$pp$neighbors(adata)
-## infer clusters
 sc$tl$leiden(adata)
-# compute umap
 sc$tl$umap(adata)
+
+adata$obsm$unscaled_X_pca <- zro_na$obsm$X_pca
+adata$obsm$unscaled_X_umap <- zro_na$obsm$X_umap
+adata$varm$unscaled_PCs <- zro_na$varm$PCs
+adata$obsp$unscaled_distances <- zro_na$obsp$distances
+adata$obsp$unscaled_connectivities <- zro_na$obsp$connectivities
 
 # save intermediate database file
 if (SAVE_INTERMEDIATE_FILES){
@@ -466,9 +426,7 @@ obs_names <- c('leiden')
 # calculate DE
 diff_exp <- omicser::compute_de_table(adata,comp_types, test_types, obs_names,sc)
 
-### WARNING:  there's an overflow bug in the logfoldchange values for this dataset
-### Might need to rescale?
-
+###
 # save intermediate database file
 if (SAVE_INTERMEDIATE_FILES){
   adata$write_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"norm_data_with_de.h5ad"))
@@ -492,7 +450,7 @@ if (FALSE) adata <- anndata::read_h5ad(filename=file.path(DB_ROOT_PATH,DB_NAME,"
 
 
 # Step 10:  configure browser ----
-omic_type <- "transcript" #c("transcript","prote","metabol","lipid","other")
+omic_type <- "prote" #c("transcript","prote","metabol","lipid","other")
 aggregate_by_default <- (if (omic_type=="transcript") TRUE else FALSE ) #e.g.  single cell
 # choose top 40 proteins by variance across dataset as our "targets"
 target_features <- adata$var_names[which(adata$var$var_rank <= 40)]
@@ -510,18 +468,12 @@ config_list <- list(
   # ANNOTATIONS / TARGETS
   # what adata$obs do we want to make default values for...
   # # should just pack according to UI?
-  default_obs =  c("Condition","leiden"), #subset & ordering
+  default_obs =  c("Case_Control","leiden"), #subset & ordering
 
-  obs_annots = c( "leiden", "n_genes","n_genes_by_counts","total_counts","total_counts_mt","pct_counts_mt"),
+  obs_annots = c( "leiden", "n_genes","n_genes_by_counts","total_counts","Sex","Diagnosis","Enrollment Status"),
 
   default_var = c("decile"),#just use them in order as defined
   var_annots = c(
-    "n_cells",
-    "mt",
-    "n_cells_by_counts",
-    "mean_counts",
-    "pct_dropout_by_counts",
-    "total_counts",
     "highly_variable",
     "dispersions_norm",
     "decile"),
@@ -529,19 +481,12 @@ config_list <- list(
 
   target_features = target_features,
   feature_details = c( "feature_name",
-                     "gene_ids",
                      "n_cells",
-                     "mt",
-                     "n_cells_by_counts",
-                     "mean_counts",
-                     "pct_dropout_by_counts",
                      "total_counts",
                      "highly_variable",
                      "means",
                      "dispersions",
                      "dispersions_norm",
-                     "mean",
-                     "std",
                      "var_rank",
                      "decile" ),
 
@@ -566,11 +511,11 @@ config_list <- list(
     method = "single-cell", # c("single-cell","bulk","other")
     organism = "human",
     lab = "?",
-    source = "peripheral blood mononuclear cells (PBMCs)",
-    title = "pbmc3k",
-    measurment = "normalized counts",
-    pub = "10X Genomics",
-    url = "https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k",
+    source = "answer ALS proteomic",
+    title = "answer als proteomic",
+    measurment = "normalized concentration",
+    pub = "",
+    url = "https://answerALS",
     date = format(Sys.time(), "%a %b %d %X %Y")
   )
 )
@@ -604,3 +549,8 @@ omicser::write_config(omicser_options,in_path = OMICSER_RUN_DIR )
 
 
 # Step 11: Run the browser -------------
+omicser::run_in_browser(
+  db_root = DB_ROOT_PATH,
+  database_names = list(UNDEFINED="UNDEFINED"),
+  install_type = "arguments"
+)
