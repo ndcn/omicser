@@ -77,9 +77,11 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
 
       join_data <- rv_data$anndata$var %>%
                         dplyr::mutate(dplyr::across(where(is.factor), as.character ))
+      ## RICO:
+      print(rv_data$de)
       wide_data <- rv_data$de %>%
                         tidyr::pivot_wider(id_cols = names,
-                                            names_from = c(group,test_type),
+                                            names_from = c(group, reference, test_type),
                                             values_from = c(logfoldchanges, scores ,pvals,pvals_adj,versus),
                                             names_repair = "check_unique"
                                           )
