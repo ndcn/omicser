@@ -15,7 +15,7 @@ Before making a contribution, please take the following steps:
 4. Fork the project repository and prepare your proposed contribution.
 5. Submit a pull request.
 
-NOTE: All contributors are implicitly sharing open license to the code submitted.  See also our [CONTRIBUTION document](https://github.com/ndcn/omicser/CONTRIBUTION.md)
+NOTE: All contributors are implicitly sharing open license to the code submitted.  See also our [CONTRIBUTION document](https://github.com/ndcn/omicser/blob/main/CONTRIBUTING.md)
 
 
 ## Governance
@@ -40,9 +40,7 @@ Users who continue to engage with the project and its community will often find 
 
 Contributors interact with the project on GitHub by filing new issues, improving existing issues, or submitting pull requests. Anyone can become a contributor: there is no expectation of commitment to the project, no required set of skills, and no selection process. The only obligation is to follow the [code of conduct](CODE_OF_CONDUCT.md).
 
-Specific advice for contributing to the project can be found in
-direct [CONTRIBUTING.md](https://github.com/ndcn/omicser/CONTRIBUTING.md).
-or relative? [CONTRIBUTING.md](CONTRIBUTING.md).
+Specific advice for contributing to the project can be found in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 #### Maintainers
 
