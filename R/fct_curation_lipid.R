@@ -28,7 +28,7 @@ read_lipid_data <- function(filename = NULL,
     stop("File doesn't exist!")
   }
   # check if data_type is correct
-  if(data_type %in% c("data_matrix", "variables", "observations")) {
+  if(!(data_type %in% c("data_matrix", "variables", "observations"))) {
     stop("Wrong 'data_type' supplied!")
   }
 
