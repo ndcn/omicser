@@ -98,6 +98,7 @@ golem::add_module( name = "export" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
+golem::add_fct( "curation_lipid" ) # helper functions for lipid cutation
 # golem::add_fct( "module" ) # NOTE: `fct` are server helpers
 # golem::add_utils( "module" ) #   'utils` are ui helpers
 
