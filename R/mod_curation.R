@@ -76,10 +76,13 @@ mod_curation_server <- function(id){
         # show the module for the selected omic
         switch(
           selected_omic,
-          "lipid" = mod_curation_lipid_ui(id = ns("curation_lipid_ui"))
+          "lipid" = mod_curation_lipid_ui(id = ns("curation_lipid"))
         )
       )
     })
+
+    # load the lipidomics curation server part
+    mod_curation_lipid_server(id = "curation_lipid")
 
   })
 }
