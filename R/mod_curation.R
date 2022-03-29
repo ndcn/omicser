@@ -40,7 +40,7 @@ mod_curation_server <- function(id){
           fade = TRUE,
           size = "l",
           footer = tagList(
-            modalButton("Cancel"),
+            modalButton("Done..."),
           ),
           radioButtons(
             inputId = ns("rb_select_omic"),
