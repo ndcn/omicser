@@ -72,6 +72,7 @@ usethis::use_package("dplyr")
 #usethis::use_package("tidyr") # called by dplyr as dependency?
 #usethis::use_package("magrittr")  # use_pipe()
 usethis::use_package("broom")
+usethis::use_package("tools")
 
 
 ## Add modules ----
