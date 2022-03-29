@@ -38,6 +38,7 @@ mod_curation_server <- function(id){
           title = "Curation",
           easyClose = FALSE,
           fade = TRUE,
+          size = "l",
           footer = tagList(
             modalButton("Cancel"),
           ),
