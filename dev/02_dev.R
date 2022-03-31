@@ -59,6 +59,8 @@ usethis::use_package("shinyFiles")
 usethis::use_package("tidyselect")
 usethis::use_package("rlang")
 usethis::use_package("RColorBrewer")
+usethis::use_package("reticulate")
+usethis::use_package("purrr")
 
 # # DISABLED for now
 # usethis::use_package("BiocManager")

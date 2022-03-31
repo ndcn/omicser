@@ -20,6 +20,7 @@ Imports:
     markdown,
     Matrix,
     plotly,
+    purrr,
     RColorBrewer,
     reticulate,
     rlang,
