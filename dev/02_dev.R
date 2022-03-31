@@ -56,6 +56,9 @@ usethis::use_package("Cairo")
 usethis::use_package("waiter")
 
 usethis::use_package("shinyFiles")
+usethis::use_package("tidyselect")
+usethis::use_package("rlang")
+usethis::use_package("RColorBrewer")
 
 # # DISABLED for now
 # usethis::use_package("BiocManager")
