@@ -21,6 +21,7 @@ Imports:
     Matrix,
     plotly,
     RColorBrewer,
+    reticulate,
     rlang,
     rmarkdown,
     shiny,
