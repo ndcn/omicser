@@ -26,43 +26,51 @@ mod_curation_lipid_ui <- function(id){
          </ul>
          </p>"),
     br(),
-    h4("File upload :"),
-    ### upload files
-    # data matrix
-    fileInput(
-      inputId = ns("fi_lipid_data"),
-      label = "Lipid data matrix (csv) :",
-      multiple = FALSE,
-      accept = ".csv",
-      buttonLabel = "Browse...",
-      placeholder = "No file selected"
-    ),
-    htmlOutput(outputId = ns("fi_lipid_data_status")),
-    # Variable / lipid information
-    fileInput(
-      inputId = ns("fi_lipid_var_info"),
-      label = "Lipid info (csv) :",
-      multiple = FALSE,
-      accept = ".csv",
-      buttonLabel = "Browse...",
-      placeholder = "No file selected"
-    ),
-    htmlOutput(outputId = ns("fi_lipid_var_status")),
-    # sample info
-    fileInput(
-      inputId = ns("fi_lipid_obs_info"),
-      label = "Sample info (csv) :",
-      multiple = FALSE,
-      accept = ".csv",
-      buttonLabel = "Browse...",
-      placeholder = "No file selected"
-    ),
-    htmlOutput(outputId = ns("fi_lipid_obs_status")),
-    # curate the data
-    actionButton(inputId = ns("ab_lipid_curate"),
-                 label = "Curate",
-                 class = "btn btn-large btn-danger")
-
+    fluidRow(
+      column(width = 6,
+             style = "border-right: 1px solid black",
+             h4("File upload :"),
+             ### upload files
+             # data matrix
+             fileInput(
+               inputId = ns("fi_lipid_data"),
+               label = "Lipid data matrix (csv) :",
+               multiple = FALSE,
+               accept = ".csv",
+               buttonLabel = "Browse...",
+               placeholder = "No file selected"
+             ),
+             htmlOutput(outputId = ns("fi_lipid_data_status")),
+             # Variable / lipid information
+             fileInput(
+               inputId = ns("fi_lipid_var_info"),
+               label = "Lipid info (csv) :",
+               multiple = FALSE,
+               accept = ".csv",
+               buttonLabel = "Browse...",
+               placeholder = "No file selected"
+             ),
+             htmlOutput(outputId = ns("fi_lipid_var_status")),
+             # sample info
+             fileInput(
+               inputId = ns("fi_lipid_obs_info"),
+               label = "Sample info (csv) :",
+               multiple = FALSE,
+               accept = ".csv",
+               buttonLabel = "Browse...",
+               placeholder = "No file selected"
+             ),
+             htmlOutput(outputId = ns("fi_lipid_obs_status")),
+             # curate the data
+             actionButton(inputId = ns("ab_lipid_curate"),
+                          label = "Curate",
+                          class = "btn btn-large btn-danger")
+      ),
+      column(width = 6,
+             # show some parameters if all files are correctly loaded
+             htmlOutput(outputId = ns("ui_lipid_curation_params"))
+      )
+    )
   )
 }
 
@@ -76,6 +84,10 @@ mod_curation_lipid_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
+    #### get the database root and all names ####
+    DB_ROOT <- golem::get_golem_options("db_root")
+    DB_NAMES <- golem::get_golem_options("database_names")
+
     ### define some reactive values
     rv_data <- reactiveValues(data = list(data = NULL,
                                           status = NULL,
@@ -85,9 +97,12 @@ mod_curation_lipid_server <- function(id){
                                                   message = NULL),
                               variables = list(data = NULL,
                                                status = NULL,
-                                               message = NULL))
+                                               message = NULL),
+                              database = list(name = NULL,
+                                              status = NULL,
+                                              message = NULL))
 
-    ### get the data matrix ###
+    #### get the data matrix ####
     observeEvent(input$fi_lipid_data, {
       req(input$fi_lipid_data)
 
@@ -109,13 +124,14 @@ mod_curation_lipid_server <- function(id){
     output$fi_lipid_data_status <- renderUI({
       req(rv_data$data$status)
 
+      # show if there is an error
       if(rv_data$data$status == "error"){
         HTML(paste("<text style='color:red; font-weight:bold'>Error:", rv_data$data$message, "</text>"))
       }
     })
 
 
-    ### get variable info ###
+    #### get variable info ####
     observeEvent(input$fi_lipid_var_info, {
       req(input$fi_lipid_var_info)
 
@@ -137,18 +153,19 @@ mod_curation_lipid_server <- function(id){
     output$fi_lipid_var_status <- renderUI({
       req(rv_data$variables$status)
 
+      # show if there is an error
       if(rv_data$variables$status == "error"){
         HTML(paste("<text style='color:red; font-weight:bold'>Error:", rv_data$variables$message, "</text>"))
       }
     })
 
 
-    ### get sample info ###
+    #### get sample info ####
     observeEvent(input$fi_lipid_obs_info, {
       req(input$fi_lipid_obs_info)
 
       # validate the extension, message is NOT shown!!
-      ext <- tools::file_ext(input$fi_lipid_sample_info$name)
+      ext <- tools::file_ext(input$fi_lipid_obs_info$name)
       validate(need(ext == "csv", "Please upload a csv file"))
 
       # read the file
@@ -165,9 +182,96 @@ mod_curation_lipid_server <- function(id){
     output$fi_lipid_obs_status <- renderUI({
       req(rv_data$observations$status)
 
+      # show if there is an error
       if(rv_data$observations$status == "error"){
         HTML(paste("<text style='color:red; font-weight:bold'>Error:", rv_data$observations$message, "</text>"))
       }
     })
-  })
+
+
+    #### Curation parameters ####
+    output$ui_lipid_curation_params <- renderUI({
+      # if one of them is still NULL don't continue
+      req(rv_data$data$status,
+          rv_data$variables$status,
+          rv_data$observations$status)
+
+      # if there is any error do NOT continue
+      status <- c(rv_data$data$status,
+                  rv_data$variables$status,
+                  rv_data$observations$status)
+
+      if(!("error" %in% status)){
+        tagList(
+          h4("Parameters :"),
+          # input field for database name
+          textInput(inputId = ns("ti_lipid_db_name"),
+                    label = "Enter database name :"),
+          # show any possible error messages
+          htmlOutput(outputId = ns("lipid_db_name_status")),
+          # select curation steps
+          checkboxGroupInput(inputId = ns("cbg_lipid_curation_params"),
+                             label = "Select curation steps :",
+                             choices = c("Remove zero lipids" = "zero"))
+        )
+      }
+    })
+
+
+    #### curation button clicked ####
+    observeEvent(input$ab_lipid_curate, {
+      # if one of them is still NULL don't continue
+      req(rv_data$data$status,
+          rv_data$variables$status,
+          rv_data$observations$status,
+          input$ti_lipid_db_name)
+
+      # get the new database name
+      rv_data$database$name <- input$ti_lipid_db_name
+
+      # check if the database name is valid
+      status_db_name <- check_database_name(db_name = rv_data$database$name,
+                                            current_db_names = DB_NAMES)
+      # update everything
+      rv_data$database$status <- status_db_name$status
+      rv_data$database$message <- status_db_name$message
+
+      # if there is any error do NOT continue
+      status <- c(rv_data$data$status,
+                  rv_data$variables$status,
+                  rv_data$observations$status,
+                  status_db_name$status)
+
+      if("error" %in% status) {
+        # do nothing
+
+        print(rv_data$database$message)
+      } else {
+        # continue
+        print("Start curaton...")
+
+        # do the curation
+        curate_lipidomics(data = list(data = rv_data$data$data,
+                                      obs = rv_data$observations$data,
+                                      var = rv_data$variables$data),
+                          db_name = rv_data$database$name,
+                          db_root = DB_ROOT)
+
+        print("Curation done!")
+      } # end of all fine
+
+    })
+
+
+    # show if there is an error in the database name
+    output$lipid_db_name_status <- renderUI({
+      req(rv_data$database$status)
+
+      # show if there is an error
+      if(rv_data$database$status == "error"){
+        HTML(paste("<text style='color:red; font-weight:bold'>Error:", rv_data$database$message, "</text>"))
+      }
+    })
+
+  }) # end mod_curation_lipid_server
 }

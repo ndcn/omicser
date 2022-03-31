@@ -115,3 +115,548 @@ check_database_name <- function(db_name = NULL,
   # return the result
   return(res)
 }
+
+
+#' @title Curate a lipidomics data set
+#'
+#' @description Curate a lipidomics data set generated with the Sciex Lipidzyer.
+#'     The resulting {anndata} object is written to a file in hdf5 format.
+#'
+#' @param data list containing all data, i.e. data, observations info and
+#'     variables info.
+#' @param db_name name of the new database.
+#' @param db_root root of all the databases.
+#' @param steps which steps should be done.
+#'
+#' @return Nothing.
+#'
+#' @author Rico Derks
+#'
+#' @noRd
+#'
+curate_lipidomics <- function(data = NULL,
+                              db_name = NULL,
+                              db_root = NULL,
+                              steps = NULL) {
+
+  print("Check db folder exists.")
+  # check if the database folder exist, if not create it
+  check <- create_db_folder(db_root = db_root,
+                            db_name = db_name)
+
+  # if creating db folder fails
+  if(check == FALSE) {
+    stop("New database folder doesn't exist and can NOT be created! Please check
+         write permissions!")
+  }
+
+  print("Get the data")
+  # initialize list with all the data
+  lipid_data <- list(data_matrix = NULL,
+                     obs_info = NULL,
+                     var_info = NULL)
+
+  #### Get all data ####
+  # lipid data: remove first column and convert to matrix
+  lipid_data$data_matrix <- as.matrix(data$data[, -1])
+  rownames(lipid_data$data_matrix) <- data$data$sample_id
+
+  # sample info
+  lipid_data$obs_info <- data$obs
+  rownames(lipid_data$obs_info) <- lipid_data$obs_info$sample_id
+
+  # variable info
+  lipid_data$var_info <- data$var
+  rownames(lipid_data$var_info) <- lipid_data$var_info$lipid_name
+
+  print("Do clean up")
+  #### Do some clean up ####
+  lipid_data <- clean_up(lipid_data = lipid_data)
+
+  print("Do pre-processing")
+  #### Pre-processing ####
+  lipid_data <- preproc_lipid_data(lipid_data = lipid_data)
+
+  print("Pack into anndata")
+  #### Pack into ann-data ####
+  ad <- pack_lipid_anndata(data = lipid_data,
+                           db_root = db_root,
+                           db_name = db_name)
+
+  print("Calculate differential expression")
+  #### Calculate differential expression table ####
+  diff_exp_table <- diff_epxression(data = lipid_data,
+                                    test_types = c("ttest", "Mann-Whitney"),
+                                    db_root = db_root,
+                                    db_name = db_name)
+
+  print("Write yml config file.")
+  #### write config file ####
+  write_lipid_config(data = lipid_data,
+                     diff_exp = diff_exp_table,
+                     db_root = db_root,
+                     db_name = db_name)
+
+  # write to hdf5 file
+  ad$write_h5ad(filename = file.path(db_root, db_name, "core_data.h5ad"))
+  ad$write_h5ad(filename = file.path(db_root, db_name, "db_data.h5ad"))
+  # return result
+  return(NULL)
+}
+
+
+#' @title Write the database config file
+#'
+#' @param data list with all the data
+#' @param diff_exp the differential expressio data
+#' @param db_root root path of all databases
+#' @param db_name name of the new database
+#'
+#' @return Nothing
+#'
+#' @author Rico Derks
+#'
+#' @noRd
+#'
+write_lipid_config <- function(data = NULL,
+                               diff_exp = NULL,
+                               db_root = NULL,
+                               db_name = NULL) {
+  # define the type
+  omic_type <- "lipid"
+  aggregate_by_default <- ifelse(omic_type == "transcript", TRUE, FALSE) #e.g.  single cell
+
+  # define the config list
+  config_list <- list(
+    ### grouping factors
+    # if it needs to be in subset add here as well
+    group_vars = colnames(data$var_info)[-1], # c("lipid_class", "excess_zero_conc", "sig_lasso_coef"),
+    group_obs = c("Group"),
+
+    ### layer info
+    layer_values = c("X"),
+    # are the names of the layers used?
+    layer_names = c("Conc."),
+
+    # ANNOTATIONS / TARGETS
+    # what adata$obs do we want to make default values for...
+    # # should just pack according to UI?
+
+    ### observations
+    default_obs = colnames(data$obs_info[1]),
+    # heatmap default selected
+    obs_annots = colnames(data$obs_info[-1]),
+
+    ### variables
+    default_var = c("feature_name"),
+    # heatmap default selected
+    var_annots = colnames(data$var_info)[-1],
+
+    ### set the target features, looks like they are not loaded yet
+    target_features = "",
+
+    ### set the feature details when dot clicked in volcano plot
+    # looks like this is not working, in domenico script it works
+    feature_deets = c(""),
+
+    ### differential expression
+    diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
+                 diff_exp_comp_type = levels(factor(diff_exp$comp_type)), #i don"t think we need this
+                 diff_exp_obs_name = levels(factor(diff_exp$obs_name)),
+                 diff_exp_tests = levels(factor(diff_exp$test_type))),
+
+    ### meta info
+    annotation_database =  NA,
+    publication = "TBD",
+    method = "bulk", # c("single-cell","bulk","other")
+    omic_type = omic_type, # see above
+    aggregate_by_default = aggregate_by_default, # see above
+    organism = 'mmusculus',
+    lab = "Giera",
+    title = "Lipidomics",
+    date = format(Sys.time(), "%a %b %d %X %Y")
+  ) # end config list
+
+  # write configuration to yaml file
+  omicser::write_db_conf(config_list = config_list,
+                         db_name = db_name,
+                         db_root = db_root)
+
+  # return nothing
+  return(NULL)
+}
+
+
+#' @title Pack the lipidomics data into an anndata object
+#'
+#' @param data a list with all the data
+#' @param db_root root path of all databases
+#' @param db_name name of the database
+#'
+#' @return anndata object.
+#'
+#' @author Rico Derks
+#'
+#' @noRd
+#'
+pack_lipid_anndata <- function(data = NULL,
+                               db_root = NULL,
+                               db_name = NULL) {
+  # prepare the data
+  data_list <- list(
+    data_mat = data$data_matrix,
+    obs_meta = data$obs_info,
+    var_annot = data$var_info,
+    omics = NULL,
+    sample_ID = data$obs_info$sample_id,
+    etc = NULL,
+    raw = NULL,
+    uns = NULL
+  )
+
+  # make anndata object
+  ad <- setup_database(database_name = db_name,
+                       db_path = db_root,
+                       data_in = data_list,
+                       re_pack = TRUE)
+
+  # return anndata object
+  return(ad)
+}
+
+
+#' @title Calculate the differential expression table
+#'
+#' @param data list with all the data
+#' @param test_types what test do you want to do
+#' @param comp the comparissons
+#' @param db_root root path of all databases
+#' @param db_name name of the database
+#'
+#' @return The differential expression results. The differential expression
+#'     results are also save to a RDS file
+#'
+#' @author Rico Derks
+#'
+#' @importFrom reticulate import
+#'
+#' @noRd
+#'
+diff_epxression <- function(data = NULL,
+                            test_types = NULL,
+                            comp = NULL,
+                            db_name = NULL,
+                            db_root = NULL) {
+
+  # what comparissons
+  comp_types <- c("{LEAN}V{OBESE}",
+                  "{LEAN}V{OBESE+VLCD}",
+                  "{OBESE}V{OBESE+VLCD}")
+
+  # name of the column containing the comparissons
+  obs_names <- c("Group")
+
+  de_table <- data.frame()
+
+  for(test_type in test_types) {
+    print(test_type)
+    # each test
+    for(comp_type in comp_types) {
+      print(comp_type)
+      # each comparison
+      # extract the x and y of the comparison
+      # comp_type <- comp_types[1]
+      parts <- unlist(
+        regmatches(x = comp_type,
+                   m = regexec(text = comp_type,
+                               pattern = "^\\{?([a-zA-Z0-9\\/\\+\\._]+)\\}?V\\{?([a-zA-Z0-9\\/\\+\\._]+)\\}?$"))
+      )
+      reference <- parts[3]
+      group <- parts[2]
+
+      # make a data.frame
+      lipid_df <- cbind(data$obs_info, as.data.frame(data$data_matrix))
+
+      if(reference == "rest") {
+        # if the reference is all other groups
+      } else {
+        # compute the de table
+        tmp_de_table <- switch(
+          test_type,
+          "ttest" = {
+            perform_ttest(data = lipid_df,
+                          group = group,
+                          reference = reference,
+                          obs_name = obs_names)
+          },
+          "Mann-Whitney" = {
+            perform_mwtest(data = lipid_df,
+                           group = group,
+                           reference = reference,
+                           obs_name = obs_names)
+          }
+        )
+        # combine the results
+        de_table <- rbind(de_table, tmp_de_table)
+      }
+    } # end for-loop comp_types
+  } # end for-loop test_types
+
+  # make some column factors
+  de_table$versus <- as.factor(de_table$versus)
+  de_table$comp_type <- as.factor(de_table$comp_type)
+  de_table$obs_name <- as.factor(de_table$obs_name)
+  de_table$test_type <- as.factor(de_table$test_type)
+
+  # # remove infinite values and NaN's
+  # remove_idx <- c(which(is.infinite(diff_exp$logfoldchanges)),
+  #                 which(is.nan(diff_exp$logfoldchanges)))
+  # diff_exp <- diff_exp[-remove_idx, ]
+
+  print(de_table)
+
+  # save the table
+  saveRDS(object = de_table,
+          file = file.path(db_root, db_name, "db_de_table.rds"))
+
+  # return de table
+  return(de_table)
+}
+
+
+#' @title Perform statistical test for differential expression table
+#'
+#' @description Do a statistical test, i.e. t-test or Mann-Whitney test.
+#'
+#' @param data the data
+#' @param group name of the group
+#' @param reference name of the reference
+#' @param obs_name column name which contains the group
+#'
+#' @return
+#'
+#' @author Rico Derks
+#'
+#' @importFrom dplyr filter mutate select rename rename_with
+#' @importFrom tidyr pivot_longer nest unnest
+#' @importFrom purrr map
+#' @importFrom rlang !!
+#' @importFrom broom tidy
+#' @importFrom stats t.test
+#'
+#' @noRd
+#'
+perform_ttest <- function(data = NULL,
+                          group = NULL,
+                          reference = NULL,
+                          obs_name = NULL) {
+  # set column names in correct order
+  # fold changes is group/reference
+  col_names <- c(group_name = group, reference_name = reference)
+  # sort for the column names
+  col_names <- sort(col_names)
+
+  # compute table
+  de_table <- data %>%
+    rename(stat_group = !!as.symbol(obs_name)) %>%
+    # select the correct groups
+    filter(stat_group == reference |
+             stat_group == group) %>%
+    # make long
+    pivot_longer(cols = -c(sample_id, stat_group),
+                 names_to = "lipid_name",
+                 values_to = "value") %>%
+    # get the data for each lipid
+    nest(data = -lipid_name) %>%
+    # do the t-test
+    mutate(ttest = map(.x = data,
+                       .f = ~ tidy(t.test(value ~ stat_group, data = .x)))) %>%
+    # unfold all data
+    unnest(cols = ttest) %>%
+    # remove unwanted columns
+    select(-data) %>%
+    # rename some column names
+    rename(names = lipid_name,
+           pvals = p.value) %>%
+    rename_with(~names(col_names), .cols = c(estimate1, estimate2)) %>%
+    mutate(
+      scores = -1,
+      logfoldchanges = log2(group_name / reference_name),
+      pvals_adj  = p.adjust(p = pvals,
+                            method = "fdr"),
+      group = col_names["group_name"],
+      comp_type = "grpVref",
+      reference = col_names["reference_name"],
+      test_type = "t-test",
+      obs_name = obs_name,
+      versus = paste(group, "vs.", reference)
+    ) %>%
+    select(names, scores, logfoldchanges, pvals, pvals_adj, group, comp_type,
+           reference, test_type, obs_name, versus)
+}
+
+
+#' @title Perform a Mann-Whitney test on lipidyzer data
+#'
+#' @param data the data
+#' @param group name of the group
+#' @param reference name of the reference
+#' @param obs_name column name which contains the group
+#'
+#' @return
+#'
+#' @author Rico Derks
+#'
+#' @importFrom dplyr filter mutate select rename rename_with summarise group_by pull
+#' @importFrom tidyr pivot_longer pivot_wider nest unnest
+#' @importFrom purrr map_dbl
+#' @importFrom rlang !!
+#' @importFrom broom tidy
+#' @importFrom stats t.test
+#'
+#' @noRd
+#'
+perform_mwtest <- function(data = NULL,
+                          group = NULL,
+                          reference = NULL,
+                          obs_name = NULL) {
+  # set column names in correct order
+  # fold changes is group/reference
+  col_names <- c(group_name = group, reference_name = reference)
+  # sort for the column names
+  col_names <- sort(col_names)
+
+  # compute table
+  de_table <- data %>%
+    rename(stat_group = !!as.symbol(obs_name)) %>%
+    # select the correct groups
+    filter(stat_group == reference |
+             stat_group == group) %>%
+    # make long
+    pivot_longer(cols = -c(sample_id, stat_group),
+                 names_to = "lipid_name",
+                 values_to = "value") %>%
+    # get the data for each lipid
+    nest(data = -lipid_name) %>%
+    # do the Mann-Whitney-test
+    mutate(pvals = map_dbl(.x = data,
+                   .f = ~ tidy(wilcox.test(value ~ stat_group, data = .x)) %>%
+                     # remove unwanted columns
+                   select(-statistic, method, alternative) %>%
+                     pull(p.value))) %>%
+    # unfold the data
+    unnest(cols = data) %>%
+    # calculate the average of each group
+    group_by(lipid_name, stat_group) %>%
+    summarise(mean_value = mean(value), .groups = "drop",
+              pvals = pvals[1]) %>%
+    # make wide again
+    pivot_wider(id_cols = -stat_group,
+                names_from = stat_group,
+                values_from = mean_value) %>%
+    # rename some columns
+    rename(names = lipid_name) %>%
+    rename_with(~names(col_names), .cols = c(!!as.symbol(col_names[1]), !!as.symbol(col_names[2]))) %>%
+    mutate(
+      scores = -1,
+      logfoldchanges = log2(group_name / reference_name),
+      pvals_adj  = p.adjust(p = pvals,
+                            method = "fdr"),
+      group = col_names["group_name"],
+      comp_type = "grpVref",
+      reference = col_names["reference_name"],
+      test_type = "Mann-Whitney-test",
+      obs_name = obs_name,
+      versus = paste(group, "vs.", reference)
+    ) %>%
+    select(names, scores, logfoldchanges, pvals, pvals_adj, group, comp_type,
+           reference, test_type, obs_name, versus)
+
+  # return the de table
+  return(de_table)
+}
+
+
+#' @title Do some clean up of the lipidomics data
+#'
+#' @description Do some clean up of the lipidomics data. Remove all lipids which
+#'     contain no data (all NA's).
+#'
+#' @param lipid_data list with all the data,
+#'
+#' @return list with the cleaned data.
+#'
+#' @author Rico Derks
+#'
+#' @noRd
+#'
+clean_up <- function(lipid_data = NULL) {
+  ## remove columns with only NA's
+  # get the id's
+  remove_variable_idx <- which(apply(X = lipid_data$data_matrix,
+                                     MARGIN = 2,
+                                     FUN = function(x) {
+                                       all(is.na(x))
+                                     }))
+  # remove from data matrix
+  lipid_data$data_matrix <- lipid_data$data_matrix[, -remove_variable_idx]
+  # remove from variable
+  lipid_data$var_info <- lipid_data$var_info[-remove_variable_idx, ]
+
+  # return cleaned data
+  return(lipid_data)
+}
+
+
+#' @title Pre-processing of the lipid data
+#'
+#' @description Do several pre-processing steps on the lipid data.
+#'
+#' @param lipid_data list with all the lipid data
+#'
+#' @return list with pre-processed data
+#'
+#' @author Rico Derks
+#'
+#' @noRd
+#'
+preproc_lipid_data <- function(lipid_data = NULL) {
+  # Replace NA's by zero's: is this tricky because its sparse?
+  lipid_data$data_matrix[which(is.na(lipid_data$data_matrix), arr.ind = TRUE)] <- 0
+
+  # check if 2/3 of a variable contains zero's
+  excess_zero_conc <- colSums(lipid_data$data_matrix == 0) > 2/3 * dim(lipid_data$data_matrix)[1]
+  lipid_data$var_info$excess_zero_conc <- excess_zero_conc
+
+  # return pre-processed data
+  return(lipid_data)
+}
+
+
+#' @title Create the new database folder
+#'
+#' @description Check if the new database folder exists, if not create it.
+#'
+#' @param db_name name of the new database.
+#' @param db_root path of the root of all databases.
+#'
+#' @return logical, indicating if the folder
+#'
+#' @author Rico Derks
+#'
+#' @noRd
+#'
+create_db_folder <- function(db_name = NULL,
+                             db_root = NULL) {
+  if(is.null(db_name) | is.null(db_root)) {
+    stop("No database name or root supplied!")
+  }
+
+  # if directory doesn't exist create it
+  if(!dir.exists(file.path(db_root, db_name))) {
+    dir.create(path = file.path(db_root, db_name))
+  }
+
+  return(TRUE)
+}
+
