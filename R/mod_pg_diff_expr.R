@@ -188,6 +188,8 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
       y_leg <- max(de$neglogpval)
       x_leg <- max(de$logfoldchanges)
 
+      print(head(de))
+
       # title_text <- paste0(input$SI_comp_type, " || ", input$SI_comp_fact)
       if( dim(de)[1]>0 ) {
         # pg_volcano_ly(in_data = filtered_de(),
@@ -338,11 +340,13 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
         )
       )
 
-      grouping_var <- filtered_de()$obs_name[1]
+      # to be sure that this is a character and not a factor
+      grouping_var <- as.character(filtered_de()$obs_name[1])
       omic_counts <- data.frame( rv_data$anndata$obs_names,
                                  data_vec,
                                  rv_data$anndata$obs[[grouping_var]] )
       colnames(omic_counts) <- c("id", "val","grp")
+
       return(omic_counts)
     })
 
