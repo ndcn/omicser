@@ -197,13 +197,15 @@ mod_curation_lipid_server <- function(id){
       # if one of them is still NULL don't continue
       req(rv_data$data$status,
           rv_data$variables$status,
-          rv_data$observations$status)
+          rv_data$observations$status,
+          rv_data$observations$data)
 
       # if there is any error do NOT continue
       status <- c(rv_data$data$status,
                   rv_data$variables$status,
                   rv_data$observations$status)
 
+      # if no error
       if(!("error" %in% status)){
         tagList(
           h4("Parameters :"),
@@ -220,11 +222,17 @@ mod_curation_lipid_server <- function(id){
                              selected = "ttest"),
           # show any possible error messages
           htmlOutput(outputId = ns("lipid_test_status")),
+          # select which group to use for the differential expression
+          selectInput(inputId = ns("si_lipid_group_de"),
+                      label = "Select a group for differential expression :",
+                      choices = colnames(rv_data$observations$data)[-1],
+                      multiple = FALSE),
           # select curation steps
           checkboxGroupInput(inputId = ns("cbg_lipid_curation_params"),
                              label = "Select curation steps :",
                              choices = c("Remove zero lipids" = "zero",
-                                         "Remove lipids 2/3 NA" = "twothird"))
+                                         "Remove lipids 2/3 NA" = "twothird"),
+                             selected = "zero")
         )
       }
     })
@@ -236,7 +244,8 @@ mod_curation_lipid_server <- function(id){
       req(rv_data$data$status,
           rv_data$variables$status,
           rv_data$observations$status,
-          input$ti_lipid_db_name)
+          input$ti_lipid_db_name,
+          input$si_lipid_group_de)
 
       ## initialize some variables here
       # initialize curation parameters
@@ -261,6 +270,9 @@ mod_curation_lipid_server <- function(id){
       } else {
         rv_data$test$tests <- input$cbg_lipid_tests_de
       }
+
+      # get the group name selected for differential expression
+      group_name <- input$si_lipid_group_de
 
       # get the new database name
       rv_data$database$name <- input$ti_lipid_db_name
@@ -295,7 +307,8 @@ mod_curation_lipid_server <- function(id){
                           db_root = DB_ROOT,
                           remove_zero_lipids = remove_zero_lipids,
                           remove_twothird_lipids = remove_twothird_lipids,
-                          tests = rv_data$test$tests)
+                          tests = rv_data$test$tests,
+                          test_group = group_name)
 
         print("Curation done!")
       } # end of all fine

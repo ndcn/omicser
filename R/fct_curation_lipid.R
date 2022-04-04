@@ -133,6 +133,7 @@ check_database_name <- function(db_name = NULL,
 #'     or zero's. Default is FALSE.
 #' @param tests which tests to use for the differential expression table.
 #'     t-test ('ttest') and or Mann-Whitney test ('mw').
+#' @param test_group group on which to do the test(s).
 #'
 #' @return Nothing.
 #'
@@ -146,13 +147,18 @@ curate_lipidomics <- function(data = NULL,
                               steps = NULL,
                               remove_zero_lipids = FALSE,
                               remove_twothird_lipids = FALSE,
-                              tests = c("ttest", "mw")) {
-
+                              tests = c("ttest", "mw"),
+                              test_group = NULL) {
+  #### sanity checks
   # is/are the correct tests selected
   tests <- match.arg(arg = tests,
                      several.ok = TRUE)
 
-  print("Check db folder exists.")
+  # is a group selected
+  if(is.null(test_group)) {
+    stop("No group select for the test(s)!")
+  }
+
   # check if the database folder exist, if not create it
   check <- create_db_folder(db_root = db_root,
                             db_name = db_name)
@@ -163,6 +169,7 @@ curate_lipidomics <- function(data = NULL,
          write permissions!")
   }
 
+  #### Get going here
   print("Get the data")
   # initialize list with all the data
   lipid_data <- list(data_matrix = NULL,
@@ -204,6 +211,7 @@ curate_lipidomics <- function(data = NULL,
   #### Calculate differential expression table ####
   diff_exp_table <- diff_epxression(data = lipid_data,
                                     test_types = tests,
+                                    test_group = test_group,
                                     db_root = db_root,
                                     db_name = db_name)
 
@@ -344,11 +352,12 @@ pack_lipid_anndata <- function(data = NULL,
 
 #' @title Calculate the differential expression table
 #'
-#' @param data list with all the data
-#' @param test_types what test do you want to do
-#' @param comp the comparissons
-#' @param db_root root path of all databases
-#' @param db_name name of the database
+#' @param data list with all the data.
+#' @param test_types what test do you want to do.
+#' @param test_group group on which to do the test(s).
+#' @param comp the comparissons.
+#' @param db_root root path of all databases.
+#' @param db_name name of the database.
 #'
 #' @return The differential expression results. The differential expression
 #'     results are also save to a RDS file
@@ -361,29 +370,33 @@ pack_lipid_anndata <- function(data = NULL,
 #'
 diff_epxression <- function(data = NULL,
                             test_types = c("ttest", "mw"),
+                            test_group = NULL,
                             comp = NULL,
                             db_name = NULL,
                             db_root = NULL) {
-
+  #### Sanity checks
   # are the correct tests selected
   test_types <- match.arg(arg = test_types,
                           several.ok = TRUE)
 
-  # what comparissons
-  comp_types <- c("{LEAN}V{OBESE}",
-                  "{LEAN}V{OBESE+VLCD}",
-                  "{OBESE}V{OBESE+VLCD}")
+  if(is.null(test_group)) {
+    stop("No group select for the test(s)!")
+  }
 
-  # name of the column containing the comparissons
-  obs_names <- c("Group")
+  #### Get going
+  # Create the comparisons
+  # get the names
+  comp_names <- sort(unique(data$obs_info[, test_group]))
+  # create the combinations
+  comp_types <- combn(x = comp_names,
+                      m = 2)
 
+  # initialize data.frame
   de_table <- data.frame()
 
   for(test_type in test_types) {
-    print(test_type)
     # each test
-    for(comp_type in comp_types) {
-      print(comp_type)
+    for(comp_type in seq(ncol(comp_types))) {
       # each comparison
       # extract the x and y of the comparison
       # comp_type <- comp_types[1]
@@ -392,11 +405,11 @@ diff_epxression <- function(data = NULL,
                    m = regexec(text = comp_type,
                                pattern = "^\\{?([a-zA-Z0-9\\/\\+\\._]+)\\}?V\\{?([a-zA-Z0-9\\/\\+\\._]+)\\}?$"))
       )
-      reference <- parts[3]
-      group <- parts[2]
+      reference <- comp_types[2, comp_type]
+      group <- comp_types[1, comp_type]
 
       # make a data.frame
-      lipid_df <- cbind(data$obs_info, as.data.frame(data$data_matrix))
+      lipid_df <- cbind(data$obs_info[, c("sample_id", test_group)], as.data.frame(data$data_matrix))
 
       if(reference == "rest") {
         # if the reference is all other groups
@@ -408,13 +421,13 @@ diff_epxression <- function(data = NULL,
             perform_ttest(data = lipid_df,
                           group = group,
                           reference = reference,
-                          obs_name = obs_names)
+                          obs_name = test_group)
           },
           "mw" = {
             perform_mwtest(data = lipid_df,
                            group = group,
                            reference = reference,
-                           obs_name = obs_names)
+                           obs_name = test_group)
           }
         )
         # combine the results
@@ -433,8 +446,6 @@ diff_epxression <- function(data = NULL,
   # remove_idx <- c(which(is.infinite(diff_exp$logfoldchanges)),
   #                 which(is.nan(diff_exp$logfoldchanges)))
   # diff_exp <- diff_exp[-remove_idx, ]
-
-  print(de_table)
 
   # save the table
   saveRDS(object = de_table,
