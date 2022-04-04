@@ -35,7 +35,7 @@ mod_curation_server <- function(id){
       # show a popup for the curation part
       showModal(
         modalDialog(
-          title = "Curation",
+          title = "Data curation",
           easyClose = FALSE,
           fade = TRUE,
           size = "l",
