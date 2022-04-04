@@ -100,7 +100,10 @@ mod_curation_lipid_server <- function(id){
                                                message = NULL),
                               database = list(name = NULL,
                                               status = NULL,
-                                              message = NULL))
+                                              message = NULL),
+                              test = list(tests = NULL,
+                                          status = NULL,
+                                          message = NULL))
 
     #### get the data matrix ####
     observeEvent(input$fi_lipid_data, {
@@ -209,10 +212,19 @@ mod_curation_lipid_server <- function(id){
                     label = "Enter database name :"),
           # show any possible error messages
           htmlOutput(outputId = ns("lipid_db_name_status")),
+          # select tests for differential expression
+          checkboxGroupInput(inputId = ns("cbg_lipid_tests_de"),
+                             label = "Select tests for differential expression :",
+                             choices = c("t-test" = "ttest",
+                                         "Mann-Whitney" = "mw"),
+                             selected = "ttest"),
+          # show any possible error messages
+          htmlOutput(outputId = ns("lipid_test_status")),
           # select curation steps
           checkboxGroupInput(inputId = ns("cbg_lipid_curation_params"),
                              label = "Select curation steps :",
-                             choices = c("Remove zero lipids" = "zero"))
+                             choices = c("Remove zero lipids" = "zero",
+                                         "Remove lipids 2/3 NA" = "twothird"))
         )
       }
     })
@@ -226,6 +238,30 @@ mod_curation_lipid_server <- function(id){
           rv_data$observations$status,
           input$ti_lipid_db_name)
 
+      ## initialize some variables here
+      # initialize curation parameters
+      remove_zero_lipids <- FALSE
+      remove_twothird_lipids <- FALSE
+
+      ## get going
+      # get the parameters for the curation
+      lipid_curation_params <- input$cbg_lipid_curation_params
+      if("zero" %in% lipid_curation_params) {
+        remove_zero_lipids <- TRUE
+      }
+      if("twothird" %in% lipid_curation_params) {
+        remove_twothird_lipids <- TRUE
+      }
+
+      # get which tests to do for the differential expression table
+      if(is.null(input$cbg_lipid_tests_de)) {
+        # no test selected
+        rv_data$test$status <- "error"
+        rv_data$test$message <- "No test selected!!"
+      } else {
+        rv_data$test$tests <- input$cbg_lipid_tests_de
+      }
+
       # get the new database name
       rv_data$database$name <- input$ti_lipid_db_name
 
@@ -236,26 +272,30 @@ mod_curation_lipid_server <- function(id){
       rv_data$database$status <- status_db_name$status
       rv_data$database$message <- status_db_name$message
 
-      # if there is any error do NOT continue
+      ## check for errors
+      # get all status'
       status <- c(rv_data$data$status,
                   rv_data$variables$status,
                   rv_data$observations$status,
-                  status_db_name$status)
+                  status_db_name$status,
+                  rv_data$test$status)
 
       if("error" %in% status) {
         # do nothing
 
-        print(rv_data$database$message)
       } else {
         # continue
-        print("Start curaton...")
+        print("Start curation...")
 
         # do the curation
         curate_lipidomics(data = list(data = rv_data$data$data,
                                       obs = rv_data$observations$data,
                                       var = rv_data$variables$data),
                           db_name = rv_data$database$name,
-                          db_root = DB_ROOT)
+                          db_root = DB_ROOT,
+                          remove_zero_lipids = remove_zero_lipids,
+                          remove_twothird_lipids = remove_twothird_lipids,
+                          tests = rv_data$test$tests)
 
         print("Curation done!")
       } # end of all fine
@@ -270,6 +310,17 @@ mod_curation_lipid_server <- function(id){
       # show if there is an error
       if(rv_data$database$status == "error"){
         HTML(paste("<text style='color:red; font-weight:bold'>Error:", rv_data$database$message, "</text>"))
+      }
+    })
+
+
+    # show error if no test is selected
+    output$lipid_test_status <- renderUI({
+      req(rv_data$test$status)
+
+      # show if there is an error
+      if(rv_data$test$status == "error"){
+        HTML(paste("<text style='color:red; font-weight:bold'>Error:", rv_data$test$message, "</text>"))
       }
     })
 

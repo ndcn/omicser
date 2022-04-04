@@ -127,6 +127,12 @@ check_database_name <- function(db_name = NULL,
 #' @param db_name name of the new database.
 #' @param db_root root of all the databases.
 #' @param steps which steps should be done.
+#' @param remove_zero_lipids remove lipids which only contain NA's or zero's.
+#'     Default is FALSE.
+#' @param remove_twothird_lipids remove lipids which contain more than 2/3 NA's
+#'     or zero's. Default is FALSE.
+#' @param tests which tests to use for the differential expression table.
+#'     t-test ('ttest') and or Mann-Whitney test ('mw').
 #'
 #' @return Nothing.
 #'
@@ -137,7 +143,14 @@ check_database_name <- function(db_name = NULL,
 curate_lipidomics <- function(data = NULL,
                               db_name = NULL,
                               db_root = NULL,
-                              steps = NULL) {
+                              steps = NULL,
+                              remove_zero_lipids = FALSE,
+                              remove_twothird_lipids = FALSE,
+                              tests = c("ttest", "mw")) {
+
+  # is/are the correct tests selected
+  tests <- match.arg(arg = tests,
+                     several.ok = TRUE)
 
   print("Check db folder exists.")
   # check if the database folder exist, if not create it
@@ -171,11 +184,15 @@ curate_lipidomics <- function(data = NULL,
 
   print("Do clean up")
   #### Do some clean up ####
-  lipid_data <- clean_up(lipid_data = lipid_data)
+  # remove lipds which only contain NA's or zero's
+  if (remove_zero_lipids == TRUE) {
+    lipid_data <- clean_up(lipid_data = lipid_data)
+  }
 
   print("Do pre-processing")
   #### Pre-processing ####
-  lipid_data <- preproc_lipid_data(lipid_data = lipid_data)
+  lipid_data <- preproc_lipid_data(lipid_data = lipid_data,
+                                   remove_twothird_lipids = remove_twothird_lipids)
 
   print("Pack into anndata")
   #### Pack into ann-data ####
@@ -186,7 +203,7 @@ curate_lipidomics <- function(data = NULL,
   print("Calculate differential expression")
   #### Calculate differential expression table ####
   diff_exp_table <- diff_epxression(data = lipid_data,
-                                    test_types = c("ttest", "Mann-Whitney"),
+                                    test_types = tests,
                                     db_root = db_root,
                                     db_name = db_name)
 
@@ -230,7 +247,7 @@ write_lipid_config <- function(data = NULL,
   config_list <- list(
     ### grouping factors
     # if it needs to be in subset add here as well
-    group_vars = colnames(data$var_info)[-1], # c("lipid_class", "excess_zero_conc", "sig_lasso_coef"),
+    group_vars = colnames(data$var_info)[-1],
     group_obs = c("Group"),
 
     ### layer info
@@ -240,7 +257,7 @@ write_lipid_config <- function(data = NULL,
 
     # ANNOTATIONS / TARGETS
     # what adata$obs do we want to make default values for...
-    # # should just pack according to UI?
+    # should just pack according to UI?
 
     ### observations
     default_obs = colnames(data$obs_info[1]),
@@ -256,7 +273,7 @@ write_lipid_config <- function(data = NULL,
     target_features = "",
 
     ### set the feature details when dot clicked in volcano plot
-    # looks like this is not working, in domenico script it works
+    # looks like this is not working, in Domenico script it works
     feature_deets = c(""),
 
     ### differential expression
@@ -343,10 +360,14 @@ pack_lipid_anndata <- function(data = NULL,
 #' @noRd
 #'
 diff_epxression <- function(data = NULL,
-                            test_types = NULL,
+                            test_types = c("ttest", "mw"),
                             comp = NULL,
                             db_name = NULL,
                             db_root = NULL) {
+
+  # are the correct tests selected
+  test_types <- match.arg(arg = test_types,
+                          several.ok = TRUE)
 
   # what comparissons
   comp_types <- c("{LEAN}V{OBESE}",
@@ -389,7 +410,7 @@ diff_epxression <- function(data = NULL,
                           reference = reference,
                           obs_name = obs_names)
           },
-          "Mann-Whitney" = {
+          "mw" = {
             perform_mwtest(data = lipid_df,
                            group = group,
                            reference = reference,
@@ -613,6 +634,12 @@ clean_up <- function(lipid_data = NULL) {
 #' @description Do several pre-processing steps on the lipid data.
 #'
 #' @param lipid_data list with all the lipid data
+#' @param remove_twothird_lipids remove lipids which contain more than 2/3 NA's
+#'     or zero's. Default is FALSE.
+#'
+#' @details If a remove_* parameter is set to FALSE removing of lipids is not
+#'     done, but only saved in the variable info {var_info}. If set to TRUE the
+#'     lipids are actually removed.
 #'
 #' @return list with pre-processed data
 #'
@@ -620,13 +647,24 @@ clean_up <- function(lipid_data = NULL) {
 #'
 #' @noRd
 #'
-preproc_lipid_data <- function(lipid_data = NULL) {
+preproc_lipid_data <- function(lipid_data = NULL,
+                               remove_twothird_lipids = FALSE) {
   # Replace NA's by zero's: is this tricky because its sparse?
   lipid_data$data_matrix[which(is.na(lipid_data$data_matrix), arr.ind = TRUE)] <- 0
 
+  ## remove lipids which contain 2/3 of zero's ##
+  # get the index the lipids
   # check if 2/3 of a variable contains zero's
   excess_zero_conc <- colSums(lipid_data$data_matrix == 0) > 2/3 * dim(lipid_data$data_matrix)[1]
-  lipid_data$var_info$excess_zero_conc <- excess_zero_conc
+  # remove or record
+  if(remove_twothird_lipids == TRUE) {
+    # remove lipids
+    lipid_data$data_matrix <- lipid_data$data_matrix[, -which(excess_zero_conc)]
+    lipid_data$var_info <- lipid_data$var_info[-which(excess_zero_conc), ]
+  } else {
+    # record lipids
+    lipid_data$var_info$excess_zero_conc <- excess_zero_conc
+  }
 
   # return pre-processed data
   return(lipid_data)
