@@ -56,7 +56,7 @@ mod_curation_server <- function(id){
       )
     })
 
-    # get which omic parameter is selected
+    # get which omics parameter is selected
     observeEvent(input$rb_select_omic, {
       req(input$rb_select_omic)
 
@@ -68,21 +68,24 @@ mod_curation_server <- function(id){
     output$ui_omic_params <- renderUI({
       req(omic_selected())
 
-      # get the selected omic
+      # get the selected omics
       selected_omic <- omic_selected()
 
       tagList(
         hr(),
-        # show the module for the selected omic
+        # show the module for the selected omics
         switch(
           selected_omic,
           "lipid" = mod_curation_lipid_ui(id = ns("curation_lipid"))
+          # !! put other omics ui modules here !!
         )
       )
     })
 
     # load the lipidomics curation server part
     mod_curation_lipid_server(id = "curation_lipid")
+
+    # !! put other omics server modules here !!
 
   })
 }
