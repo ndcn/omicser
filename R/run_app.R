@@ -37,6 +37,11 @@ run_app <- function(
 
 #' run_in_browser - shortcut to launch in_browser
 #'
+#' @param db_root path of the database root
+#' @param database_names database names
+#' @param install_type installation type
+#' @param ... parameters passes on to run_app()
+#'
 #' @return
 #' @export
 #'

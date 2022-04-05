@@ -53,7 +53,15 @@ mod_pg_table_ui <- function(id){
 #' @param id shiny internal
 #' @param rv_data reactive data
 #' @param rv_selections side selector reactives
+#' @param active_layer_data active layer
+#'
 #' @importFrom DT JS datatable renderDT dataTableProxy selectRows
+#' @importFrom rlang .data
+#' @importFrom magrittr %>%
+#' @importFrom dplyr mutate across inner_join
+#' @importFrom tidyr pivot_wider
+#' @importFrom plotly plot_ly config layout
+#'
 #' @noRd
 mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
   moduleServer( id, function(input, output, session){
@@ -78,13 +86,13 @@ mod_pg_table_server <- function(id, rv_data, rv_selections, active_layer_data) {
       join_data <- rv_data$anndata$var %>%
                         dplyr::mutate(dplyr::across(where(is.factor), as.character ))
       wide_data <- rv_data$de %>%
-                        tidyr::pivot_wider(id_cols = names,
-                                            names_from = c(group, reference, test_type),
-                                            values_from = c(logfoldchanges, scores ,pvals,pvals_adj,versus),
+                        tidyr::pivot_wider(id_cols = .data$names,
+                                            names_from = c(.data$group, .data$reference, .data$test_type),
+                                            values_from = c(.data$logfoldchanges, .data$scores, .data$pvals, .data$pvals_adj, .data$versus),
                                             names_repair = "check_unique"
                                           )
       comp_data <- join_data %>%
-                        dplyr::inner_join(wide_data,by = c("feature_name"="names") )
+                        dplyr::inner_join(wide_data, by = c("feature_name"="names") )
       #comp_data <- as.data.frame(comp_data1)
       rownames(comp_data) <- comp_data$feature_name
 

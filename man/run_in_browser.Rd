@@ -11,6 +11,15 @@ run_in_browser(
   ...
 )
 }
+\arguments{
+\item{db_root}{path of the database root}
+
+\item{database_names}{database names}
+
+\item{install_type}{installation type}
+
+\item{...}{parameters passes on to run_app()}
+}
 \value{
 
 }

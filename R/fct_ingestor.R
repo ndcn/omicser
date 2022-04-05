@@ -14,6 +14,7 @@
 #' @noRd
 #' @import data.table
 #' @import RColorBrewer
+#'
 gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
   # load or generate configs..
 

@@ -82,7 +82,10 @@ mod_pg_expression_ui <- function(id){
 #' @param box_data boxplot data
 #' @param varbox_data var boxplot data
 #'
+#' @importFrom grDevices pdf dev.off png
+#'
 #' @noRd
+#'
 mod_pg_expression_server <- function(id, rv_data, rv_selections, heat_data){ #}, agg_heat){
   moduleServer( id, function(input, output, session){
     ns <- session$ns

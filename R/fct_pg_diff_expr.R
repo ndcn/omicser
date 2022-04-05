@@ -239,16 +239,34 @@ hline <- function(y = 0, color = "blue") {
 }
 
 
-
+#' @title create plotly volcano plot from ggplot2
+#'
+#' @param in_data data
+#' @param pvalue_adjust adjust p-value
+#' @param title title of the plot
+#'
+#' @return plotly object
+#'
+#' @importFrom ggplot2 ggplot aes geom_point theme_minimal scale_color_manual geom_vline geom_hline
+#' @importFrom rlang .data
+#'
+#' @noRd
+#'
 volc_ggplotly <- function(in_data, pvalue_adjust = FALSE, title = "") {
 
   # plot adding up all layers we have seen so far
-  ggplot(data=de, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed, label=delabel)) +
+  ggplot(data = in_data,
+         aes(x = .data$log2FoldChange,
+             y = -log10(.data$pvalue),
+             col = .data$diffexpressed,
+             label = .data$delabel)) +
     geom_point() +
     theme_minimal() +
-    scale_color_manual(values=c("blue", "black", "red")) +
-    geom_vline(xintercept=c(-0.6, 0.6), col="red") +
-    geom_hline(yintercept=-log10(0.05), col="red")
+    scale_color_manual(values = c("blue", "black", "red")) +
+    geom_vline(xintercept = c(-0.6, 0.6),
+               col = "red") +
+    geom_hline(yintercept = -log10(0.05),
+               col = "red")
 
 }
 

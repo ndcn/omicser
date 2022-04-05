@@ -7,6 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+#'
 mod_subset_selector_ui <- function(id){
   ns <- NS(id)
 
@@ -17,7 +18,12 @@ mod_subset_selector_ui <- function(id){
 
 #' subset_selector Server Functions
 #'
+#' @param id id
+#' @param rv_conf configuration
+#' @param meta_field meta field
+#'
 #' @noRd
+#'
 mod_subset_selector_server <- function(id,rv_conf,meta_field){
   moduleServer( id, function(input, output, session){
     ns <- session$ns

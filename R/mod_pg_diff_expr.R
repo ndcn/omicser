@@ -68,7 +68,10 @@ mod_pg_diff_expr_ui <- function(id){
 #' @param active_layer_data current data matrix
 #'
 #' @noRd
+#'
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
+#' @importFrom utils head
+#'
 mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns

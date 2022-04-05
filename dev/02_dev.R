@@ -61,6 +61,12 @@ usethis::use_package("rlang")
 usethis::use_package("RColorBrewer")
 usethis::use_package("reticulate")
 usethis::use_package("purrr")
+usethis::use_package("Seurat")
+usethis::use_package("circlize")
+usethis::use_package("config")
+usethis::use_package("htmlwidgets")
+usethis::use_package("matrixStats")
+usethis::use_package("ggplot2")
 
 # # DISABLED for now
 # usethis::use_package("BiocManager")

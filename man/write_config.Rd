@@ -7,9 +7,11 @@
 write_config(in_config, in_path = NULL, set_default = FALSE)
 }
 \arguments{
+\item{in_config}{list of database names, conda environment, and database path}
+
 \item{in_path}{where the config file lives. default cwd}
 
-\item{in_options}{list of database names, conda environment, and database path}
+\item{set_default}{set defaults (default is FALSE).}
 }
 \value{
 

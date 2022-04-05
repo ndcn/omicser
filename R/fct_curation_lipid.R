@@ -14,6 +14,8 @@
 #'
 #' @author Rico Derks
 #'
+#' @importFrom utils read.csv
+#'
 #' @noRd
 #'
 read_lipid_data <- function(filename = NULL,
@@ -365,6 +367,7 @@ pack_lipid_anndata <- function(data = NULL,
 #' @author Rico Derks
 #'
 #' @importFrom reticulate import
+#' @importFrom utils combn
 #'
 #' @noRd
 #'
@@ -474,7 +477,8 @@ diff_epxression <- function(data = NULL,
 #' @importFrom purrr map
 #' @importFrom rlang !!
 #' @importFrom broom tidy
-#' @importFrom stats t.test
+#' @importFrom stats t.test p.adjust
+#' @importFrom rlang .data
 #'
 #' @noRd
 #'
@@ -492,39 +496,40 @@ perform_ttest <- function(data = NULL,
   de_table <- data %>%
     rename(stat_group = !!as.symbol(obs_name)) %>%
     # select the correct groups
-    filter(stat_group == reference |
-             stat_group == group) %>%
+    filter(.data$stat_group == reference |
+             .data$stat_group == group) %>%
     # make long
-    pivot_longer(cols = -c(sample_id, stat_group),
+    pivot_longer(cols = -c(.data$sample_id, .data$stat_group),
                  names_to = "lipid_name",
                  values_to = "value") %>%
     # get the data for each lipid
-    nest(data = -lipid_name) %>%
+    nest(data = -.data$lipid_name) %>%
     # do the t-test
-    mutate(ttest = map(.x = data,
-                       .f = ~ tidy(t.test(value ~ stat_group, data = .x)))) %>%
+    mutate(ttest = map(.x = .data$data,
+                       .f = ~ tidy(t.test(.data$value ~ .data$stat_group, data = .x)))) %>%
     # unfold all data
-    unnest(cols = ttest) %>%
+    unnest(cols = .data$ttest) %>%
     # remove unwanted columns
-    select(-data) %>%
+    select(-.data$data) %>%
     # rename some column names
-    rename(names = lipid_name,
-           pvals = p.value) %>%
-    rename_with(~names(col_names), .cols = c(estimate1, estimate2)) %>%
+    rename(names = .data$lipid_name,
+           pvals = .data$p.value) %>%
+    rename_with(~names(col_names), .cols = c(.data$estimate1, .data$estimate2)) %>%
     mutate(
       scores = -1,
-      logfoldchanges = log2(group_name / reference_name),
-      pvals_adj  = p.adjust(p = pvals,
+      logfoldchanges = log2(.data$group_name / .data$reference_name),
+      pvals_adj  = p.adjust(p = .data$pvals,
                             method = "fdr"),
       group = col_names["group_name"],
       comp_type = "grpVref",
       reference = col_names["reference_name"],
       test_type = "t-test",
       obs_name = obs_name,
-      versus = paste(group, "vs.", reference)
+      versus = paste(.data$group, "vs.", .data$reference)
     ) %>%
-    select(names, scores, logfoldchanges, pvals, pvals_adj, group, comp_type,
-           reference, test_type, obs_name, versus)
+    select(.data$names, .data$scores, .data$logfoldchanges, .data$pvals,
+           .data$pvals_adj, .data$group, .data$comp_type, .data$reference,
+           .data$test_type, .data$obs_name, .data$versus)
 }
 
 
@@ -544,14 +549,15 @@ perform_ttest <- function(data = NULL,
 #' @importFrom purrr map_dbl
 #' @importFrom rlang !!
 #' @importFrom broom tidy
-#' @importFrom stats t.test
+#' @importFrom stats t.test p.adjust
+#' @importFrom rlang .data
 #'
 #' @noRd
 #'
 perform_mwtest <- function(data = NULL,
-                          group = NULL,
-                          reference = NULL,
-                          obs_name = NULL) {
+                           group = NULL,
+                           reference = NULL,
+                           obs_name = NULL) {
   # set column names in correct order
   # fold changes is group/reference
   col_names <- c(group_name = group, reference_name = reference)
@@ -562,47 +568,48 @@ perform_mwtest <- function(data = NULL,
   de_table <- data %>%
     rename(stat_group = !!as.symbol(obs_name)) %>%
     # select the correct groups
-    filter(stat_group == reference |
-             stat_group == group) %>%
+    filter(.data$stat_group == reference |
+             .data$stat_group == group) %>%
     # make long
-    pivot_longer(cols = -c(sample_id, stat_group),
+    pivot_longer(cols = -c(.data$sample_id, .data$stat_group),
                  names_to = "lipid_name",
                  values_to = "value") %>%
     # get the data for each lipid
-    nest(data = -lipid_name) %>%
+    nest(data = -.data$lipid_name) %>%
     # do the Mann-Whitney-test
-    mutate(pvals = map_dbl(.x = data,
-                   .f = ~ tidy(wilcox.test(value ~ stat_group, data = .x)) %>%
-                     # remove unwanted columns
-                   select(-statistic, method, alternative) %>%
-                     pull(p.value))) %>%
+    mutate(pvals = map_dbl(.x = .data$data,
+                           .f = ~ tidy(wilcox.test(.data$value ~ .data$stat_group, data = .x)) %>%
+                             # remove unwanted columns
+                             select(-.data$statistic, .data$method, .data$alternative) %>%
+                             pull(.data$p.value))) %>%
     # unfold the data
-    unnest(cols = data) %>%
+    unnest(cols = .data$data) %>%
     # calculate the average of each group
-    group_by(lipid_name, stat_group) %>%
-    summarise(mean_value = mean(value), .groups = "drop",
-              pvals = pvals[1]) %>%
+    group_by(.data$lipid_name, .data$stat_group) %>%
+    summarise(mean_value = mean(.data$value), .groups = "drop",
+              pvals = .data$pvals[1]) %>%
     # make wide again
-    pivot_wider(id_cols = -stat_group,
-                names_from = stat_group,
-                values_from = mean_value) %>%
+    pivot_wider(id_cols = -.data$stat_group,
+                names_from = .data$stat_group,
+                values_from = .data$mean_value) %>%
     # rename some columns
-    rename(names = lipid_name) %>%
+    rename(names = .data$lipid_name) %>%
     rename_with(~names(col_names), .cols = c(!!as.symbol(col_names[1]), !!as.symbol(col_names[2]))) %>%
     mutate(
       scores = -1,
-      logfoldchanges = log2(group_name / reference_name),
-      pvals_adj  = p.adjust(p = pvals,
+      logfoldchanges = log2(.data$group_name / .data$reference_name),
+      pvals_adj  = p.adjust(p = .data$pvals,
                             method = "fdr"),
       group = col_names["group_name"],
       comp_type = "grpVref",
       reference = col_names["reference_name"],
       test_type = "Mann-Whitney-test",
       obs_name = obs_name,
-      versus = paste(group, "vs.", reference)
+      versus = paste(.data$group, "vs.", .data$reference)
     ) %>%
-    select(names, scores, logfoldchanges, pvals, pvals_adj, group, comp_type,
-           reference, test_type, obs_name, versus)
+    select(.data$names, .data$scores, .data$logfoldchanges, .data$pvals,
+           .data$pvals_adj, .data$group, .data$comp_type, .data$reference,
+           .data$test_type, .data$obs_name, .data$versus)
 
   # return the de table
   return(de_table)

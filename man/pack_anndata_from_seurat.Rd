@@ -7,14 +7,11 @@
 pack_anndata_from_seurat(seurat_obj_name)
 }
 \arguments{
-\item{seurat_obj}{}
+\item{seurat_obj_name}{name of seurat object}
 }
 \value{
 adata the anndata object we are browsing
 }
 \description{
 pack_anndata_from_seurat
-}
-\examples{
- TODO
 }

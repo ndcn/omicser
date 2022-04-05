@@ -168,6 +168,22 @@ pack_anndata_from_csv <- function(data_in){
 
 
 # modified from sceasy original to take advantage of the anndata package
+#' @title convert searat two anndata
+#'
+#' @param obj object
+#' @param outFile output file
+#' @param assay assay
+#' @param main_layer main layer
+#' @param transfer_layers transfer layer
+#' @param drop_single_values drop single values
+#'
+#' @importFrom utils compareVersion
+#' @importFrom Seurat GetAssayData GetAssay Embeddings
+#' @importFrom Matrix t
+#' @importFrom anndata AnnData
+#'
+#' @noRd
+#'
 seurat2anndata <- function(obj,
                            outFile = NULL,
                            assay = 'RNA',
@@ -223,12 +239,15 @@ seurat2anndata <- function(obj,
 
 #' pack_anndata_from_seurat
 #'
-#' @param seurat_obj
+#' @param seurat_obj_name name of seurat object
 #'
 #' @return adata the anndata object we are browsing
+#'
+#' @importFrom dplyr mutate relocate
+#' @importFrom rlang .data
+#'
 #' @export pack_anndata_from_seurat
 #'
-#' @examples  TODO
 pack_anndata_from_seurat <- function(seurat_obj_name){
 
 
@@ -252,7 +271,7 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
     if ( !("sample_ID" %in% adata$obs_keys()) ){
       obs <- adata$obs
       obs <- obs %>% dplyr::mutate(sample_ID=adata$obs_names) %>%
-                     dplyr::relocate(sample_ID)
+                     dplyr::relocate(.data$sample_ID)
       adata$obs <- obs
     }
 
@@ -262,7 +281,7 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
     if ( !("feature_name" %in% adata$var_keys()) ){
       var_ <- adata$var
       var_ <- var_ %>% dplyr::mutate(feature_name=adata$var_names) %>%
-                       dplyr::relocate(feature_name)
+                       dplyr::relocate(.data$feature_name)
       adata$var <- var_
     }
 
@@ -272,11 +291,11 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
     } else {
       obs <- adata$raw$obs
       obs <- obs %>% dplyr::mutate(sample_ID=adata$raw$obs_names) %>%
-        dplyr::relocate(sample_ID)
+        dplyr::relocate(.data$sample_ID)
       adata$raw$obs <- obs
       var_ <- adata$raw$var
       var_ <- var_ %>% dplyr::mutate(feature_name=adata$raw$var_names) %>%
-                       dplyr::relocate(feature_name)
+                       dplyr::relocate(.data$feature_name)
       adata$raw$var <- var_
     }
 
@@ -310,6 +329,12 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
 #' @description A a function to create the anndata database
 #'
 #' @return The return value, if any, from executing the function.
+#'
+#' @importFrom dplyr mutate relocate
+#' @importFrom rlang .data
+#' @importFrom tools file_ext
+#' @importFrom anndata read_h5ad
+#'
 #' @export setup_database
 #'
 #' @examples  TODO
@@ -356,7 +381,7 @@ setup_database <- function(database_name, db_path, data_in, re_pack=TRUE){
       if ( !("sample_ID" %in% adata$obs_keys()) ){
          obs <- adata$obs
          obs <- obs %>% dplyr::mutate(sample_ID=adata$obs_names) %>%
-                        dplyr::relocate(sample_ID)
+                        dplyr::relocate(.data$sample_ID)
          adata$obs <- obs
        }
       #enforce sample_ID
@@ -365,7 +390,7 @@ setup_database <- function(database_name, db_path, data_in, re_pack=TRUE){
       if ( !("feature_name" %in% adata$var_keys()) ){
         var_ <- adata$var
         var_ <- var_ %>% dplyr::mutate(feature_name=adata$var_names) %>%
-                        dplyr::relocate(feature_name)
+                        dplyr::relocate(.data$feature_name)
         adata$var <- var_
 
       }
@@ -376,11 +401,11 @@ setup_database <- function(database_name, db_path, data_in, re_pack=TRUE){
       } else {
         obs <- adata$raw$obs
         obs <- obs %>% dplyr::mutate(sample_ID=adata$raw$obs_names) %>%
-          dplyr::relocate(sample_ID)
+          dplyr::relocate(.data$sample_ID)
         adata$raw$obs <- obs
         var_ <- adata$raw$var
         var_ <- var_ %>% dplyr::mutate(feature_name=adata$raw$var_names) %>%
-                         dplyr::relocate(feature_name)
+                         dplyr::relocate(.data$feature_name)
         adata$raw$var <- var_
       }
 
