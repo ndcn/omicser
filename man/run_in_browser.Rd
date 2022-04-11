@@ -20,12 +20,9 @@ run_in_browser(
 
 \item{...}{parameters passes on to run_app()}
 }
-\value{
-
-}
 \description{
 run_in_browser - shortcut to launch in_browser
 }
 \examples{
-TODO
+# TODO
 }

@@ -2,16 +2,13 @@
 % Please edit documentation in R/run_app.R
 \name{run_defaults}
 \alias{run_defaults}
-\title{run_defai;ts - shortcut to launch with default settings.}
+\title{run_defaults - shortcut to launch with default settings.}
 \usage{
 run_defaults()
 }
-\value{
-
-}
 \description{
-run_defai;ts - shortcut to launch with default settings.
+run_defaults - shortcut to launch with default settings.
 }
 \examples{
-TODO
+# TODO
 }

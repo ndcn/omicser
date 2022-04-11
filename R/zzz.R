@@ -16,7 +16,9 @@
         "ID",
         "UI",
         # mod_pg_expression_server
-        "grp"
+        "grp",
+        # mod_pg_table_server
+        "where"
       )
     )
   }

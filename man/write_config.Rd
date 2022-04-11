@@ -14,11 +14,11 @@ write_config(in_config, in_path = NULL, set_default = FALSE)
 \item{set_default}{set defaults (default is FALSE).}
 }
 \value{
-
+Nothing. File is written.
 }
 \description{
 write_config: helper for Writing the Config file for setting up the omicser databases
 }
 \examples{
-TODO
+# TODO
 }

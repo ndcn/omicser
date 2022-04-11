@@ -18,5 +18,5 @@ config_list: list of UI configurations for accessing data
 get_db_conf: helper for reading the database config
 }
 \examples{
-TODO
+# TODO
 }

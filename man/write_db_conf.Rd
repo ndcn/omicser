@@ -14,11 +14,11 @@ write_db_conf(config_list, db_name, db_root = NULL)
 \item{db_root}{where the folder lives. default cwd}
 }
 \value{
-
+Nothing, a file is written.
 }
 \description{
 write_db_conf: helper for writing the ui config options for the database
 }
 \examples{
-TODO
+# TODO
 }

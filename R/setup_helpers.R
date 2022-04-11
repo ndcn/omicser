@@ -5,10 +5,12 @@
 #' @param in_path where the config file lives. default cwd
 #' @param set_default set defaults (default is FALSE).
 #'
-#' @return
+#' @return Nothing. File is written.
+#'
 #' @export write_config
 #' @importFrom configr write.config
-#' @examples TODO
+#' @examples
+#' # TODO
 write_config <- function(in_config, in_path=NULL, set_default=FALSE) {
 
   if ( is.null(in_path) ) {
@@ -46,7 +48,8 @@ write_config <- function(in_config, in_path=NULL, set_default=FALSE) {
 #' @return the list of options contained in `app_config.yml`
 #' @export get_config
 #' @importFrom configr read.config
-#' @examples TODO
+#' @examples
+#' # TODO
 get_config <- function(in_path = NULL) {
 
   if ( is.null(in_path) ) {
@@ -127,10 +130,11 @@ get_config <- function(in_path = NULL) {
 #' @param db_meta data to write
 #' @param db_name what is out database is called
 #' @param db_root where the folder lives. default cwd
-#' @return
+#' @return Nothing, a file is written.
 #' @export write_db_meta
 #' @importFrom configr write.config
-#' @examples TODO
+#' @examples
+#' # TODO
 write_db_meta <- function(db_meta,db_name, db_root = NULL) {
 
   if ( is.null(db_root) ) {
@@ -152,7 +156,8 @@ write_db_meta <- function(db_meta,db_name, db_root = NULL) {
 #' @return meta_info: database meta deta
 #' @export get_db_meta
 #' @importFrom configr read.config
-#' @examples TODO
+#' @examples
+#' # TODO
 get_db_meta <- function(db_name, db_root = NULL)  {
 
   if ( is.null(db_root) ) {
@@ -176,10 +181,11 @@ get_db_meta <- function(db_name, db_root = NULL)  {
 #' @param config_list the database configuration list
 #' @param db_name what is out database is called
 #' @param db_root where the folder lives. default cwd
-#' @return
+#' @return Nothing, a file is written.
 #' @export write_db_conf
 #' @importFrom configr write.config
-#' @examples TODO
+#' @examples
+#' # TODO
 write_db_conf <- function(config_list,db_name, db_root = NULL) {
 
   if ( is.null(db_root) ) {
@@ -203,7 +209,8 @@ write_db_conf <- function(config_list,db_name, db_root = NULL) {
 #' @return config_list: list of UI configurations for accessing data
 #' @export get_db_conf
 #' @importFrom configr read.config
-#' @examples TODO
+#' @examples
+#' # TODO
 get_db_conf <- function(db_name, db_root = NULL)  {
 
   if ( is.null(db_root) ) {

@@ -42,10 +42,10 @@ run_app <- function(
 #' @param install_type installation type
 #' @param ... parameters passes on to run_app()
 #'
-#' @return
 #' @export
 #'
-#' @examples TODO
+#' @examples
+#' # TODO
 run_in_browser <- function(db_root=NULL,database_names=NULL,install_type = "empty",...){
 
   if (is.null(db_root)) db_root <- "UNDEFINED"
@@ -60,12 +60,12 @@ run_in_browser <- function(db_root=NULL,database_names=NULL,install_type = "empt
 
 
 
-#' run_defai;ts - shortcut to launch with default settings.
+#' run_defaults - shortcut to launch with default settings.
 #'
-#' @return
 #' @export
 #'
-#' @examples TODO
+#' @examples
+#' # TODO
 run_defaults <- function(){
   # load yaml and add launch.browser = TRUE to the list
   #
@@ -88,10 +88,10 @@ run_defaults <- function(){
 
 #'  run_dockers - shortcut to launch with default settings for the docker container
 #'
-#' @return
 #' @export
 #'
-#' @examples TODO
+#' @examples
+#' # TODO
 run_docker <- function(){
   # load yaml and add launch.browser = TRUE to the list
   #

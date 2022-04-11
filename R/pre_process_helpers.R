@@ -17,7 +17,8 @@
 #' @importFrom tidyselect all_of
 #'
 #'
-#' @examples TODO
+#' @examples 
+#' # TODO
 compute_de_table <- function(adata,comp_types, test_types, obs_names,sc) {
   # this should update adata in place with the diff_exp data...
   diff_exp <- data.frame()
@@ -83,7 +84,8 @@ compute_de_table <- function(adata,comp_types, test_types, obs_names,sc) {
 #' @return adata the anndata object we are browsing
 #' @export pack_anndata_from_csv
 #'
-#' @examples  TODO
+#' @examples 
+#' # TODO
 pack_anndata_from_csv <- function(data_in){
 
   #tools::file_path_sans_ext(data_in)
@@ -337,7 +339,8 @@ pack_anndata_from_seurat <- function(seurat_obj_name){
 #'
 #' @export setup_database
 #'
-#' @examples  TODO
+#' @examples 
+#' # TODO
 setup_database <- function(database_name, db_path, data_in, re_pack=TRUE){
   #LOAD & PACK into ANNDATA
   ##if data_in contains filenames they must be the full path (i.e. RAW_DIR inlcuded)

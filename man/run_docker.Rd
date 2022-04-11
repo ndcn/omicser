@@ -6,12 +6,9 @@
 \usage{
 run_docker()
 }
-\value{
-
-}
 \description{
 run_dockers - shortcut to launch with default settings for the docker container
 }
 \examples{
-TODO
+# TODO
 }

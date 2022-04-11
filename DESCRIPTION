@@ -6,6 +6,7 @@ Author: Andy Henrie
 Description: Data exploration playground for general -omics sharing.  Developed as part of the NDCN Open Science initiative Data Science Pilot March-Sept 2021.
 License: MIT + file LICENSE
 Encoding: UTF-8
+Depends: R (>= 3.5.0)
 Imports:
     anndata,
     broom,
@@ -34,12 +35,14 @@ Imports:
     shiny,
     shinydashboardPlus,
     shinyFiles,
+    spelling,
     shinyjs,
     stringr,
     tidyr,
     tidyselect,
     tools,
-    waiter
+    waiter,
+    testthat
 Authors@R: person('Andy', 'Henrie', email = 'henrie@datatecnica.com', role = c('cre', 'aut'))
 RoxygenNote: 7.1.2
 URL: https://ndcn.github.io/omicser, https://github.com/ndcn/omicser
