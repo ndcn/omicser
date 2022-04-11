@@ -18,7 +18,10 @@
         # mod_pg_expression_server
         "grp",
         # mod_pg_table_server
-        "where"
+        "where",
+        # perform_ttest / perform_mwtest
+        "value",
+        "stat_group"
       )
     )
   }

@@ -72,6 +72,77 @@ read_lipid_data <- function(filename = NULL,
 }
 
 
+#' @title Extract all lipid information
+#'
+#' @description Extract which lipids are uploaded and combine with the data
+#'     from the master lipids tables.
+#'
+#' @param lipid_data data.frame with the lipid data. Colnames contain the lipid
+#'     names from the lipidyzer.
+#'
+#' @return data.frame containing only the lipids uploaded and with all extra
+#'     information from master lipids table.
+#'
+#' @author Rico Derks
+#'
+#' @importFrom dplyr filter group_by summarise rename
+#' @importFrom rlang .data
+#'
+#' @noRd
+#'
+get_lipid_info <- function(lipid_data = NULL) {
+  # Sanity check
+  if(is.null(lipid_data)) {
+    stop("No data supplied!")
+  }
+
+  # get the lipid names (lipidyzer) from the uploaded data.
+  lipidyzer_lipids <- colnames(lipid_data)
+
+  # get all information about the lipids
+  lipid_info <- master_table_lipids %>%
+    filter(.data$lipidyzer_name %in% lipidyzer_lipids)
+
+  # data.frame needs to be collapsed, for some lipids multiple entries
+  lipid_info_clean <- lipid_info %>%
+    group_by(.data$lipidyzer_name) %>%
+    summarise(common_name = .data$common_name[1],
+              species_shorthand = .data$species_shorthand[1],
+              lipid_class = .data$lipid_class[1],
+              abbreviation = .data$abbreviation[1],
+              abbreviation_chains = .data$abbreviation_chains[1],
+              regno = paste(.data$regno, collapse = ","),
+              lm_id = paste(.data$lm_id, collapse = ","),
+              name = paste(.data$name, collapse = "\t"),
+              abbrev = .data$abbrev[1],
+              abbrev_chains = .data$abbrev_chains[1],
+              core = .data$core[1],
+              main_class = .data$main_class[1],
+              sub_class = .data$sub_class[1],
+              class_level4 = .data$class_level4[1],
+              kegg_id = paste(.data$kegg_id, collapse = ","),
+              hmdb_id = paste(.data$hmdb_id, collapse = ","),
+              chebi_id = paste(.data$chebi_id, collapse = ","),
+              lipidbank_id = paste(.data$lipidbank_id, collapse = ","),
+              pubchem_id = paste(.data$pubchem_cid, collapse = ","),
+              class_lm_id = .data$class_lm_id[1],
+              class_kegg_id = .data$class_kegg_id[1],
+              class_hmdb_id = .data$class_hmdb_id[1],
+              class_chebi_id = .data$class_chebi_id[1],
+              class_lipidbank_id = .data$class_lipidbank_id[1],
+              class_pubchem_id = .data$class_pubchem_cid[1],
+              .groups = "drop") %>%
+    rename(lipid_name = .data$lipidyzer_name) %>%
+    as.data.frame()
+
+  # set the rownames
+  rownames(lipid_info_clean) <- lipid_info_clean$lipid_name
+
+  # return results
+  return(lipid_info_clean)
+}
+
+
 #' @title Check the database name
 #'
 #' @description Check if the database name doesn't contain any spaces or special
@@ -506,7 +577,7 @@ perform_ttest <- function(data = NULL,
     nest(data = -.data$lipid_name) %>%
     # do the t-test
     mutate(ttest = map(.x = .data$data,
-                       .f = ~ tidy(t.test(.data$value ~ .data$stat_group, data = .x)))) %>%
+                       .f = ~ tidy(t.test(value ~ stat_group, data = .x)))) %>%
     # unfold all data
     unnest(cols = .data$ttest) %>%
     # remove unwanted columns
@@ -530,6 +601,9 @@ perform_ttest <- function(data = NULL,
     select(.data$names, .data$scores, .data$logfoldchanges, .data$pvals,
            .data$pvals_adj, .data$group, .data$comp_type, .data$reference,
            .data$test_type, .data$obs_name, .data$versus)
+
+  # return result
+  return(de_table)
 }
 
 
@@ -578,7 +652,7 @@ perform_mwtest <- function(data = NULL,
     nest(data = -.data$lipid_name) %>%
     # do the Mann-Whitney-test
     mutate(pvals = map_dbl(.x = .data$data,
-                           .f = ~ tidy(wilcox.test(.data$value ~ .data$stat_group, data = .x)) %>%
+                           .f = ~ tidy(wilcox.test(value ~ stat_group, data = .x)) %>%
                              # remove unwanted columns
                              select(-.data$statistic, .data$method, .data$alternative) %>%
                              pull(.data$p.value))) %>%

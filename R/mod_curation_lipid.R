@@ -41,16 +41,6 @@ mod_curation_lipid_ui <- function(id){
                placeholder = "No file selected"
              ),
              htmlOutput(outputId = ns("fi_lipid_data_status")),
-             # Variable / lipid information
-             fileInput(
-               inputId = ns("fi_lipid_var_info"),
-               label = "Lipid info (csv) :",
-               multiple = FALSE,
-               accept = ".csv",
-               buttonLabel = "Browse...",
-               placeholder = "No file selected"
-             ),
-             htmlOutput(outputId = ns("fi_lipid_var_status")),
              # sample info
              fileInput(
                inputId = ns("fi_lipid_obs_info"),
@@ -121,6 +111,13 @@ mod_curation_lipid_server <- function(id){
       rv_data$data$status <- res$status
       rv_data$data$message <- res$message
       rv_data$data$data <- res$data_df
+
+      # get the lipid info
+      res_var <- get_lipid_info(lipid_data = rv_data$data$data)
+      # get all everything
+      # rv_data$variables$status <- res_var$status
+      # rv_data$variables$message <- res_var$message
+      rv_data$variables$data <- res_var
     })
 
     # show if there is an error during upload
@@ -130,35 +127,6 @@ mod_curation_lipid_server <- function(id){
       # show if there is an error
       if(rv_data$data$status == "error"){
         HTML(paste("<text style='color:red; font-weight:bold'>Error:", rv_data$data$message, "</text>"))
-      }
-    })
-
-
-    #### get variable info ####
-    observeEvent(input$fi_lipid_var_info, {
-      req(input$fi_lipid_var_info)
-
-      # validate the extension, message is NOT shown!!
-      ext <- tools::file_ext(input$fi_lipid_var_info$name)
-      validate(need(ext == "csv", "Please upload a csv file"))
-
-      # read the file
-      res <- read_lipid_data(filename = input$fi_lipid_var_info$datapath,
-                             data_type = "variables")
-
-      # get all everything
-      rv_data$variables$status <- res$status
-      rv_data$variables$message <- res$message
-      rv_data$variables$data <- res$data_df
-    })
-
-    # show if there is an error during upload
-    output$fi_lipid_var_status <- renderUI({
-      req(rv_data$variables$status)
-
-      # show if there is an error
-      if(rv_data$variables$status == "error"){
-        HTML(paste("<text style='color:red; font-weight:bold'>Error:", rv_data$variables$message, "</text>"))
       }
     })
 
@@ -196,13 +164,12 @@ mod_curation_lipid_server <- function(id){
     output$ui_lipid_curation_params <- renderUI({
       # if one of them is still NULL don't continue
       req(rv_data$data$status,
-          rv_data$variables$status,
           rv_data$observations$status,
           rv_data$observations$data)
 
       # if there is any error do NOT continue
       status <- c(rv_data$data$status,
-                  rv_data$variables$status,
+                  # rv_data$variables$status,
                   rv_data$observations$status)
 
       # if no error
@@ -242,7 +209,6 @@ mod_curation_lipid_server <- function(id){
     observeEvent(input$ab_lipid_curate, {
       # if one of them is still NULL don't continue
       req(rv_data$data$status,
-          rv_data$variables$status,
           rv_data$observations$status,
           input$ti_lipid_db_name,
           input$si_lipid_group_de)
@@ -287,7 +253,6 @@ mod_curation_lipid_server <- function(id){
       ## check for errors
       # get all status'
       status <- c(rv_data$data$status,
-                  rv_data$variables$status,
                   rv_data$observations$status,
                   status_db_name$status,
                   rv_data$test$status)

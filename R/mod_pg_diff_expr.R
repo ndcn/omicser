@@ -191,7 +191,7 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
       y_leg <- max(de$neglogpval)
       x_leg <- max(de$logfoldchanges)
 
-      print(head(de))
+      print(str(de))
 
       # title_text <- paste0(input$SI_comp_type, " || ", input$SI_comp_fact)
       if( dim(de)[1]>0 ) {
@@ -333,6 +333,9 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
 
       selected <- event_data(event = "plotly_click")$pointNumber + 1
       omic_name <- filtered_de()$names[selected]
+
+      # RICO: show the selected data
+      print(colnames(active_layer_data$data))
 
       data_vec <- active_layer_data$data[,omic_name]
       # check if there is data present
