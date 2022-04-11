@@ -191,8 +191,6 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
       y_leg <- max(de$neglogpval)
       x_leg <- max(de$logfoldchanges)
 
-      print(str(de))
-
       # title_text <- paste0(input$SI_comp_type, " || ", input$SI_comp_fact)
       if( dim(de)[1]>0 ) {
         # pg_volcano_ly(in_data = filtered_de(),
