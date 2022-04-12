@@ -323,7 +323,7 @@ write_lipid_config <- function(data = NULL,
   config_list <- list(
     ### grouping factors
     # if it needs to be in subset add here as well
-    group_vars = colnames(data$var_info)[-1],
+    group_vars = "lipid_class", # colnames(data$var_info)[-1],
     group_obs = c("Group"),
 
     ### layer info
@@ -343,14 +343,14 @@ write_lipid_config <- function(data = NULL,
     ### variables
     default_var = c("feature_name"),
     # heatmap default selected
-    var_annots = colnames(data$var_info)[-1],
+    var_annots = "lipid_class", # colnames(data$var_info)[-1],
 
     ### set the target features, looks like they are not loaded yet
     target_features = "",
 
     ### set the feature details when dot clicked in volcano plot
     # looks like this is not working, in Domenico script it works
-    feature_deets = c(""),
+    feature_deets = colnames(data$var_info)[-1],
 
     ### differential expression
     diffs = list(diff_exp_comps = levels(factor(diff_exp$versus)),
@@ -423,7 +423,7 @@ pack_lipid_anndata <- function(data = NULL,
 #' @param data list with all the data.
 #' @param test_types what test do you want to do.
 #' @param test_group group on which to do the test(s).
-#' @param comp the comparissons.
+#' @param comp the comparisons.
 #' @param db_root root path of all databases.
 #' @param db_name name of the database.
 #'

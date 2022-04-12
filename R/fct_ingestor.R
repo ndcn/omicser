@@ -24,14 +24,17 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
   conf_yml <- file.path(db_root_path,db_name,"db_config.yml" )
 
   # check if we have it or are forcing
-  if ( !regenerate) {
+  if (!regenerate) {
     # do we have the files
-    if ( all(file.exists( config_files ))) {
-      # are teh saved files newer than the yaml?
-      if (difftime(file.info(config_files[1])$ctime,file.info(conf_yml)$ctime, units = "days") < 0) {
+    if (all(file.exists( config_files ))) {
+      # are the saved files newer than the yaml?
+      if (difftime(file.info(config_files[1])$ctime, file.info(conf_yml)$ctime, units = "days") < 0) {
+        # read the rds files
         omxr_conf <- readRDS(file = config_files[1])
         omxr_def <- readRDS(file = config_files[2])
-        return (list(conf  = omxr_conf,def   = omxr_def))
+
+        return(list(conf  = omxr_conf,
+                     def   = omxr_def))
       }
     }
   }
@@ -261,7 +264,7 @@ gen_config_table <- function(ad_in, db_name, db_root_path, regenerate = FALSE) {
     omxr_def$obs_annots <- conf_list$obs_annots
     omxr_def$var_annots <- conf_list$var_annots
     omxr_def$target_features <- conf_list$target_features # first 20
-    omxr_def$feature_details <- conf_list$feature_details
+    omxr_def$feature_details <- conf_list$feature_deets
     omxr_def$filter_feature  <- conf_list$filter_feature
 
     # #meta info
