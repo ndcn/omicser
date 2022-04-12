@@ -21,7 +21,7 @@
 read_lipid_data <- function(filename = NULL,
                             data_type = c("data_matrix", "variables", "observations")) {
   ### sanity check
-  # is a filename supplied
+  # is a file name supplied
   if(is.null(filename)) {
     stop("Please supply a file name!")
   }
@@ -135,7 +135,7 @@ get_lipid_info <- function(lipid_data = NULL) {
     rename(lipid_name = .data$lipidyzer_name) %>%
     as.data.frame()
 
-  # set the rownames
+  # set the row names
   rownames(lipid_info_clean) <- lipid_info_clean$lipid_name
 
   # return results
@@ -243,7 +243,6 @@ curate_lipidomics <- function(data = NULL,
   }
 
   #### Get going here
-  print("Get the data")
   # initialize list with all the data
   lipid_data <- list(data_matrix = NULL,
                      obs_info = NULL,
@@ -262,25 +261,21 @@ curate_lipidomics <- function(data = NULL,
   lipid_data$var_info <- data$var
   rownames(lipid_data$var_info) <- lipid_data$var_info$lipid_name
 
-  print("Do clean up")
   #### Do some clean up ####
   # remove lipds which only contain NA's or zero's
   if (remove_zero_lipids == TRUE) {
     lipid_data <- clean_up(lipid_data = lipid_data)
   }
 
-  print("Do pre-processing")
   #### Pre-processing ####
   lipid_data <- preproc_lipid_data(lipid_data = lipid_data,
                                    remove_twothird_lipids = remove_twothird_lipids)
 
-  print("Pack into anndata")
   #### Pack into ann-data ####
   ad <- pack_lipid_anndata(data = lipid_data,
                            db_root = db_root,
                            db_name = db_name)
 
-  print("Calculate differential expression")
   #### Calculate differential expression table ####
   diff_exp_table <- diff_epxression(data = lipid_data,
                                     test_types = tests,
@@ -288,7 +283,6 @@ curate_lipidomics <- function(data = NULL,
                                     db_root = db_root,
                                     db_name = db_name)
 
-  print("Write yml config file.")
   #### write config file ####
   write_lipid_config(data = lipid_data,
                      diff_exp = diff_exp_table,

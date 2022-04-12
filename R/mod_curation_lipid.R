@@ -199,7 +199,7 @@ mod_curation_lipid_server <- function(id){
                              label = "Select curation steps :",
                              choices = c("Remove zero lipids" = "zero",
                                          "Remove lipids 2/3 NA" = "twothird"),
-                             selected = "zero")
+                             selected = c("zero", "twothird"))
         )
       }
     })
