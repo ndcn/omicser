@@ -292,8 +292,9 @@ curate_lipidomics <- function(data = NULL,
   # write to hdf5 file
   ad$write_h5ad(filename = file.path(db_root, db_name, "core_data.h5ad"))
   ad$write_h5ad(filename = file.path(db_root, db_name, "db_data.h5ad"))
+
   # return result
-  return(NULL)
+  return("Done")
 }
 
 

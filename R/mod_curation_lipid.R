@@ -67,6 +67,7 @@ mod_curation_lipid_ui <- function(id){
 #' curation_lipid Server Functions
 #'
 #' @importFrom tools file_ext
+#' @importFrom waiter Waiter transparent spin_loaders
 #'
 #' @noRd
 #'
@@ -199,10 +200,30 @@ mod_curation_lipid_server <- function(id){
                              label = "Select curation steps :",
                              choices = c("Remove zero lipids" = "zero",
                                          "Remove lipids 2/3 NA" = "twothird"),
-                             selected = c("zero", "twothird"))
+                             selected = c("zero", "twothird")),
+          # show when curation is done
+          htmlOutput(outputId = ns("lipid_curation_status"))
         )
       }
     })
+
+    # show when curation is done
+    output$lipid_curation_status <- renderUI({
+      req(rv_data$curation_status)
+
+      if(rv_data$curation_status == "Done"){
+        HTML(paste("<text style='color:blue; font-weight:bold'>Curation done!</text>"))
+      }
+    })
+
+
+    #### define waiter ####
+    wtr <- waiter::Waiter$new(
+      # set the waiter to the full app
+      id = NULL,
+      html = waiter::spin_whirly(),
+      color = waiter::transparent(.5)
+    )
 
 
     #### curation button clicked ####
@@ -212,6 +233,9 @@ mod_curation_lipid_server <- function(id){
           rv_data$observations$status,
           input$ti_lipid_db_name,
           input$si_lipid_group_de)
+
+      # show the waiter
+      wtr$show()
 
       ## initialize some variables here
       # initialize curation parameters
@@ -262,22 +286,22 @@ mod_curation_lipid_server <- function(id){
 
       } else {
         # continue
-        print("Start curation...")
-
         # do the curation
-        curate_lipidomics(data = list(data = rv_data$data$data,
-                                      obs = rv_data$observations$data,
-                                      var = rv_data$variables$data),
-                          db_name = rv_data$database$name,
-                          db_root = DB_ROOT,
-                          remove_zero_lipids = remove_zero_lipids,
-                          remove_twothird_lipids = remove_twothird_lipids,
-                          tests = rv_data$test$tests,
-                          test_group = group_name)
+        res_cur <- curate_lipidomics(data = list(data = rv_data$data$data,
+                                                 obs = rv_data$observations$data,
+                                                 var = rv_data$variables$data),
+                                     db_name = rv_data$database$name,
+                                     db_root = DB_ROOT,
+                                     remove_zero_lipids = remove_zero_lipids,
+                                     remove_twothird_lipids = remove_twothird_lipids,
+                                     tests = rv_data$test$tests,
+                                     test_group = group_name)
 
-        print("Curation done!")
+        rv_data$curation_status <- res_cur
       } # end of all fine
 
+      # stop the waiter
+      wtr$hide()
     })
 
 
