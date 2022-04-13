@@ -11,12 +11,18 @@ run_in_browser(
   ...
 )
 }
-\value{
+\arguments{
+\item{db_root}{path of the database root}
 
+\item{database_names}{database names}
+
+\item{install_type}{installation type}
+
+\item{...}{parameters passes on to run_app()}
 }
 \description{
 run_in_browser - shortcut to launch in_browser
 }
 \examples{
-TODO
+# TODO
 }

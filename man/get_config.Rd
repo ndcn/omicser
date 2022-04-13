@@ -16,5 +16,5 @@ the list of options contained in `app_config.yml`
 get_config: helper for reading the Config file containing information about the databases
 }
 \examples{
-TODO
+# TODO
 }

@@ -39,9 +39,10 @@ mod_ingestor_ui <- function(id) {
     fluidRow(
       column(width = 3,
              offset = 0,
-             actionButton(ns("AB_add_database_load"), label = "Add Database", class = "btn btn-large btn-danger")
-             )
-      ),
+             actionButton(ns("AB_add_database_load"), label = "Add Database", class = "btn btn-large btn-danger"),
+             mod_curation_ui(id = ns("curation_ui"))
+      )
+    ),
     hr(style = "border-top: 1px dashed grey;"),
     fluidRow(
       column(width = 4,
@@ -156,6 +157,9 @@ mod_ingestor_server <- function(id) {
     shinyFiles::shinyDirChoose(input, "database_root_path", roots = c(shinyFiles::getVolumes()()), session = session, allowDirCreate = FALSE)
     mod_additional_info_server("additional_info_ui_ingest",
                                db_info = db)
+
+    # The server part for the curation process
+    mod_curation_server(id = "curation_ui")
 
     to_return <- reactiveValues(
       # these values hold the database contents (only reactive because we can choose)

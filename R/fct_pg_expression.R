@@ -82,6 +82,31 @@ get_my_cols2 <- function(top_annotations){
   return(top_colors)
 }
 
+#' @title Make complex heatmap
+#'
+#' @param in_mat matrix
+#' @param cluster_samps cluster samples
+#' @param samp_grp sample groups
+#' @param samp_grp_nm sample group names
+#' @param samp_title sample title
+#' @param samp_aggregated samples aggregated
+#' @param samp_split samples split
+#' @param cluster_feats cluster features
+#' @param feat_grp feature groups
+#' @param feat_grp_nm feature group names
+#' @param feats_title feature title
+#' @param units_label unit labels
+#' @param omics omics
+#' @param omics_at omics
+#' @param top_annotations top annotations
+#' @param right_annotations right annotation
+#'
+#' @return complexheatmap object
+#'
+#' @importFrom stats hclust dist
+#'
+#' @noRd
+#'
 make_cx_heatmap = function(in_mat,
                            cluster_samps, samp_grp, samp_grp_nm, samp_title,samp_aggregated,samp_split,
                            cluster_feats, feat_grp, feat_grp_nm, feats_title,

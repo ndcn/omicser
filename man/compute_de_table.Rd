@@ -24,5 +24,5 @@ diff_exp, differential expression table
 compute_de_table = helper function to create differential expression table
 }
 \examples{
-TODO
+# TODO
 }

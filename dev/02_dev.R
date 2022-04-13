@@ -56,6 +56,19 @@ usethis::use_package("Cairo")
 usethis::use_package("waiter")
 
 usethis::use_package("shinyFiles")
+usethis::use_package("tidyselect")
+usethis::use_package("rlang")
+usethis::use_package("RColorBrewer")
+usethis::use_package("reticulate")
+usethis::use_package("purrr")
+usethis::use_package("Seurat")
+usethis::use_package("circlize")
+usethis::use_package("config")
+usethis::use_package("htmlwidgets")
+usethis::use_package("matrixStats")
+usethis::use_package("ggplot2")
+usethis::use_package("spelling")
+usethis::use_package("testthat")
 
 # # DISABLED for now
 # usethis::use_package("BiocManager")
@@ -72,6 +85,7 @@ usethis::use_package("dplyr")
 #usethis::use_package("tidyr") # called by dplyr as dependency?
 #usethis::use_package("magrittr")  # use_pipe()
 usethis::use_package("broom")
+usethis::use_package("tools")
 
 
 ## Add modules ----
@@ -88,6 +102,8 @@ golem::add_module( name = "additional_info") # Name of the module
 golem::add_module( name = "omic_selector") # Name of the module
 golem::add_module( name = "subset_selector") # Name of the module
 golem::add_module( name = "help") # Name of the module
+golem::add_module( name = "curation" ) # all about curation of new data sets
+golem::add_module( name = "curation_lipid" ) # all about curation for lipid data sets
 
 # DEPRICATE?
 golem::add_module( name = "pg_vis_qc") # Name of the module
@@ -95,6 +111,7 @@ golem::add_module( name = "export" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
+golem::add_fct( "curation_lipid" ) # helper functions for lipid cutation
 # golem::add_fct( "module" ) # NOTE: `fct` are server helpers
 # golem::add_utils( "module" ) #   'utils` are ui helpers
 

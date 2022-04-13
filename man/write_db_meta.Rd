@@ -14,11 +14,11 @@ write_db_meta(db_meta, db_name, db_root = NULL)
 \item{db_root}{where the folder lives. default cwd}
 }
 \value{
-
+Nothing, a file is written.
 }
 \description{
 write_db_meta: helper for writing the database meta info
 }
 \examples{
-TODO
+# TODO
 }

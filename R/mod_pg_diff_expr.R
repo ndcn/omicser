@@ -68,7 +68,10 @@ mod_pg_diff_expr_ui <- function(id){
 #' @param active_layer_data current data matrix
 #'
 #' @noRd
+#'
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
+#' @importFrom utils head
+#'
 mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
@@ -338,11 +341,13 @@ mod_pg_diff_expr_server <- function(id,rv_data, rv_selections, active_layer_data
         )
       )
 
-      grouping_var <- filtered_de()$obs_name[1]
+      # to be sure that this is a character and not a factor
+      grouping_var <- as.character(filtered_de()$obs_name[1])
       omic_counts <- data.frame( rv_data$anndata$obs_names,
                                  data_vec,
                                  rv_data$anndata$obs[[grouping_var]] )
       colnames(omic_counts) <- c("id", "val","grp")
+
       return(omic_counts)
     })
 
