@@ -207,6 +207,22 @@ mod_curation_lipid_server <- function(id){
       }
     })
 
+    # check database name when you type
+    observeEvent(input$ti_lipid_db_name, {
+      # get the database name
+      db_name <- input$ti_lipid_db_name
+
+      # start checking if the name is longer then 0 characters
+      if(nchar(db_name) > 0) {
+        status_db_name <- check_database_name(db_name = db_name,
+                                              db_root = DB_ROOT)
+
+        # update everything
+        rv_data$database$status <- status_db_name$status
+        rv_data$database$message <- status_db_name$message
+      }
+    })
+
     # show when curation is done
     output$lipid_curation_status <- renderUI({
       req(rv_data$curation_status)
@@ -269,7 +285,7 @@ mod_curation_lipid_server <- function(id){
 
       # check if the database name is valid
       status_db_name <- check_database_name(db_name = rv_data$database$name,
-                                            current_db_names = DB_NAMES)
+                                            db_root = DB_ROOT)
       # update everything
       rv_data$database$status <- status_db_name$status
       rv_data$database$message <- status_db_name$message
