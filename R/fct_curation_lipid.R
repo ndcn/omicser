@@ -149,7 +149,7 @@ get_lipid_info <- function(lipid_data = NULL) {
 #'     characters.
 #'
 #' @param db_name character vector (length = 1) with the database name.
-#' @param current_db_names named list with all the current database names.
+#' @param db_root root path of all the databases.
 #'
 #' @return TRUE if database name is ok, FALSE if not
 #'
@@ -158,31 +158,46 @@ get_lipid_info <- function(lipid_data = NULL) {
 #' @noRd
 #'
 check_database_name <- function(db_name = NULL,
-                                current_db_names = NULL) {
+                                db_root = NULL) {
+  # sanity check
+  if(is.null(db_name)) {
+    stop("No database name supplied!")
+  }
+  if(is.null(db_root)) {
+    stop("No root path of the database location supplied!")
+  }
 
   # initialize the list to return
   res <- list(status = NULL,
               message = NULL)
 
   # check if the database doesn't contain any special characters
-  db_name_matches <- regexpr(text = db_name,
-                             pattern = "[a-zA-Z//-_]+")
+  # TRUE is ok
+  db_name_matches <- grepl(x = db_name,
+                           pattern = "^[a-zA-Z_-]+$")
 
-  if(nchar(db_name) == attributes(db_name_matches)$match.length) {
+  # check if the database name exist by checking if the folder exists
+  # TRUE is not OK
+  db_folder_names <- db_name %in% list.dirs(path = db_root,
+                                            full.names = FALSE,
+                                            recursive = FALSE)
+
+  # set message and status
+  if(db_name_matches == FALSE | db_folder_names == TRUE) {
+    if(db_folder_names == TRUE) {
+      # if already exists error
+      res$status <- "error"
+      res$message <- "Database name already exists!"
+    }
+    if(db_name_matches == FALSE) {
+      # special character used
+      res$status <- "error"
+      res$message <- "Please only use 'a-z', 'A-Z' or '-_' in the database name!"
+    }
+  } else {
     # all ok
     res$status <- "ok"
-  } else {
-    # special character used
-    res$status <- "error"
-    res$message <- "Error in database name. Please only use 'a-z', 'A-Z' or '-_'!"
-  }
-
-  # check if database name exists
-  # this is only done for database known to omicser
-  # other folders are not detected
-  if(db_name %in% unlist(current_db_names)) {
-    res$status <- "error"
-    res$message <- "Database name already exists!"
+    res$message <- NULL
   }
 
   # return the result
