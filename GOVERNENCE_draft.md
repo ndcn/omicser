@@ -55,7 +55,7 @@ The maintainers of omicser are:
 * [Rico Derks](https://github.com/ricoderks) Head Maintainer
 * [Andy Henrie](https://github.com/ergonyc) Original Author
 
-Our _Head_ Maintainer, [Rico Derks](https://github.com/rderks) will additionally delegate tasks, communicate proactively with the project lead, and ensure that pull requests, issues, etc are handled in a timely manner.
+Our _Head_ Maintainer, [Rico Derks](https://github.com/ricoderks) will additionally delegate tasks, communicate proactively with the project lead, and ensure that pull requests, issues, etc are handled in a timely manner.
 
 All maintainers are bound by the [code of conduct](CODE_OF_CONDUCT.md).
 
