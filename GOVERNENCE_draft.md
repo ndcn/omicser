@@ -52,7 +52,7 @@ Maintainers are recruited from contributors. An invitation to join the core team
 
 The maintainers of omicser are:
 
-* [Rico Derks](https://github.com/rderks) Head Maintainer
+* [Rico Derks](https://github.com/ricoderks) Head Maintainer
 * [Andy Henrie](https://github.com/ergonyc) Original Author
 
 Our _Head_ Maintainer, [Rico Derks](https://github.com/rderks) will additionally delegate tasks, communicate proactively with the project lead, and ensure that pull requests, issues, etc are handled in a timely manner.
