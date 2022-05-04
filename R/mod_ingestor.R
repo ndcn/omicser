@@ -332,8 +332,10 @@ mod_ingestor_server <- function(id) {
       }
     })
 
-    observe({
-      if (  modal_db_info$config_ready ) {
+    # enable / disable Update&close button
+    # if configuration is done, it is ok to enable button
+    observeEvent(input$AB_add_database_load, {
+      if (modal_db_info$config_ready) {
         shinyjs::enable("ab_save_config")
       } else {
         shinyjs::disable("ab_save_config")
