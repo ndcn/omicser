@@ -17,12 +17,43 @@ Before making a contribution, please take the following steps:
 
 NOTE: All contributors are implicitly sharing open license to the code submitted.  See also our [CONTRIBUTION document](https://github.com/ndcn/omicser/blob/main/CONTRIBUTING.md)
 
+All participants in this project are bound by the [code of conduct](CODE_OF_CONDUCT.md).
+
 
 ## Governance
 
 ### Roles and responsibilities
 
-This project has a large community of ***users*** and ***contributors***, a team of ***maintainers***, the ***”Brain Trust”***, and a ***NDCN Github Org Lead***.
+This project has a large community of __users__ and __contributors__, a team of __maintainers__, the __”Brain Trust”__, and a full time developer who is the __project lead__.
+
+#### “Brain Trust”
+The NDCN Browser “Brain Trust” is the group of NDCN  PIs, their lab members, and CZI personnel who continue to steer the open source project.  The “Brain Trust” is responsible for:
+
+* Specify and evolve the strategic objectives of the project.
+* Enabling the project survives in the long term.
+
+Together the group of individuals who constitute the _“Brain Trust”_ will proactively articulate the overall strategies, goals and objectives of the project.  Although the _”Brain Trust_ is everyone involved in the bi-monthly discussions, the primary responsibility is shared among the PIs of that group.   Currently, all of the _Maintainers_ are __also__ members of the _Brain Trust_.  They will ensure that the (_Head_) Maintainers' tactical objectives are aligned with the overall project.  
+
+#### Maintainers
+
+Maintainers are collectively responsible for day-to-day development of the package, including responding to issues and reviewing pull requests. They are GitHub administrators and [package authors](https://github.com/ndcn/omicser/blob/master/DESCRIPTION#L5), which means that they have the ability to make changes to project code, and receive credit when others cite the package.
+
+While maintainers can modify code directly, this ability is rarely used. Instead, changes are proposed as pull requests, and are only merged after they have been reviewed by at least one other core developer. Changes to the API (especially breaking changes) must also be approved by the project lead.
+
+Maintainers are recruited from contributors. An invitation to join the core team can be extended to anyone who has made a major contribution, either through a small number of large changes, or a consistent pattern of smaller contributions. Any existing core developer can propose a contributor be invited to the core team by contacting the project lead. The project lead will the confirm the invitation with the other maintainers.
+
+The maintainers of omicser are:
+
+* [TBD](http://github.com/) Lead Developer, Head Maintainer
+* [Yassene Mohammed](https://github.com/yassene) Science lead 
+* [Rico Derks](https://github.com/rderks) Technical lead 
+* [Andy Henrie](https://github.com/ergonyc) Original Author
+
+Our _Lead_ Developer is also the Head Maintainer of this repository, [TBD](https://github.com/TBD) will additionally delegate tasks, communicate proactively with the Science and Tech project lead and other stakeholders.  They have the responsibility, to ensure that pull requests, issues, etc are handled in a timely manner.
+
+All maintainers are bound by the [code of conduct](CODE_OF_CONDUCT.md).
+
+<!-- More details can be found in the [maintainers guidelines](MAINTAINER_GUIDELINES.md).-->
 
 #### Users
 
@@ -36,46 +67,14 @@ Users are encouraged to participate in the life of the project and the community
 
 Users who continue to engage with the project and its community will often find themselves becoming more and more involved. Such users may then go on to become contributors, as described above.
 
-#### Contributors
 
-Contributors interact with the project on GitHub by filing new issues, improving existing issues, or submitting pull requests. Anyone can become a contributor: there is no expectation of commitment to the project, no required set of skills, and no selection process. The only obligation is to follow the [code of conduct](CODE_OF_CONDUCT.md).
-
-Specific advice for contributing to the project can be found in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-#### Maintainers
-
-Maintainers are collectively responsible for day-to-day development of the package, including responding to issues and reviewing pull requests. They are GitHub administrators and [package authors](https://github.com/ndcn/omicser/blob/master/DESCRIPTION#L5), which means that they have the ability to make changes to project code, and receive credit when others cite the package.
-
-While maintainers can modify code directly, this ability is rarely used. Instead, changes are proposed as pull requests, and are only merged after they have been reviewed by at least one other core developer. Changes to the API (especially breaking changes) must also be approved by the project lead.
-
-Maintainers are recruited from contributors. An invitation to join the core team can be extended to anyone who has made a major contribution, either through a small number of large changes, or a consistent pattern of smaller contributions. Any existing core developer can propose a contributor be invited to the core team by contacting the project lead. The project lead will the confirm the invitation with the other maintainers.
-
-The maintainers of omicser are:
-
-* [Rico Derks](https://github.com/ricoderks) Head Maintainer
-* [Andy Henrie](https://github.com/ergonyc) Original Author
-
-Our _Head_ Maintainer, [Rico Derks](https://github.com/ricoderks) will additionally delegate tasks, communicate proactively with the project lead, and ensure that pull requests, issues, etc are handled in a timely manner.
-
-All maintainers are bound by the [code of conduct](CODE_OF_CONDUCT.md).
-
-<!-- More details can be found in the [maintainers guidelines](MAINTAINER_GUIDELINES.md).-->
-
-#### “Brain Trust”
-The NDCN Browser  ***“Brain Trust”*** is the group of NDCN  PIs, their lab members, and CZI personnel who continue to steer the open source project.  The “Brain Trust” is responsible for:
-
-* Specify and evolve the strategic objectives of the project.
-* Enabling the project survives in the long term.
-
-Together the group of individuals who constitute the ***“Brain Trust”*** will proactively articulate the overall strategies, goals and objectives of the project.  Although the ***”Brain Trust*** is everyone involved in the bi-monthly discussions, the primary responsibility is shared among the PIs of that group.   Currently, all of the ***Maintainers*** are __also__ memebers of the ***Brain Trust***.  They will ensure that the ***(Head) Maintainers*** tactical objectives are aligned with the overall project.  
-
-#### Project NDCN Github Organization lead
-The ***NDCN Github Organization Lead***  leads,  [Chris Sifuentes](https://github.com/cjsifuen), is responsible for:
-* Clearly communication of the NDCN Github Organization policies and objectiveson the strategic objectives of the project.
+#### Project NDCN Liason
+The NDCN Liason,  [Chris Sifuentes](https://github.com/cjsifuen), is responsible for:
+* Clearly communication of the NDCN Github Organization policies and objectives.
 * Mediating any conflicts amongst the maintainers in repositories within the NDCN Github Organization.
 
-The project lead is bound by the [code of conduct](CODE_OF_CONDUCT.md).
 
 ### Decision-making process
 
-This project makes decisions according to a consensus model where suggestions are considered and discussed between the community and maintainers, typically in GitHub issues. If the community questions a decision, the ***“Brain Trust”*** and/or the ***NDCN Github Organization Lead*** may review it and either uphold or reverse it.
+This project makes decisions according to a consensus model where suggestions are considered and discussed between the community and maintainers, typically in GitHub issues. If the community questions a decision, the __“Brain Trust”__ and/or the __NDCN Github Organization lead__ may review it and either uphold or reverse it.
+
