@@ -46,7 +46,7 @@ The maintainers of omicser are:
 
 * [TBD](http://github.com/) Lead Developer, Head Maintainer
 * [Yassene Mohammed](https://github.com/yassene) Science lead 
-* [Rico Derks](https://github.com/rderks) Technical lead 
+* [Rico Derks](https://github.com/ricoderks) Technical lead 
 * [Andy Henrie](https://github.com/ergonyc) Original Author
 
 Our _Lead_ Developer is also the Head Maintainer of this repository, [TBD](https://github.com/TBD) will additionally delegate tasks, communicate proactively with the Science and Tech project lead and other stakeholders.  They have the responsibility, to ensure that pull requests, issues, etc are handled in a timely manner.
