@@ -119,12 +119,12 @@
 <p>Once both the data and browser are appropriately formatted and configured, you are ready to browse your data!</p>
 <p>Ensuring your working directory contains the <code>app_config.yml</code> file, launch the application by executing the following line of code:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/run_defaults.html">run_defaults</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/run_defaults.html">run_defaults</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Your application should automatically load in a new tab/window of your default browser (tested on Chrome and Firefox). If you prefer, there is also an exported <code><a href="../reference/run_in_browser.html">run_in_browser()</a></code> function which takes the database locations as arguments:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/run_in_browser.html">run_in_browser</a></span><span class="op">(</span>db_root <span class="op">=</span> <span class="st">"/path/to/database/folders"</span>,
-                        database_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>`your db name`<span class="op">=</span><span class="st">"database_folder_name"</span><span class="op">)</span>
-                        <span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">omicser</span><span class="fu">::</span><span class="fu"><a href="../reference/run_in_browser.html">run_in_browser</a></span><span class="op">(</span>db_root <span class="op">=</span> <span class="st">"/path/to/database/folders"</span>,</span>
+<span>                        database_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>`your db name`<span class="op">=</span><span class="st">"database_folder_name"</span><span class="op">)</span></span>
+<span>                        <span class="op">)</span></span></code></pre></div>
 <p>Please note that you need to keep RStudio running to work with data in your browser.</p>
 <blockquote>
 <p>When you are done browsing, you will need to close both the browser window <strong>and</strong> end the process running in RStudio. You can end the process in R by clicking on the red stop sign icon in your Console, or by entering <code>Control C</code> in the Console.</p>
@@ -140,16 +140,16 @@
 </h3>
 <p>You can check to see what python is set up on the backend with:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/py_discover_config.html" class="external-link">py_discover_config</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/py_discover_config.html" class="external-link">py_discover_config</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>We can ensure / enforce that the correct python (with <code>anndata</code> and/or <code>scanpy</code> libraries available) by using <code>reticulate</code> and R <code>Sys</code> calls. For instance we can make sure we have an environment with:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">OMICSER_PYTHON</span> <span class="op">&lt;-</span>  <span class="st">"pyenv_omicser"</span>
-<span class="va">OMICSER_PYTHON_EXISTS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/conda-tools.html" class="external-link">conda_list</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="st">"name"</span><span class="op">]</span><span class="op">==</span><span class="va">OMICSER_PYTHON</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">OMICSER_PYTHON</span> <span class="op">&lt;-</span>  <span class="st">"pyenv_omicser"</span></span>
+<span><span class="va">OMICSER_PYTHON_EXISTS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/conda-tools.html" class="external-link">conda_list</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="st">"name"</span><span class="op">]</span><span class="op">==</span><span class="va">OMICSER_PYTHON</span><span class="op">)</span></span></code></pre></div>
 <p>And we can force <code>reticulate</code> to use our properly configured python by setting the <code>RETICULATED_PYTHON</code> environment variable:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RETICULATE_PYTHON"</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"OMICSER_PYTHON"</span> <span class="op">)</span> <span class="op">{</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span><span class="st">"RETICULATE_PYTHON"</span><span class="op">=</span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/conda-tools.html" class="external-link">conda_python</a></span><span class="op">(</span>envname <span class="op">=</span> <span class="va">OMICSER_PYTHON</span><span class="op">)</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RETICULATE_PYTHON"</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"OMICSER_PYTHON"</span> <span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span><span class="st">"RETICULATE_PYTHON"</span><span class="op">=</span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/conda-tools.html" class="external-link">conda_python</a></span><span class="op">(</span>envname <span class="op">=</span> <span class="va">OMICSER_PYTHON</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p>If <code>py_discover_config()</code> does not now show your configured python environment, you will need to restart your R-session and set the <code>RETICULATED_PYTHON</code> environment variable again before spawning the browser.</p>
 <ul>
 <li><p><strong>What if I have a dev intallation of <code>omicser</code>?</strong> You should make sure to re-load the code before running the browser using the <code>golem</code> helpers. Please see <a href="https://github.com/ndcn/omicser/blob/main/examples/dev_run_browser_script.R" class="external-link"><code>examples/dev_run_browser_script.R</code></a>.</p></li>
@@ -178,7 +178,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>
