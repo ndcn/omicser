@@ -27,12 +27,13 @@ All participants in this project are bound by the [code of conduct](CODE_OF_COND
 This project has a large community of __users__ and __contributors__, a team of __maintainers__, the __”Brain Trust”__, and a full time developer who is the __project lead__.
 
 #### “Brain Trust”
-The NDCN Browser “Brain Trust” is the group of NDCN  PIs, their lab members, and CZI personnel who continue to steer the open source project.  The “Brain Trust” is responsible for:
+Although the principle execution and responsibility for development of the NDCN Omics Broswer is concentrated and hosted in [Martin Giera's Lab at the University of Leiden] (https://www.universiteitleiden.nl/plantsandmetabolomics/lecturers/martin-giera), the NDCN Browser “Brain Trust” is the group of NDCN  PIs, their lab members, and CZI personnel who continue to steer the open source project.  The “Brain Trust” is responsible for:
 
 * Specify and evolve the strategic objectives of the project.
 * Enabling the project survives in the long term.
 
 Together the group of individuals who constitute the _“Brain Trust”_ will proactively articulate the overall strategies, goals and objectives of the project.  Although the _”Brain Trust_ is everyone involved in the bi-monthly discussions, the primary responsibility is shared among the PIs of that group.   Currently, all of the _Maintainers_ are __also__ members of the _Brain Trust_.  They will ensure that the (_Head_) Maintainers' tactical objectives are aligned with the overall project.  
+
 
 #### Maintainers
 
@@ -40,16 +41,19 @@ Maintainers are collectively responsible for day-to-day development of the packa
 
 While maintainers can modify code directly, this ability is rarely used. Instead, changes are proposed as pull requests, and are only merged after they have been reviewed by at least one other core developer. Changes to the API (especially breaking changes) must also be approved by the project lead.
 
-Maintainers are recruited from contributors. An invitation to join the core team can be extended to anyone who has made a major contribution, either through a small number of large changes, or a consistent pattern of smaller contributions. Any existing core developer can propose a contributor be invited to the core team by contacting the project lead. The project lead will the confirm the invitation with the other maintainers.
+Additional maintainers are recruited from contributors. An invitation to join the core team can be extended to anyone who has made a major contribution, either through a small number of large changes, or a consistent pattern of smaller contributions. Any existing core developer can propose a contributor be invited to the core team by contacting the project lead. The project lead will the confirm the invitation with the other maintainers.
 
-The maintainers of omicser are:
 
-* [TBD](http://github.com/) Lead Developer, Head Maintainer
+The current maintainers of omicser are:
+
+* [Rico Derks](https://github.com/ricoderks) Lead Developer/Bioinformatics, Head Maintainer
 * [Yassene Mohammed](https://github.com/yassene) Science lead 
-* [Rico Derks](https://github.com/ricoderks) Technical lead 
-* [Andy Henrie](https://github.com/ergonyc) Original Author
+* [Damien Olivier](http://github.com/) Full-time developer (hire in progress) 
 
-Our _Lead_ Developer is also the Head Maintainer of this repository, [TBD](https://github.com/TBD) will additionally delegate tasks, communicate proactively with the Science and Tech project lead and other stakeholders.  They have the responsibility, to ensure that pull requests, issues, etc are handled in a timely manner.
+
+Our _Lead_ Developer is also the Head Maintainer of this repository, [Rico Derks](https://github.com/ricoderks) will additionally delegate tasks, communicate proactively with the Science and Tech project lead and other stakeholders.  They have the responsibility, to ensure that pull requests, issues, etc are handled in a timely manner.
+
+The full-time developer [TBD](https://github.com/TBD), is a post-doc who is 100% focused on developing the NDCN Omics browser and refining it into a widely deployed and performant tool for the -omics research community. 
 
 All maintainers are bound by the [code of conduct](CODE_OF_CONDUCT.md).
 
