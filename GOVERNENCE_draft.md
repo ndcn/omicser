@@ -51,7 +51,7 @@ The current maintainers of omicser are:
 * [Damien Olivier](http://github.com/) Full-time developer (hire in progress) 
 
 
-Our _Lead_ Developer is also the Head Maintainer of this repository, [Rico Derks](https://github.com/ricoderks) will additionally delegate tasks, communicate proactively with the Science and Tech project lead and other stakeholders.  They have the responsibility, to ensure that pull requests, issues, etc are handled in a timely manner.
+Our _Lead_ Developer, [Rico Derks](https://github.com/ricoderks), is also the Head Maintainer of this repository.  He will additionally delegate tasks, communicate proactively with the Science and Tech project lead and other stakeholders.  They have the responsibility to ensure that pull requests, issues, etc are handled in a timely manner.
 
 The full-time developer [TBD](https://github.com/TBD), is a post-doc who is 100% focused on developing the NDCN Omics browser and refining it into a widely deployed and performant tool for the -omics research community. 
 
