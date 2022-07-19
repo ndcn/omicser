@@ -40,14 +40,13 @@ Together the group of individuals who constitute the _“Brain Trust”_ will pr
 Maintainers are collectively responsible for day-to-day development of the package, including responding to issues and reviewing pull requests. They are GitHub administrators and [package authors](https://github.com/ndcn/omicser/blob/master/DESCRIPTION#L5), which means that they have the ability to make changes to project code, and receive credit when others cite the package.
 
 The current maintainers of Omicser are:
-* [Rico Derks](https://github.com/ricoderks) Lead Developer/Bioinformatics, Head Maintainer
-* [Yassene Mohammed](https://github.com/yassene) Science lead 
-* [Damien Olivier](http://github.com/) Full-time developer (hire in progress) 
+* Head Maintaner. [Rico Derks](https://github.com/ricoderks) Bioinformatics & Tech Lead
+* [Yassene Mohammed](https://github.com/yassene) Science Lead 
+* [Damien Olivier](http://github.com/) Full-time (Lead) developer (hire in progress) 
 
+Our _Head Maintainer_ , [Rico Derks](https://github.com/ricoderks), is also the lead on technical and bioinformatics. He will additionally delegate tasks, communicate proactively with the Science lead, the lead developer, and other stakeholders. They have the responsibility to ensure that pull requests, issues, etc. are handled in a timely manner.
 
-Our _Lead_ Developer, [Rico Derks](https://github.com/ricoderks), is also the Head Maintainer of this repository.  He will additionally delegate tasks, communicate proactively with the Science and Tech project lead and other stakeholders.  They have the responsibility to ensure that pull requests, issues, etc are handled in a timely manner.
-
-The full-time developer [TBD](https://github.com/TBD), is a post-doc who is 100% focused on developing the NDCN Omics browser and refining it into a widely deployed and performant tool for the -omics research community. 
+The lead developer [TBD](https://github.com/TBD), is a post-doc who is focused full-time on developing the NDCN Omics browser and refining it into a widely deployed and performant tool for the -omics research community. 
 
 While maintainers can modify code directly, this ability is rarely used. Instead, changes are proposed as pull requests, and are only merged after they have been reviewed by at least one other _core developer_. Changes to the API (especially breaking changes) must also be approved by the project lead.
 
