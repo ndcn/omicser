@@ -48,9 +48,9 @@ Our _Head Maintainer_ , [Rico Derks](https://github.com/ricoderks), is also the 
 
 The lead developer [TBD](https://github.com/TBD), is a post-doc who is focused full-time on developing the NDCN Omics browser and refining it into a widely deployed and performant tool for the -omics research community. 
 
-While maintainers can modify code directly, this ability is rarely used. Instead, changes are proposed as pull requests, and are only merged after they have been reviewed by at least one other _core developer_. Changes to the API (especially breaking changes) must also be approved by the project lead.
+While maintainers can modify code directly, this ability is rarely used. Instead, changes are proposed as pull requests, and are only merged after they have been reviewed by at least one other _contributor_. Changes to the API (especially breaking changes) must also be approved by the Head Maintainer.
 
-Additional maintainers are recruited from contributors. An invitation to join the maintainers can be extended to anyone who has made a major contribution, either through a small number of large changes, or a consistent pattern of smaller contributions. Any existing core developer can propose a contributor be invited to the _core developers_ by contacting the project lead. The project lead will the confirm the invitation with the other maintainers.
+Additional maintainers are recruited from contributors. An invitation to join the maintainers can be extended to anyone who has made a major contribution, either through a small number of large changes, or a consistent pattern of smaller contributions. Any existing core maintainers can propose a contributor be invited to join the maintainers by contacting the Head Maintainer. The project lead will the confirm the invitation with the other maintainers.
 
 All _maintainers_ are bound by the [code of conduct](CODE_OF_CONDUCT.md).
 
@@ -74,8 +74,8 @@ Users are encouraged to participate in the life of the project and the community
 Users who continue to engage with the project and its community will often find themselves becoming more and more involved. Such users may then go on to become contributors, as described above.
 
 
-#### NDCN Liason
-The NDCN Liason,  [Chris Sifuentes](https://github.com/cjsifuen), is responsible for:
+#### NDCN Liaison
+The NDCN Liaison,  [Chris Sifuentes](https://github.com/cjsifuen), is responsible for:
 * Clearly communication of the NDCN Github Organization policies and objectives.
 * Mediating any conflicts amongst the maintainers in repositories within the NDCN Github Organization.
 
